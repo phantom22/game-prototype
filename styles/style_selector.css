@@ -1,0 +1,111 @@
+body {
+	overflow-y: visible;
+}
+.center {
+	position: relative;
+	margin: -8px auto;
+	background: #111;
+	width: 70%;
+}
+table {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+tr {
+	overflow: hidden;
+}
+td {
+	width: 50%;
+	overflow: hidden;
+}
+tr:not(.title), tr:not(.title) td {
+	height: 300px;
+	max-height: 300px;
+	padding: 0;
+}
+.title td:nth-child(1) {
+	border-right-color: #262626;
+}
+table, tr, td {
+	border-collapse: collapse;
+	border: 1px solid hsl(0, 0%, 9.9%);
+}
+p {
+	color: white;
+	font-weight: bold;
+	font-size: 20px;
+	width: 100%;
+	text-align: center;
+}
+.title {
+	height: 40px;
+	background: #262626;
+}
+.screenshot {
+	display: block;
+	margin: 0 auto;
+	width: auto;
+	height: 260px;
+}
+.screenshot.selected {
+	overflow: hidden;
+	-moz-user-select: none;
+	user-select: none;
+	pointer-events: none;
+}
+.difficulty {
+	width: 60%;
+	display: none;
+	position: absolute;
+	margin-top: 70px;
+	overflow: hidden;
+	opacity: 0.0;
+	transition: all 0.7s;
+}
+.difficulty button {
+	width: 35%;
+	height: 90px;
+	border: 1px solid black;
+	background: black;
+	color: white;
+	transition: all 0.35s;
+	font-size: 25px;
+	font-weight: bold;
+}
+.difficulty button:nth-child(1) {
+	border-right-color: #111;
+	margin-left: 7.5%;
+}
+.difficulty button:hover {
+	color: black;
+}
+.difficulty button:nth-child(1):hover {
+	background: #70db70;
+	border-color: #70db70;
+}
+.difficulty button:nth-child(2):hover {
+	background: #ff4d4d;
+	border-color: #ff4d4d;
+}
+.center, table, tr {
+	min-width: 761px;
+}
+td {
+	min-width: 378px;
+	overflow: hidden;
+}
+.difficulty button {
+	min-width: 210px;
+}
+.difficulty {
+	min-width: 420px;
+}
+.difficulty button, .difficulty {
+	min-height: 90px;
+	overflow: hidden;
+}
+.center {
+	overflow-y: visible;
+	overflow-x: hidden;
+}
