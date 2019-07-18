@@ -47,7 +47,7 @@ const TOOL = {
 "c":function($N){if($N&&typeof $N=="number"){return Math.ceil($N)}},
 "a":function($N){if($N&&typeof $N=="number"){return Math.abs($N)}},
 // random a number [Math Random]
-"R":function($N,r){if($N&&!isNaN($N)||typeof $N=="number"){return r&&!isNaN(r)||typeof r=="number"?Math.floor(Math.random()*(r-$N+1))+$N:Math.floor(Math.random()*$N)}}
+"R":function($N,r){if($N&&!isNaN($N)||typeof $N=="number"){return r&&!isNaN(r)||typeof r=="number"?Math.floor(Math.random()*(r-$N))+$N:Math.floor(Math.random()*$N)}}
 },
 
 "Array":{

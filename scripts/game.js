@@ -232,7 +232,7 @@ class gameInstance {
       if (Math.abs(nX - oX) <= mv && Math.abs(nY - oY) <= mv && Math.abs(nX - oX) + Math.abs(nY - oY) <= mv) {
 
         let l = p.vision.loss; let t = p.vision.tokens;
-        this.data.player.vision.tokens -= t !== l+1 ? 1 : 0; this.data.player.vision.range = Math.ceil(t / l);
+        this.data.player.vision.tokens -= t !== l+1 ? 1 : 0; this.data.player.vision.range = Math.ceil(t / l) > 0 ? Math.ceil(t / l) : 2;
         this.data.player.position = [Number(nX),Number(nY)];
 
         let oXY = [oX,oY];
@@ -253,17 +253,18 @@ class gameInstance {
 
   tileEvents(xy) {
 
-      let id = this.reg[xy.join("-")].id; let r = this.data.player.vision.range; let l = this.data.player.vision.loss; let t = this.data.player.vision.tokens;
+      let id = this.reg[xy.join("-")].id; let r = this.data.player.vision.range; let l = this.data.player.vision.loss; let t = this.data.player.vision.tokens; let bT = t; let M = T.Math;
 
       switch (id) {
 
-          case 2: this.data.player.coins += 1; this.data.player.vision.tokens = t + Math.floor(l * 1.8); break;
-          case 5: this.data.player.vision.tokens = t + Math.floor(l * 0.8); break;
+          case 2: this.data.player.coins += 1; this.data.player.vision.tokens = t + Math.floor(l * 1.1) + M.R(5,(l*2)+1) - M.R(0,(l*2)-2); break;
+          case 5: this.data.player.vision.tokens = t + Math.floor(l * 0.5) + M.R(2,l+1) - M.R(0,l-1); break;
 
       }
 
       t = this.data.player.vision.tokens;
-      this.data.player.vision.tokens = t < (l * (this.data.player.vision.range + 1)) ? t : (l * (this.data.player.vision.range + 1));
+      this.data.player.vision.tokens = t < (l * 7) ? t : (l * 7);
+      this.data.player.vision.tokens = t < l+1 ? l+1 : t;
 
   }
 
