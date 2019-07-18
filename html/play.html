@@ -4,9 +4,9 @@
 	<meta charset="UTF-8">
 	<title>2D game</title>
 	<style>
-	body {
-			background: black;
-		}
+	 body {
+		background: black;
+	}
 	table, tr, td {
 		border-collapse: collapse;
 		border: none;
@@ -21,24 +21,27 @@
 		min-width: 15px;
 	}
 	.air {
-		background: hsl(0, 79%, 10%);
+		background: hsl(0, 79%, 5%);
 	}
 	.wall {
-		background: hsl(0, 90%, 23%);
+		background: hsl(0, 90%, 27%);
 	}
 	.coin {
-		background: #ffff99;
+		background: #ffff1a;
+	}
+	.prop {
+		background: #000;
 	}
 	.door {
 		background: #994d00;
 	}
 	.player {
-		outline: 3px solid #ffc266;
-		background: #ffc266;
+		outline: 3px solid #e60000;
+		background: #e60000;
 		z-index: 0;
 	}
 	.light:not(.player) {
-		background: hsl(0, 79%, 16%);
+		background: hsl(0, 79%, 20%);
 	}
 	</style>
 </head>

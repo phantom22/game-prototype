@@ -42,6 +42,10 @@ p {
 	height: 40px;
 	background: #262626;
 }
+.title td {
+	height: 66px;
+	min-height: 66px;
+}
 .screenshot {
 	display: block;
 	margin: 0 auto;
@@ -52,10 +56,9 @@ p {
 	overflow: hidden;
 	-moz-user-select: none;
 	user-select: none;
-	pointer-events: none;
 }
 .difficulty {
-	width: 60%;
+	width: 50%;
 	display: none;
 	position: absolute;
 	margin-top: 70px;
@@ -64,7 +67,7 @@ p {
 	transition: all 0.7s;
 }
 .difficulty button {
-	width: 35%;
+	width: 42%;
 	height: 90px;
 	border: 1px solid black;
 	background: black;
@@ -89,10 +92,10 @@ p {
 	border-color: #ff4d4d;
 }
 .center, table, tr {
-	min-width: 761px;
+	min-width: 1162px;
 }
 td {
-	min-width: 378px;
+	min-width: 300px;
 	overflow: hidden;
 }
 .difficulty button {

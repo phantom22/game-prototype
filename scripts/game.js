@@ -4,24 +4,25 @@ class gameInstance {
 
   constructor(player = {position,moves,vision,gamemode}, map = {grid,meta}) {
 
-    let pl = player; let p = pl.position; let mv = pl.moves; let v = pl.vision; let gm = pl.gamemode; let g = map.grid; let m = map.meta;
+    let pl = player; let p = pl.position; let mv = pl.moves; let v = pl.vision; let gm = pl.gamemode; let g = map.grid; let m = map.meta; let r = v.range; let l = v.loss;
 
     g = g && !Array.isArray(g) && !isNaN(g) ? [g,g] : g;
     g = g && Array.isArray(g) && !isNaN(g.reduce((a,b)=>a+b)) ? g : undefined;
     m = m && m.split("").length == g[0]*g[1] ? m.split("").map(v=>Number(v)) : undefined;
     p = Array.isArray(p) && !isNaN(p.reduce((a,b)=>a+b)) ? p : false;
-    v = !isNaN(v) ? v : undefined;
+    r = !isNaN(r) ? r : undefined;
+    l = !isNaN(l) ? l : undefined;
     mv = mv && !isNaN(mv) ? mv : 1;
     gm = !isNaN(gm) ? gm : 0;
 
-    if (g && !isNaN(m.reduce((a,b)=>a+b)) && typeof p !== "undefined" && mv && !isNaN(v) && typeof gm !== "undefined") {
+    if (g && !isNaN(m.reduce((a,b)=>a+b)) && typeof p !== "undefined" && mv && !isNaN(r) && !isNaN(l) && typeof gm !== "undefined") {
 
       let f = gm == 3 ? true : undefined;
 
-      this.info = {map:map,player:pl};
+      this.data = {map:map,player:pl};
       this.reg = {};
       this.createMap();
-      this.registerMap();
+      this.registerMap(f);
       this.mapRender(f);
 
     }
@@ -30,14 +31,14 @@ class gameInstance {
 
   tileClass(typeId) {
 
-    let tT = {0:"air",1:"wall",2:"coin",3:"door",4:"player"};
+    let tT = {0:"air",1:"wall",2:"coin",3:"door",4:"player",5:"coin"};
     if (!isNaN(typeId)) {return String(tT[typeId])}
 
   }
 
   createMap() {
 
-    let D = T.DOM; let m = this.info.map;
+    let D = T.DOM; let m = this.data.map;
 
     if (m.meta && !m.element) {
 
@@ -45,15 +46,15 @@ class gameInstance {
       for (let i=0;i < m.grid[1];i++) {let r = D.cE("tr"); for (let I=0;I < m.grid[0];I++) {let c = D.cE("td"); c.dataset.x = I; c.dataset.y = i; D.aC(c,r)} D.aC(r,tbd)}
       D.aC(tbd,tbl);
 
-      this.info.map.element = tbl;
+      this.data.map.element = tbl;
 
     }
 
   }
 
-  registerMap() {
+  registerMap(flag) {
 
-    let m = this.info.map; let p = this.info.player; let g = m.grid;
+    let m = this.data.map; let p = this.data.player; let g = m.grid;
 
     if (m.meta && m.element instanceof HTMLElement) {
 
@@ -71,13 +72,34 @@ class gameInstance {
 
       }
 
+      if (!flag) {
+
+        this.registerCoins();
+
+      }
+
+    }
+
+  }
+
+  registerCoins() {
+
+    let coins = 10; let M = T.Math;
+
+    let reg = Object.keys(this.reg); let a = reg.filter(v=>this.reg[v].id==0);
+
+    for (let i=0;i<50;i++) {
+
+      let n = M.R(a.length); let id = i < coins ? 2 : 5;
+      this.registerTile(a[n].split("-"),id);
+
     }
 
   }
 
   registerTile(xy,typeId) {
 
-    let D = T.DOM; let m = this.info.map;
+    let D = T.DOM; let m = this.data.map;
 
     if (xy && Array.isArray(xy) && !isNaN(typeId)) {
 
@@ -123,14 +145,14 @@ class gameInstance {
 
   mapRender(flag) {
 
-    let m = this.info.map; let p = this.info.player;
+    let m = this.data.map; let p = this.data.player;
 
     if (m.element) {
 
       let D = T.DOM;
       D.aC(m.element);
 
-      if (p.position) {let xy = p.position; this.playerSight()}
+      if (p.position) {let xy = p.position; this.playerSight(); this.tileUpdateDisplay(xy); this.data.player.coins = 0; this.data.player.vision.tokens = p.vision.range * p.vision.loss;}
 
       if (flag) {Object.keys(this.reg).forEach(v => {let xy = v.split("-"); this.tileUpdateDisplay(xy)})}
 
@@ -140,7 +162,7 @@ class gameInstance {
 
   playerSight() {
 
-    let p = this.info.player; let xy = p.position; let s = p.sight; let gm = p.gamemode;
+    let p = this.data.player; let xy = p.position; let s = p.lastSight; let gm = p.gamemode;
 
      if (!isNaN(xy.reduce((a,b)=>a+b))) {
 
@@ -150,46 +172,49 @@ class gameInstance {
 
           else if(gm == 0) {
 
-            let w = TOOL.Array.rVI("true",s.map(v=>this.reg[`${v[0]}-${v[1]}`]!==undefined&&this.reg[`${v[0]}-${v[1]}`].id==1));
-            let a = TOOL.Array.rVI("true",s.map(v=>this.reg[`${v[0]}-${v[1]}`]!==undefined&&this.reg[`${v[0]}-${v[1]}`].id==0));
-            w.forEach(v=>{this.tileClear(s[v])});
-            a.forEach(v=>{let c=this.reg[`${s[v][0]}-${s[v][1]}`].element;c.classList.remove("light")});
+            document.querySelectorAll(".wall").forEach(v=>v.classList.remove("wall"));
+            document.querySelectorAll(".light").forEach(v=>v.classList.remove("light"));
+            document.querySelectorAll(".coin").forEach(v=>{v.classList.remove("coin");v.classList.add("air")});
 
           }
 
-          this.info.player.sight = [];
+          this.data.player.lastSight = [];
 
         }
 
         let x = xy[0]; let y = xy[1];
-        let sg = this.sightRadius(p.vision);
+        let sg = this.sightRadius();
 
         if (gm == 0) {
 
-          let a = TOOL.Array.rVI("true",sg.map(v=>this.reg[`${v[0]}-${v[1]}`]!==undefined&&this.reg[`${v[0]}-${v[1]}`].id==0));
-          a.forEach(v=>{let c=this.reg[`${sg[v][0]}-${sg[v][1]}`].element;c.classList.add("light")});
+          let a = sg.filter(v=>this.reg[`${v[0]}-${v[1]}`]!==undefined&&this.reg[`${v[0]}-${v[1]}`].id==0);
+          a.forEach(v=>{let c=this.reg[`${v[0]}-${v[1]}`].element;c.classList.add("light")});
         
         }
 
-        this.info.player.sight = sg;
+        this.data.player.lastSight = sg;
         sg.forEach(v => this.tileUpdateDisplay(v));
 
      }
 
   }
 
-  sightRange(r) {
+  sightRange() {
 
+    let r = this.data.player.vision.range;
     if (r && !isNaN(r)) {let n = -r; let range = []; for (let i=0;i<(r*2)+1;i++) {range.push(n); n += 1} return range}
 
   }
 
-  sightRadius(r) {
+  sightRadius() {
+
+    let r = this.data.player.vision.range;
 
     if (r && !isNaN(r)) {
 
-      let xy = this.info.player.position; let x = xy[0]; let y = xy[1]; let ra = this.sightRange(r); let sight = [];
-      for (let i=0;i<ra.length;i++) {for (let I=0;I<ra.length;I++) {let X = I; let Y = i; let f = true; f = X==0&&Y==0||X==r*2&&Y==0||X==0&&Y==r*2||X==r*2&&Y==r*2 ? false : true; if (f) {sight.push([x+ra[I],y+ra[i]])}}}
+      let xy = this.data.player.position; let x = xy[0]; let y = xy[1]; let ra = this.sightRange(); let sight = []; let g = this.data.map.grid;
+      for (let i=0;i<ra.length;i++) {for (let I=0;I<ra.length;I++) {let X = I; let Y = i; let f = true; f = X==0&&Y==0||X==r*2&&Y==0||X==0&&Y==r*2||X==r*2&&Y==r*2||X==r&&Y==r ? false : true; if (f) {let n1 = x+ra[I]>=0&&x+ra[I]<g[0] ? x+ra[I]:false; let n2 = y+ra[i]>=0&&y+ra[i]<g[1] ? y+ra[i]:false; if (typeof n1=="number"&&typeof n2=="number") {sight.push([n1,n2])}}}}
+
       return sight
 
     }
@@ -198,24 +223,26 @@ class gameInstance {
 
   playerMove(e) {
 
-    let p = this.info.player; let mv = p.moves; let x = e.dataset.x; let y = e.dataset.y;
+    let p = this.data.player; let mv = p.moves; let x = e.dataset.x; let y = e.dataset.y;
 
-    if (mv && e && e instanceof HTMLElement && this.reg[`${x}-${y}`].id == 0) {
+    if (mv && e && e instanceof HTMLElement && this.reg[`${x}-${y}`].id !== 1) {
 
       let nX = e.dataset.x; let nY = e.dataset.y; let oX = p.position[0]; let oY = p.position[1];
 
       if (Math.abs(nX - oX) <= mv && Math.abs(nY - oY) <= mv && Math.abs(nX - oX) + Math.abs(nY - oY) <= mv) {
 
-        this.info.player.position = [Number(nX),Number(nY)];
+        let l = p.vision.loss; let t = p.vision.tokens;
+        this.data.player.vision.tokens -= t !== l+1 ? 1 : 0; this.data.player.vision.range = Math.ceil(t / l);
+        this.data.player.position = [Number(nX),Number(nY)];
 
         let oXY = [oX,oY];
         let nXY = [nX,nY];
 
         this.registerTile(oXY,0);
         this.tileUpdateDisplay(oXY);
+        this.tileEvents(nXY);
         this.registerTile(nXY,4);
         this.tileUpdateDisplay(nXY);
-        
         this.playerSight();
 
       }
@@ -224,4 +251,22 @@ class gameInstance {
 
   }
 
+  tileEvents(xy) {
+
+      let id = this.reg[xy.join("-")].id; let r = this.data.player.vision.range; let l = this.data.player.vision.loss; let t = this.data.player.vision.tokens;
+
+      switch (id) {
+
+          case 2: this.data.player.coins += 1; this.data.player.vision.tokens = t + Math.floor(l * 1.8); break;
+          case 5: this.data.player.vision.tokens = t + Math.floor(l * 0.8); break;
+
+      }
+
+      t = this.data.player.vision.tokens;
+      this.data.player.vision.tokens = t < (l * (this.data.player.vision.range + 1)) ? t : (l * (this.data.player.vision.range + 1));
+
+  }
+
 }
+
+//for (i=0;i<=10000;i++){let diameter = ((i+1)*2)+1; let square = (diameter*diameter)-5; let move = ((i+1)*4)+2; console.log(`radius = ${i+1} && diameter = ${diameter} => efficiency = ${100-move/(square/100)}% (calculating only ${move} units of ${square})`)}

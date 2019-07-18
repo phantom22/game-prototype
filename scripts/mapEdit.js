@@ -15,7 +15,7 @@
 
       for (let i=0;i < g[0]*g[1];i++) {meta.push(0)}
 
-      let instance = new gameInstance({position:false,moves:1,vision:3,gamemode:3},{grid:g,meta:meta.join("")});
+      let instance = new gameInstance({position:false,moves:1,vision:{range:3,loss:6},gamemode:3},{grid:g,meta:meta.join("")});
 
       let typeId = {"air":0,"wall":1,"coin":2,"door":3};
 
@@ -46,7 +46,7 @@
         let tds = D.qSA("td"); let m = [];
         tds.forEach(v =>{let c = v.className; m.push(typeId[c])});
 
-        console.log(`new gameInstance({position:[x,y],moves:1,vision:4,gamemode:0},{g:[${g[0]},${g[1]}],meta:"${m.join("")}"})`);
+        console.log(`new gameInstance({position:[x,y],moves:1,vision:{range:5,loss:6},gamemode:0},{g:[${g[0]},${g[1]}],meta:"${m.join("")}"})`);
 
       });
 

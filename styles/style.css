@@ -15,10 +15,10 @@ td {
 	min-width: 15px;
 }
 .air {
-	background: hsl(0, 79%, 10%);
+	background: hsl(0, 79%, 5%);
 }
 .wall {
-	background: hsl(0, 90%, 23%);
+	background: hsl(0, 90%, 27%);
 }
 .coin {
 	background: #ffff99;
@@ -27,10 +27,10 @@ td {
 	background: #994d00;
 }
 .player {
-	outline: 3px solid #ffc266;
-	background: #ffc266;
+	outline: 3px solid #e60000;
+	background: #e60000;
 	z-index: 0;
 }
 .light:not(.player) {
-	background: hsl(0, 79%, 16%);
+	background: hsl(0, 79%, 20%);
 }

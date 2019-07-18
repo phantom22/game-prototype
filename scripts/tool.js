@@ -54,7 +54,7 @@ const TOOL = {
 "r":function($A){if($A&&Array.isArray($A)){return $A.reduce((a,b)=>a+b)}},
 "s":function($A,$N,r){if($A&&$N&&Array.isArray($A)&&!isNaN($N)){return !isNaN(r)&&r>=$N?$A.slice($N,r):$A.slice($N)}},
 // [Recurring Values Indexes]
-"rVI":function(v,$A){if(v&&$A&&Array.isArray($A)){v=typeof v=="number"?String(v):v;let $o=[];for(let i=0;i<$A.length;i++){if(String($A[i])==v){$o.push(i)}}return $o}}
+"rVI":function(v,$A){if(v&&$A&&Array.isArray($A)){v=Array.isArray(v)?v:[v];let $o=[];for(let I=0;I<v.length;I++){for(let i=0;i<$A.length;i++){if(JSON.stringify($A[i])==JSON.stringify(v[I])){$o.push(i)}}}return $o.sort((a,b)=>a-b)}}
 },
 
 "String":{

@@ -7,7 +7,7 @@
 
 let L = String(document.location);
 L.slice(0,L.lastIndexOf("/"));
-let rt = L.slice(0,L.slice(0,L.lastIndexOf("/")).lastIndexOf("/"))+"/";
+const ROOT = L.slice(0,L.slice(0,L.lastIndexOf("/")).lastIndexOf("/"))+"/";
 
 (function(){
 
@@ -25,14 +25,14 @@ let rt = L.slice(0,L.slice(0,L.lastIndexOf("/")).lastIndexOf("/"))+"/";
 
 	files.script.forEach(v=>{
 		let script = document.createElement("script");
-		script.src = rt + v;
+		script.src = ROOT + v;
 		document.body.appendChild(script);
 	});
 
 	setTimeout(function(){
 		let script = document.createElement("script");
-		script.src = rt + "scripts/play.js";
+		script.src = ROOT + "scripts/play.js";
 		document.body.appendChild(script);
-	},100)
+	},1500);
 
 })();
