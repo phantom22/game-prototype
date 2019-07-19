@@ -174,38 +174,30 @@ class gameInstance {
 
   playerSight() {
 
-    let p = this.data.player; let xy = p.position; let s = p.lastSight; let gm = p.gamemode;
+    let p = this.data.player; let xy = p.position; let lUT = p.lastUpdatedTiles; let gm = p.gamemode;
 
      if (!isNaN(xy.reduce((a,b)=>a+b))) {
 
-        if (s) {
+        if (lUT) {
 
-          if (gm == 1) {s.forEach(v => this.tileClear(v))}
+          if (gm == 1) {lUT.forEach(v => {if(JSON.stringify(v) !== JSON.stringify(xy)){this.tileClear(v)}} )}
 
-          else if(gm == 0) {
+          document.querySelectorAll(".wall").forEach(v=>v.classList.remove("wall"));
+          document.querySelectorAll(".light").forEach(v=>v.classList.remove("light"));
+          document.querySelectorAll(".coin").forEach(v=>{v.classList.remove("coin");v.classList.add("air")});
 
-            document.querySelectorAll(".wall").forEach(v=>v.classList.remove("wall"));
-            document.querySelectorAll(".light").forEach(v=>v.classList.remove("light"));
-            document.querySelectorAll(".coin").forEach(v=>{v.classList.remove("coin");v.classList.add("air")});
-
-          }
-
-          this.data.player.lastSight = [];
+          this.data.player.lastUpdatedTiles = [];
 
         }
 
         let x = xy[0]; let y = xy[1];
-        let sg = this.sightRadius();
+        let currentTiles = this.sightRadius();
 
-        if (gm == 0) {
+        let a = currentTiles.filter(v=>this.reg[`${v[0]}-${v[1]}`]!==undefined&&this.reg[`${v[0]}-${v[1]}`].id==0);
+        a.forEach(v=>{let c=this.reg[`${v[0]}-${v[1]}`].element;c.classList.add("light")});
 
-          let a = sg.filter(v=>this.reg[`${v[0]}-${v[1]}`]!==undefined&&this.reg[`${v[0]}-${v[1]}`].id==0);
-          a.forEach(v=>{let c=this.reg[`${v[0]}-${v[1]}`].element;c.classList.add("light")});
-        
-        }
-
-        this.data.player.lastSight = sg;
-        sg.forEach(v => this.tileUpdateDisplay(v));
+        this.data.player.lastUpdatedTiles = currentTiles;
+        currentTiles.forEach(v => this.tileUpdateDisplay(v));
 
      }
 
@@ -243,8 +235,6 @@ class gameInstance {
 
       if (Math.abs(nX - oX) <= mv && Math.abs(nY - oY) <= mv && Math.abs(nX - oX) + Math.abs(nY - oY) <= mv) {
 
-        let l = p.vision.loss; let t = p.vision.tokens;
-        this.data.player.vision.tokens -= t !== l+1 ? 1 : 0; this.data.player.vision.range = Math.ceil(t / l) > 0 ? Math.ceil(t / l) : 2;
         this.data.player.position = [Number(nX),Number(nY)];
 
         let oXY = [oX,oY];
@@ -253,6 +243,10 @@ class gameInstance {
         this.registerTile(oXY,0);
         this.tileUpdateDisplay(oXY);
         this.tileEvents(nXY);
+
+        let l = p.vision.loss; let t = p.vision.tokens;
+        this.data.player.vision.tokens -= t !== l+1 ? 1 : 0; this.data.player.vision.range = Math.ceil(t / l) > 0 ? Math.ceil(t / l) : 2;
+        
         this.registerTile(nXY,4);
         this.tileUpdateDisplay(nXY);
         this.playerSight();
@@ -269,8 +263,8 @@ class gameInstance {
 
       switch (id) {
 
-          case 2: this.data.player.coins += 1; this.data.player.vision.tokens = t + Math.floor(l * 1.1) + M.R(5,(l*2)+1) - M.R(0,(l*2)-2); break;
-          case 5: this.data.player.vision.tokens = t + Math.floor(l * 0.5) + M.R(2,l+1) - M.R(0,l-1); break;
+          case 2: this.data.player.coins += 1; this.data.player.vision.tokens = t + Math.floor(l * 1.1) + M.R(5,(l*2)+1) - M.R(3,(l*2)-2); break;
+          case 5: this.data.player.vision.tokens = t + Math.floor(l * 0.5) + M.R(2,l+1) - M.R(1,l-1); break;
 
       }
       

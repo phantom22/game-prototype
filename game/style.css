@@ -15,13 +15,13 @@ min-height: 15px;
 min-width: 15px;
 }
 .air {
-background: hsl(0, 79%, 5%); 
+background: hsl(0, 85%, 5%); 
 }
 .wall {
-background: hsl(210, 49%, 6.5%);
+background: hsl(210, 49%, 4%);
 }
 .coin {
-background: hsl(60, 75%, 50%);
+background: hsl(60, 75%, 47%);
 }
 .prop {
 background: #000;
@@ -30,13 +30,10 @@ background: #000;
 background: #994d00;
 }
 .player {
-outline: 3px solid #e60000;
-background: #e60000;
+outline: 3px solid hsl(0, 80%, 35%);
+background: hsl(0, 70%, 48%);
 z-index: 0;
 }
 .light:not(.player) {
-background: hsl(0, 79%, 20%);
-}
-.hidden {
-	display: none;
+background: hsl(0, 79%, 18%);
 }
