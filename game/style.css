@@ -15,13 +15,13 @@ min-height: 15px;
 min-width: 15px;
 }
 .air {
-background: hsl(0, 79%, 5%);
+background: hsl(0, 79%, 5%); 
 }
 .wall {
-background: hsl(0, 90%, 27%);
+background: hsl(210, 49%, 6.5%);
 }
 .coin {
-background: #ffff1a;
+background: hsl(60, 75%, 50%);
 }
 .prop {
 background: #000;

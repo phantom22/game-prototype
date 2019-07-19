@@ -9,7 +9,7 @@ class gameInstance {
     g = g && !Array.isArray(g) && !isNaN(g) ? [g,g] : g;
     g = g && Array.isArray(g) && !isNaN(g.reduce((a,b)=>a+b)) ? g : undefined;
     m = m && m.split("").length == g[0]*g[1] ? m.split("").map(v=>Number(v)) : undefined;
-    p = Array.isArray(p) && !isNaN(p.reduce((a,b)=>a+b)) ? p : false;
+    p = Array.isArray(p) && !isNaN(p.reduce((a,b)=>a+b)) || typeof p == "boolean" ? p : false;
     r = !isNaN(r) ? r : undefined;
     l = !isNaN(l) ? l : undefined;
     mv = mv && !isNaN(mv) ? mv : 1;
@@ -54,7 +54,7 @@ class gameInstance {
 
   registerMap(flag) {
 
-    let m = this.data.map; let p = this.data.player; let g = m.grid;
+    let m = this.data.map; let p = this.data.player; let g = m.grid; let M = T.Math;
 
     if (m.meta && m.element instanceof HTMLElement) {
 
@@ -65,9 +65,19 @@ class gameInstance {
 
       }
 
-      if (p.position !== false) {
+      if (p.position !== false && typeof p.position !== "boolean") {
 
         let XY = p.position;
+        this.registerTile(XY,4);
+
+      }
+
+      else if (p.position == true) {
+
+        let reg = Object.keys(this.reg);
+
+        let a = reg.filter(v=>this.reg[v].id==0); let n = M.R(a.length); let XY = a[n].split("-").map(v=>Number(v));
+        this.data.player.position = XY;
         this.registerTile(XY,4);
 
       }
@@ -84,16 +94,18 @@ class gameInstance {
 
   registerCoins() {
 
-    let coins = 10; let M = T.Math;
+    let coins = 10; let falseCoins = 40; let M = T.Math;
 
     let reg = Object.keys(this.reg); let a = reg.filter(v=>this.reg[v].id==0);
 
-    for (let i=0;i<50;i++) {
+    for (let i=0;i <= (coins + falseCoins);i++) {
 
       let n = M.R(a.length); let id = i < coins ? 2 : 5;
       this.registerTile(a[n].split("-"),id);
 
     }
+
+    this.data.map.coins = {real:coins,false:falseCoins};
 
   }
 
@@ -261,10 +273,9 @@ class gameInstance {
           case 5: this.data.player.vision.tokens = t + Math.floor(l * 0.5) + M.R(2,l+1) - M.R(0,l-1); break;
 
       }
-
-      t = this.data.player.vision.tokens;
-      this.data.player.vision.tokens = t < (l * 7) ? t : (l * 7);
-      this.data.player.vision.tokens = t < l+1 ? l+1 : t;
+      
+      this.data.player.vision.tokens = this.data.player.vision.tokens < (this.data.player.vision.loss * 7) ? this.data.player.vision.tokens : (this.data.player.vision.loss * 7)-1;
+      this.data.player.vision.tokens = this.data.player.vision.tokens < this.data.player.vision.loss+1 ? this.data.player.vision.loss+1 : this.data.player.vision.tokens;
 
   }
 

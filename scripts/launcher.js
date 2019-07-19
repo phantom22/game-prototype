@@ -44,7 +44,7 @@
 		T.aC(tr,tbd);
 		T.aC(tbd,tbl);
 		T.aC(tbl,div);
-		document.body.insertAdjacentElement("afterbegin",div)
+		document.body.insertAdjacentElement("afterbegin",div);
 
 	}
 
@@ -82,7 +82,7 @@
 			let difficulty = evt.target.textContent.toLowerCase();
 			let level = evt.target.offsetParent.nextElementSibling.alt.split("lvl")[1];
 
-			document.location=`html/play.html?d=${difficulty}&m=${level}`;
+			document.location=`game/play.html?d=${difficulty}&m=${level}`;
 
 		})
 
