@@ -162,7 +162,7 @@ class gameInstance {
     if (m.element) {
 
       let D = T.DOM;
-      D.aC(m.element);
+      document.body.insertAdjacentElement("afterbegin",m.element);
 
       if (p.position) {let xy = p.position; this.playerSight(); this.tileUpdateDisplay(xy); this.data.player.coins = 0; this.data.player.vision.tokens = p.vision.range * p.vision.loss;}
 
