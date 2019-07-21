@@ -15,7 +15,7 @@
 
       for (let i=0;i < g[0]*g[1];i++) {meta.push(0)}
 
-      let instance = new gameInstance({position:false,moves:1,vision:{range:3,loss:6},gamemode:3},{grid:g,meta:meta.join("")});
+      let instance = new gameInstance({gamemode:3},{grid:g,meta:meta.join("")});
 
       let typeId = {"air":0,"wall":1,"coin":2,"door":3};
 
@@ -68,14 +68,14 @@
 
       for (let i=0;i<c1.length;i++) {
 
-      	for (let I=0;I<c2.length;I++) {
+        for (let I=0;I<c2.length;I++) {
 
-      		let xy = [c1[i],c2[I]];
+          let xy = [c1[i],c2[I]];
 
-      		instance.registerTile(xy,2);
-      		instance.tileUpdateDisplay(xy);
+          instance.registerTile(xy,2);
+          instance.tileUpdateDisplay(xy);
 
-      	}
+        }
 
       }
 

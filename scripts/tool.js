@@ -59,7 +59,7 @@ const TOOL = {
 
 "String":{
 
-// variety of symbols that are supported in the text encoding/decoding	[Symbols]
+// variety of symbols that are supported in the text encoding/decoding  [Symbols]
 "s":["A","a","B","b","C","c","D","d","E","e","F","f","G","g","H","h","I","i","J","j","K","k","L","l","M","m","N","n","O","o","P","p","Q","q","R","r","S","s","T","t","U","u","V","v","W","w","X","x","Y","y","Z","z","à","è","é","ì","ò","ù","0","1","2","3","4","5","6","7","8","9","Й","й","Ц","ц","У","у","К","к","Е","е","Н","н","Г","г","Ш","ш","Щ","щ","З","з","Х","х","Ъ","ъ","Ф","ф","Ы","ы","В","в","А","а","П","п","Р","р","О","о","Л","л","Д","д","Ж","ж","Э","э","Я","я","Ч","ч","С","с","М","м","И","и","Т","т","Ь","ь","Б","б","Ю","ю",".",",",";",":","!","?","\"","'","\\","{","}","[","]","(",")","&","|","~","*","#","<",">","@","%","_","-","+","=","/","`"," ","$","€","^"],
 // return an encrypted string wich encode method is based on a key
 "encode":class{constructor($S,k,$f){this.output="";if($S&&typeof $S=="string"&&k){let t=TOOL.String;$S=t.tSC($S);k=t.tSC(k);k=String(k);let o=t.oStr($S+k);let c=t.cA(k,t.s);[...o].forEach(v=>{let $s=c[TOOL.Array.rVI(v,t.s)[0]];if(typeof $s!=="undefined"){this.output+=$s}});this.signature=this.output.slice(-k.length);this.output=this.output.slice(0,-k.length);if(!$f){delete this.signature}}else{this.output=$S&&!k?$S:undefined}}},
