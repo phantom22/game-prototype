@@ -70,6 +70,6 @@ font-weight: bold;
 border: 3px solid hsl(0, 79%, 25%);
 background: hsl(210, 49%, 15%);
 }
-.hud td:hover {
+.hud td:not(.selected):hover {
 background: hsl(210, 49%, 10%);
 }

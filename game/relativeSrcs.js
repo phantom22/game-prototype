@@ -35,8 +35,8 @@ let instance;
           else if (k == 83) {s = [x,y+1]}
           else if (k == 65) {s = [x-1,y]} 
           else if (k == 68) {s = [x+1,y]}
-          else if (k == 38) {instance.updateSelectedSlot(-1)}
-          else if (k == 40) {instance.updateSelectedSlot(1)}
+          else if (k == 38) {instance.updateSelectedSlot(instance.data.player.hud.inventory.selectedSlot-1)}
+          else if (k == 40) {instance.updateSelectedSlot(instance.data.player.hud.inventory.selectedSlot+1)}
 
           if (s) {
 
@@ -53,7 +53,7 @@ let instance;
         document.querySelectorAll(".hud td").forEach(v=>v.addEventListener("click",function(evt){
 
           let id = evt.target.dataset.id;
-          instance.updateSelectedSlot(false,id);
+          instance.updateSelectedSlot(id);
           
         }));
 

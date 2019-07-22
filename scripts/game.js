@@ -174,19 +174,15 @@ class gameInstance {
 
   }
 
-  updateSelectedSlot(n,id) {
+  updateSelectedSlot(id) {
     let D = T.DOM; let s = D.qSA(".selected");
     // if a .selected element is found, removing its .selected class
     s ? s.forEach(v=>v.classList.remove("selected")) : s;
-    // if n is a number then adding it to the selectedSlot id (note: the n number can also be negative)
-    this.data.player.hud.inventory.selectedSlot += n && !isNaN(n) ? n : 0;
-    let S = this.data.player.hud.inventory.slots; let sS = this.data.player.hud.inventory.selectedSlot;
-    // if the selectedSlot number is higher than the amount of avaiable slots then making the selectedSlot number as the maximum slot number avaiable
-    this.data.player.hud.inventory.selectedSlot = sS > Number(Object.keys(S).length-1) ? Number(Object.keys(S).length-1) : sS;
-    // if the selectedSlot number is smaller than 0, setting the selectedSlot number as 0 which is the minimum slot number avaiable
-    this.data.player.hud.inventory.selectedSlot = sS < 0 ? 0 : this.data.player.hud.inventory.selectedSlot;
     // if id is a number, setting the selectedSlot as the id
     this.data.player.hud.inventory.selectedSlot = id && !isNaN(id) || id == 0 ? id : this.data.player.hud.inventory.selectedSlot;
+
+    this.data.player.hud.inventory.selectedSlot = id && this.data.player.hud.inventory.selectedSlot < Object.keys(this.data.player.hud.inventory.slots).length-1 ? this.data.player.hud.inventory.selectedSlot : Object.keys(this.data.player.hud.inventory.slots).length-1;
+    this.data.player.hud.inventory.selectedSlot = id && this.data.player.hud.inventory.selectedSlot > 0 ? this.data.player.hud.inventory.selectedSlot : 0;
     // adding to the querySelector[selectedSlot] the .selected class
     D.qSA(".hud td")[this.data.player.hud.inventory.selectedSlot].classList.add("selected");
   }
