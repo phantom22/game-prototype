@@ -281,7 +281,7 @@ class gameInstance {
         
         // getting the number of inventory slots, creating inventory table
         let s = Number(Object.keys(this.data.player.hud.inventory.slots).length); let div = D.cE("div"); div.className = "hud"; let tbl = D.cE("table"); let tbd = D.cE("tbody");
-        for (let i=0;i<s;i++) {console.log("lol");let tr = D.cE("tr");let td = D.cE("td");td.dataset.id = i;D.aC(td,tr);D.aC(tr,tbd)}
+        for (let i=0;i<s;i++) {let tr = D.cE("tr");let td = D.cE("td");td.dataset.id = i;D.aC(td,tr);D.aC(tr,tbd)}
         // appending the inventory table to the body element
         D.aC(tbd,tbl);D.aC(tbl,div);D.aC(div);
 
