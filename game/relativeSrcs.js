@@ -1,8 +1,9 @@
+let instance;
 (function(){
 
     let L = String(document.location);
     L.slice(0,L.lastIndexOf("/"));
-    const ROOT = L.slice(0,L.slice(0,L.lastIndexOf("/")).lastIndexOf("/"))+"/";
+    const ROOT = L.slice(0,L.slice(0,L.lastIndexOf("/")).lastIndexOf("/")) + "/";
     
     let tScript = document.createElement("script");
     tScript.src = ROOT + "scripts/tool.js";
@@ -24,7 +25,7 @@
 
                 let l = LEVELS; let a = String(document.location).slice(-12).split("d=")[1].split("&m="); a[1] = Number(a[1])-1;
 
-                let instance = new gameInstance({position:true,moves:1,vision:{initialRange:l[a[0]].range,tokensPerRangeLoss:l[a[0]].loss,maxRange:l[a[0]].range+2,minRange:2},gamemode:l[a[0]].gamemode},{grid:l[a[1]].grid,meta:`${l[a[1]].meta}`,coins:{true:{quantity:10,tokenRewards:{base:"*1.1",random:{added:[5,"*2 +1"],removed:[3,"*2 -2"]}}},false:{quantity:40,tokenRewards:{base:"*0.5",random:{added:[2,"*1 +1"],removed:[1,"*1 -1"]}}}}});
+                instance = new gameInstance({position:true,moves:1,vision:{initialRange:l[a[0]].range,tokensPerRangeLoss:l[a[0]].loss,maxRange:l[a[0]].range+2,minRange:2},gamemode:l[a[0]].gamemode},{grid:l[a[1]].grid,meta:`${l[a[1]].meta}`,coins:{true:{quantity:10,tokenRewards:{base:"*1.3",random:{added:[6,"*2 +2"],removed:[3,"*2 -3"]}}},false:{quantity:40,tokenRewards:{base:"*0.6",random:{added:[3,"*1 +1"],removed:[1,"*1 -2"]}}}}});
 
                 document.addEventListener("keydown", function(event){
 
@@ -34,6 +35,8 @@
                     else if (k == 83) {s = [x,y+1]}
                     else if (k == 65) {s = [x-1,y]} 
                     else if (k == 68) {s = [x+1,y]}
+                    else if (k == 38) {instance.updateSelectedSlot(-1)}
+                    else if (k == 40) {instance.updateSelectedSlot(1)}
 
                     if (s) {
 
