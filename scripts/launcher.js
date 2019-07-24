@@ -7,16 +7,16 @@
 
   for (let i=0;i<=lvls;i++) {
 
-      let tr = T.cE("tr"); let tds = [T.cE("td"), T.cE("td")];
+    let tr = T.cE("tr"); let tds = [T.cE("td"), T.cE("td")];
 
     // if the index is even
     if (i % 2 == 0) {
 
       tds.forEach(v => {
 
-      	// creating a p element that will contain the lvl number
+      	// creating p element that will contain the lvl number
         let p = T.cE("p");
-        // adding to the tr element a class that will make the tr height much lower than the tr(s) that will contain the images
+        // adding to the tr element a .title class
         tr.className = "title";
         p.textContent = `Level ${trI+lvlI}`;
         // if there is a level with such index
@@ -31,7 +31,7 @@
     // if index is odd
     else {
 
-      // difficulty selector
+      // in-game difficulty selector
       let difficulty = `<div class="difficulty" style="display: none; opacity: 0;"><button>Normal</button><button>Hard</button></div>`;
 
       tds.forEach(v => {
@@ -39,7 +39,7 @@
       	// creating the img elements
         let img = T.cE("img");
         img.className = "screenshot";
-        // adding the dataURI of a level based on the trI and the lvlI
+        // adding the dataURI of a level screenshot based on the trI and lvlI sum
         img.src = `${SCREENSHOTS[trI+lvlI-1]}`;
         img.alt = `lvl${trI+lvlI}`;
         // if there is a level with such index
@@ -81,15 +81,15 @@
       // check if image is already selected
       let f = evt.target.classList.contains("selected");
 
-      // removing all the .selected classes from the images
+      // if the querySelector finds a .selected element, removing its .selected class
       document.querySelectorAll(".selected").forEach(v=>{v.classList.remove("selected");v.offsetParent.firstElementChild.style.opacity="0.0";setTimeout(function(){v.offsetParent.firstElementChild.style.display="none"},750)});
 
       // if the image is not already .selected
       if (!f) {
 
-      	// getting the .difficulty selector
+      	// getting the in-game difficulty selector
         let difficulty = evt.target.offsetParent.firstElementChild;
-        // displaying the .difficulty div
+        // displaying the difficulty div
         difficulty.style.display = "block";
         // giving the div an opacity with a timeout to create a visual effect
         setTimeout(function(){difficulty.style.opacity = "1.0"},50);
@@ -111,11 +111,11 @@
 
       // getting the difficulty from the textContent of the clicked button
       let difficulty = evt.target.textContent.toLowerCase();
-      // getting the lvl index from the image alternate text
+      // getting the lvl index from the image.alt value
       let level = evt.target.offsetParent.nextElementSibling.alt.split("lvl")[1];
 
-      // moving to the "game/play.html" and adding the difficulty and the level in the location so "game/relativeSrcs.js" can understand what lvl and what difficulty is being played
-      document.location=`game/play.html?d=${difficulty}&m=${level}`;
+      // moving the location to "game/play.html" and adding the difficulty and the level in the location so "game/relativeSrcs.js" can understand what lvl and what difficulty needs to be loaded
+      document.location=`game/play.html?d=${difficulty}&m=${Number(level)-1}`;
 
     });
 

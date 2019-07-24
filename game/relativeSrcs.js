@@ -1,7 +1,7 @@
 let instance;
 (function(){
 
-  // getting the website string
+  // getting the website url string
   let L = String(document.location);
   // getting the root folder of the game
   const ROOT = L.slice(0,L.slice(0,L.lastIndexOf("/")).lastIndexOf("/")) + "/";
@@ -31,10 +31,10 @@ let instance;
       gScript.onload = function() {
 
         // getting the difficulty and the map number from the website url
-        let l = LEVELS; let a = String(document.location).slice(-12).split("d=")[1].split("&m="); a[1] = Number(a[1])-1;
+        let l = LEVELS; let a = L.slice(-12).split("d=")[1].split("&m=");
 
         // after all the .js scripts are loaded creating a game
-        instance = new gameInstance({position:true,moves:1,vision:{initialRange:l[a[0]].range,tokensPerRangeLoss:l[a[0]].loss,maxRange:l[a[0]].range+2,minRange:2},gamemode:l[a[0]].gamemode},{grid:l[a[1]].grid,meta:`${l[a[1]].meta}`,coins:{true:{quantity:10,tokenRewards:{base:"*1.3",random:{added:[6,"*2 +2"],removed:[3,"*2 -3"]}}},false:{quantity:40,tokenRewards:{base:"*0.6",random:{added:[3,"*1 +1"],removed:[1,"*1 -2"]}}}}});
+        instance = new gameInstance({position:true,moves:1,vision:{initialRange:l[a[0]].range,tokensPerRangeLoss:l[a[0]].loss,maxRange:l[a[0]].range+2,minRange:2},gamemode:l[a[0]].gamemode},{grid:l[a[1]].grid,meta:`${l[a[1]].meta}`,bannedTilesFromRandomizing:l[a[1]].bannedTilesFromRandomizing,coins:{true:{quantity:10,tokenRewards:{base:"*1.3",random:{added:[6,"*2 +2"],removed:[3,"*2 -3"]}}},false:{quantity:40,tokenRewards:{base:"*0.6",random:{added:[3,"*1 +1"],removed:[1,"*1 -2"]}}}}});
 
         // adding an event listener for the keybord press event
         document.addEventListener("keydown", function(event){
@@ -55,7 +55,7 @@ let instance;
           // if pressed "arrow down"
           else if (k == 40) {instance.updateSelectedSlot(instance.data.player.hud.inventory.selectedSlot+1)}
 
-          // if the new coordinates are defined
+          // if the new coordinates are defined (if one of the WASD buttons was pressed)
           if (s) {
 
             // register querySelector
@@ -75,7 +75,7 @@ let instance;
         document.querySelectorAll(".hud td").forEach(v=>v.addEventListener("click",function(evt){
 
           // getting the id of each clicked slot
-          let id = evt.target.dataset.id;
+          let id = Number(evt.target.dataset.id);
           // updating the selected slot
           instance.updateSelectedSlot(id);
           
