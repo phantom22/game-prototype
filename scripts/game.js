@@ -112,7 +112,7 @@ class gameInstance {
     if (m.meta && !m.element) {
 
       // creating the main game table, its tr(s) and td(s) are defined by the map.grid array (resolution)
-      let tbl = D.cE("table"); tbl.filter = "url(#noise)"; tbl.style.width = "47.32%"; let tbd = D.cE("tbody");
+      let tbl = D.cE("table"); let tbd = D.cE("tbody");
       for (let i=0;i < m.grid[1];i++) {let r = D.cE("tr"); for (let I=0;I < m.grid[0];I++) {let c = D.cE("td"); c.dataset.x = I; c.dataset.y = i; D.aC(c,r)} D.aC(r,tbd)}
       D.aC(tbd,tbl);
 
@@ -455,36 +455,33 @@ class gameInstance {
 
     }
      
-
-    // this counter is needed for the interval
+    // this counter is needed for the distortion
     this.data.player.madness.minRangeMoves += this.data.player.vision.range == this.data.player.vision.minRange ? 1 : 0;
 
-    // madness quantity is set to 0 if lower than 0 when players range is equal to minRange
-    this.data.player.madness.quantity = this.data.player.vision.range == this.data.player.vision.minRange && this.data.player.madness.quantity < 0 ? 0 : this.data.player.madness.quantity;
     // adding madness quantity if players range is equal to minRange, removing if players range is higher than minRange
     this.data.player.madness.quantity += this.data.player.vision.range > this.data.player.vision.minRange ? this.data.map.madness.loss : this.data.map.madness.gain;
 
-    this.data.map.madness.interval = setInterval(function(){
+    // make sure that madness quantity stays between 0 and 1
+    this.data.player.madness.quantity = this.data.player.madness.quantity < 0 ? 0 : this.data.player.madness.quantity;
+    this.data.player.madness.quantity = this.data.player.madness.quantity > 0.99 ? 0.99 : this.data.player.madness.quantity;
 
-    	// if player minRangeMoves is equal or higher than minRangeMovesBeforeActivation
-    	if (instance.data.player.madness.minRangeMoves >= instance.data.map.madness.minRangeMovesBeforeActivation) {
+    if (this.data.player.madness.minRangeMoves >= this.data.map.madness.minRangeMovesBeforeActivation && this.data.player.madness.quantity > 0) {
 
-    		document.querySelectorAll("table")[0].classList.add("madness");
-    		// n is the tables width % number
-    		let n = Number(document.querySelectorAll("table")[0].style.width.split("%")[0]); 
-    		// res is calculated by adding to the n the players madness quantity divided by the interval rate, 47.32 is the lowest width at which the table changes visually
-    		let res = n + (instance.data.player.madness.quantity / 150) < 47.32 ? 47.32 : n + (instance.data.player.madness.quantity / 150); 
-    		// checking if res is not higher than 100, 100% is the cap for the table width, if it goes higher then the table-x overflow will be visible
-    		res = res > 100 ? 100 : res; 
-    		// updating the tables width
-    		document.querySelectorAll("table")[0].style.width=`${res}%`;
-    		// if the table came back to the 47.32% width then resetting minRangeMoves
-    		instance.data.player.madness.minRangeMoves = res <= 47.32 ? 0 : instance.data.player.madness.minRangeMoves;
-    		res <= 47.32 ? document.querySelectorAll("table")[0].classList.remove("madness") : false;
+    	this.data.map.element.classList.add("madness");
+    	let feTurbolence = document.querySelector("feTurbulence"); let feDisplacementMap = document.querySelector("feDisplacementMap");
+    	let baseFrequency = `${this.data.player.madness.quantity} ${this.data.player.madness.quantity}`;
+    	let scale = Math.ceil(Number(this.data.player.madness.quantity.toFixed(2)) * 50);
+    	feTurbolence.setAttribute("baseFrequency",baseFrequency);
+    	feDisplacementMap.setAttribute("scale",scale);
 
-    	}
+    }
 
-    },150);
+    if (this.data.player.vision.range > this.data.player.vision.minRange && this.data.player.madness.quantity == 0) {
+
+    	this.data.player.madness.minRangeMoves = 0;
+    	this.data.map.element.classList.remove("madness");
+
+    }
 
     // if the number of tokens is higher than the (tokensPerRangeLoss * maxRange, basically if the tokens number is higher than the maximum range * tokensPerRangeLoss) changing the number of tokens to the maximum value based on the maxRange 
     this.data.player.vision.tokens = this.data.player.vision.tokens < (this.data.player.vision.tokensPerRangeLoss * this.data.player.vision.maxRange) ? this.data.player.vision.tokens : (this.data.player.vision.tokensPerRangeLoss * this.data.player.vision.maxRange);

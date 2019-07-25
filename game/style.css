@@ -48,6 +48,7 @@ background: hsl(0, 79%, 18%);
 .madness {
 filter: url(#noise);
 }
+/*
 .madness .air {
 background: hsl(0, 10%, 5%); 
 }
@@ -71,7 +72,7 @@ z-index: 0;
 .madness .light:not(.door) {
 background: hsl(0, 20%, 18%);
 }
-
+*/
 .hud {
 display: none;
 position: absolute;
