@@ -54,7 +54,7 @@ const LEVELS = {
   "normal":{
     range:5,
     gamemode:0,
-    loss:10
+    loss:7
   },
 
   "hard":{

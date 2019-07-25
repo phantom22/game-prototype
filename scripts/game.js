@@ -112,7 +112,7 @@ class gameInstance {
     if (m.meta && !m.element) {
 
       // creating the main game table, its tr(s) and td(s) are defined by the map.grid array (resolution)
-      let tbl = D.cE("table"); tbl.style.width = "47.32%"; let tbd = D.cE("tbody");
+      let tbl = D.cE("table"); tbl.filter = "url(#noise)"; tbl.style.width = "47.32%"; let tbd = D.cE("tbody");
       for (let i=0;i < m.grid[1];i++) {let r = D.cE("tr"); for (let I=0;I < m.grid[0];I++) {let c = D.cE("td"); c.dataset.x = I; c.dataset.y = i; D.aC(c,r)} D.aC(r,tbd)}
       D.aC(tbd,tbl);
 
@@ -296,7 +296,7 @@ class gameInstance {
     if (m.element && m.element instanceof HTMLElement) {
 
       // inserting the table after the beginning of the body tag
-      document.body.insertAdjacentElement("afterbegin",m.element);
+      document.body.insertAdjacentElement("beforeend",m.element);
 
       // if the player position is an array of numbers
       if (p.position && Array.isArray(p.position) && !isNaN(p.position.reduce((a,b)=>a+b))) {
@@ -469,6 +469,7 @@ class gameInstance {
     	// if player minRangeMoves is equal or higher than minRangeMovesBeforeActivation
     	if (instance.data.player.madness.minRangeMoves >= instance.data.map.madness.minRangeMovesBeforeActivation) {
 
+    		document.querySelectorAll("table")[0].classList.add("madness");
     		// n is the tables width % number
     		let n = Number(document.querySelectorAll("table")[0].style.width.split("%")[0]); 
     		// res is calculated by adding to the n the players madness quantity divided by the interval rate, 47.32 is the lowest width at which the table changes visually
@@ -479,6 +480,7 @@ class gameInstance {
     		document.querySelectorAll("table")[0].style.width=`${res}%`;
     		// if the table came back to the 47.32% width then resetting minRangeMoves
     		instance.data.player.madness.minRangeMoves = res <= 47.32 ? 0 : instance.data.player.madness.minRangeMoves;
+    		res <= 47.32 ? document.querySelectorAll("table")[0].classList.remove("madness") : false;
 
     	}
 
