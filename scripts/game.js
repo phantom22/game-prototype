@@ -5,12 +5,14 @@ class gameInstance {
   constructor(player = {position,moves,vision,gamemode}, map = {grid,meta}) {
 
     // assigning almost every value to a variable, flag is set to true if gamemode == 3 (editor)
-    let pl = player; let p = pl.position; let mv = pl.moves; let v = pl.vision; let gm = pl.gamemode; let b = map.bannedTilesFromRandomizing; let g = map.grid; let m = map.meta; let r = v ? v.initialRange : undefined; let Mr = v ? v.maxRange : undefined; let mr = v ? v.minRange : undefined; let l = v ? v.tokensPerRangeLoss : undefined; let c = map.coins; let f = gm == 3 ? true : undefined;
+    let pl = player; let p = pl.position; let mv = pl.moves; let v = pl.vision; let gm = pl.gamemode; let md = map.madness; let b = map.bannedTilesFromRandomizing; let g = map.grid; let m = map.meta; let r = v ? v.initialRange : undefined; let Mr = v ? v.maxRange : undefined; let mr = v ? v.minRange : undefined; let l = v ? v.tokensPerRangeLoss : undefined; let c = map.coins; let f = gm == 3 ? true : undefined;
 
     // if truecoins quantity and all the rewards, base and randomized, are defined. if not then the coins object becomes undefined
-    c = c && c.true.quantity && c.true.tokenRewards.base && c.true.tokenRewards.random.added && c.true.tokenRewards.random.removed ? c : undefined;
+    c = c && c.true.quantity && c.true.tokenRewards.base && c.true.tokenRewards.random.added && c.true.tokenRewards.random.removed ? c : undefined; 
     // if falsecoins quantity and all the rewards, base and randomized, are defined. if not then the coins object becomes undefined
     c = c && c.false.quantity && c.false.tokenRewards.base && c.false.tokenRewards.random.added && c.false.tokenRewards.random.removed ? c : undefined;
+    
+    md = md && !isNaN(md.minRangeMovesBeforeActivation + md.loss + md.gain + md.coins.true.negativeMadnessMultiplier + md.coins.true.positiveMadnessMultiplier + md.coins.false.negativeMadnessMultiplier + md.coins.false.positiveMadnessMultiplier) ? md : undefined;
     // if bannedTilesFromRandomizing is defined and it's an array. if not setting bannedTilesFromRandomizing to empty array
     b = b && Array.isArray(b) ? b : []; 
     // if grid is an array of numbers. if not but it's a number creating array of two equal numbers
@@ -34,7 +36,7 @@ class gameInstance {
     gm = !isNaN(gm) ? gm : 0;
 
     // if all these variables are defined or if the gamemode == 3 (editor) and map.grid and map.meta is defined
-    if (g && !isNaN(m.reduce((a,b)=>a+b)) && typeof p !== "undefined" && mv && !isNaN(r) && !isNaN(l) && typeof gm !== "undefined" && c && b || gm == 3 && g && !isNaN(m.reduce((a,b)=>a+b))) {
+    if (g && !isNaN(m.reduce((a,b)=>a+b)) && typeof p !== "undefined" && mv && !isNaN(r) && !isNaN(l) && typeof gm !== "undefined" && c && b && md || gm == 3 && g && !isNaN(m.reduce((a,b)=>a+b))) {
 
       // if coins are defined assigning to two variables the truecoins and the falsecoins token rewards
       let tR = c ? c.true.tokenRewards : undefined; let fR = c ? c.false.tokenRewards : undefined;
@@ -110,7 +112,7 @@ class gameInstance {
     if (m.meta && !m.element) {
 
       // creating the main game table, its tr(s) and td(s) are defined by the map.grid array (resolution)
-      let tbl = D.cE("table"); let tbd = D.cE("tbody");
+      let tbl = D.cE("table"); tbl.style.width = "47.32%"; let tbd = D.cE("tbody");
       for (let i=0;i < m.grid[1];i++) {let r = D.cE("tr"); for (let I=0;I < m.grid[0];I++) {let c = D.cE("td"); c.dataset.x = I; c.dataset.y = i; D.aC(c,r)} D.aC(r,tbd)}
       D.aC(tbd,tbl);
 
@@ -171,6 +173,8 @@ class gameInstance {
 
       }
 
+      this.registerDoor();
+
     }
 
   }
@@ -198,12 +202,31 @@ class gameInstance {
 
     for (let i=0;i < (trueCoins + falseCoins);i++) {
 
-   	  // filtering all the reg coordinates that are non-wall-tiles and are not contained in the bannedTilesFromRandomizing array
+      // filtering all the reg coordinates that are non-wall-tiles and are not contained in the bannedTilesFromRandomizing array
       let reg = Object.keys(this.reg); let a = reg.filter(v=>this.reg[v].id==0&&!b.includes(v));
       // n is a random number between 0 and a.length - 1 and it's used to randomize a non-wall-tile to be registered as truecoins or falsecoins, the id (2 = realcoins and 5 = falsecoins) is determined by the for() loop index
       let n = M.R(a.length); let id = i < trueCoins ? 2 : 5;
       // registering the randomized tile as realcoin or falsecoin
       this.registerTile(a[n].split("-"),id);
+
+    }
+
+  }
+
+  registerDoor() {
+
+  	// if there isn't a door in the register
+    if (!this.data.map.door) {
+
+      // mapping the bannedTilesFromRandomizing array to the register format (ex."x-y")
+      let M = T.Math; let b = this.data.map.bannedTilesFromRandomizing.map(v=>`${v[0]}-${v[1]}`);
+      // filtering all the reg coordinates that are non-wall-tiles and are not contained in the bannedTilesFromRandomizing array
+      let reg = Object.keys(this.reg); let a = reg.filter(v=>this.reg[v].id==0&&!b.includes(v));
+      // n is a random number between 0 and a.length - 1 and it's used to randomize a non-wall-tile to be registered as a door
+      let n = M.R(a.length);
+      this.data.map.door = a[n].split("-").map(v=>Number(v));
+      // registering the randomized tile as a door
+      this.registerTile(this.data.map.door,3);
 
     }
 
@@ -279,7 +302,7 @@ class gameInstance {
       if (p.position && Array.isArray(p.position) && !isNaN(p.position.reduce((a,b)=>a+b))) {
 
         // getting the player position, creating the light radius around the player, showing the player, updating the coins counter and calculating the players tokens
-        let xy = p.position; this.playerSight(); this.tileUpdateDisplay(xy); this.data.player.coins = {true:0,false:0}; this.data.player.vision.tokens = p.vision.range * p.vision.tokensPerRangeLoss;
+        let xy = p.position; this.playerSight(); this.tileUpdateDisplay(xy); this.data.player.coins = {true:0,false:0}; this.data.player.madness = {quantity:0,minRangeMoves:0}; this.data.player.vision.tokens = p.vision.range * p.vision.tokensPerRangeLoss;
         
         // getting the number of inventory slots, creating inventory table
         let s = Number(Object.keys(this.data.player.hud.inventory.slots).length); let div = D.cE("div"); div.className = "hud"; let tbl = D.cE("table"); let tbd = D.cE("tbody");
@@ -329,7 +352,7 @@ class gameInstance {
         let currentTiles = this.sightRadius();
 
         // filtering off all the non-wall-tiles from the new radius of sight
-        let a = currentTiles.filter(v=>this.reg[`${v[0]}-${v[1]}`]!==undefined&&this.reg[`${v[0]}-${v[1]}`].id==0);
+        let a = currentTiles.filter(v=>this.reg[`${v[0]}-${v[1]}`]!==undefined&&this.reg[`${v[0]}-${v[1]}`].id==0||this.reg[`${v[0]}-${v[1]}`].id==3);
         // adding to the filtered air tiles the .light class
         a.forEach(v=>{let c=this.reg[`${v[0]}-${v[1]}`].element;c.classList.add("light")});
 
@@ -386,6 +409,9 @@ class gameInstance {
       // checking if the movement is done only on one axis, x or y and if the player.moves are set to 1 then it's not possible to move on the z axis
       if (Math.abs(nX - oX) <= mv && Math.abs(nY - oY) <= mv && Math.abs(nX - oX) + Math.abs(nY - oY) <= mv) {
 
+      	// check if last tile is a door
+      	let id = `${oX}-${oY}` == this.data.map.door.join("-") ? 3 : 0;
+
         // updating player position with the new coordinates
         this.data.player.position = [Number(nX),Number(nY)];
 
@@ -393,8 +419,8 @@ class gameInstance {
         let oXY = [oX,oY];
         let nXY = [nX,nY];
 
-        // registering the old coordinates as air
-        this.registerTile(oXY,0);
+        // registering the old coordinates as air, or door
+        this.registerTile(oXY,id);
         // updating the old coordinates display
         this.tileUpdateDisplay(oXY);
         // all sort of events that alterate the vision range and tokens, based on the tile that the player is stepping on
@@ -422,12 +448,42 @@ class gameInstance {
     switch (id) {
 
       // the truecoins have a bigger base reward than the falsecoins, and also a bigger randomized reward interval that is added and removed from the final token reward. also adding 1 to the true coins counter
-      case 2: this.data.player.coins.true += 1; this.data.player.vision.tokens = t + tc.base + M.R(tcR.added[0],tcR.added[1]) - M.R(tcR.removed[0],tcR.removed[1]); break;
+      case 2: this.data.player.coins.true += 1; this.data.player.madness.quantity = this.data.player.madness.quantity > 0 ? this.data.player.madness.quantity * this.data.map.madness.coins.true.positiveMadnessMultiplier : this.data.player.madness.quantity * this.data.map.madness.coins.true.negativeMadnessMultiplier; this.data.player.vision.tokens = t + tc.base + M.R(tcR.added[0],tcR.added[1]) - M.R(tcR.removed[0],tcR.removed[1]); break;
+      case 3: this.data.map.coins.true.quantity - this.data.player.coins.true == 0 ? alert("you won") : alert(`you found ${this.data.player.coins.true} coins of ${this.data.map.coins.true.quantity}`);
       // every tokenreward of the falsecoins is smaller than the truecoins. also adding 1 to the false coin counter
-      case 5: this.data.player.coins.false += 1; this.data.player.vision.tokens = t + fc.base + M.R(fcR.added[0],fcR.added[1]) - M.R(fcR.removed[0],fcR.removed[1]); break;
+      case 5: this.data.player.coins.false += 1; this.data.player.madness.quantity = this.data.player.madness.quantity > 0 ? this.data.player.madness.quantity * this.data.map.madness.coins.false.positiveMadnessMultiplier : this.data.player.madness.quantity * this.data.map.madness.coins.false.negativeMadnessMultiplier; this.data.player.vision.tokens = t + fc.base + M.R(fcR.added[0],fcR.added[1]) - M.R(fcR.removed[0],fcR.removed[1]); break;
 
     }
-      
+     
+
+    // this counter is needed for the interval
+    this.data.player.madness.minRangeMoves += this.data.player.vision.range == this.data.player.vision.minRange ? 1 : 0;
+
+    // madness quantity is set to 0 if lower than 0 when players range is equal to minRange
+    this.data.player.madness.quantity = this.data.player.vision.range == this.data.player.vision.minRange && this.data.player.madness.quantity < 0 ? 0 : this.data.player.madness.quantity;
+    // adding madness quantity if players range is equal to minRange, removing if players range is higher than minRange
+    this.data.player.madness.quantity += this.data.player.vision.range > this.data.player.vision.minRange ? this.data.map.madness.loss : this.data.map.madness.gain;
+
+    this.data.map.madness.interval = setInterval(function(){
+
+    	// if player minRangeMoves is equal or higher than minRangeMovesBeforeActivation
+    	if (instance.data.player.madness.minRangeMoves >= instance.data.map.madness.minRangeMovesBeforeActivation) {
+
+    		// n is the tables width % number
+    		let n = Number(document.querySelectorAll("table")[0].style.width.split("%")[0]); 
+    		// res is calculated by adding to the n the players madness quantity divided by the interval rate, 47.32 is the lowest width at which the table changes visually
+    		let res = n + (instance.data.player.madness.quantity / 150) < 47.32 ? 47.32 : n + (instance.data.player.madness.quantity / 150); 
+    		// checking if res is not higher than 100, 100% is the cap for the table width, if it goes higher then the table-x overflow will be visible
+    		res = res > 100 ? 100 : res; 
+    		// updating the tables width
+    		document.querySelectorAll("table")[0].style.width=`${res}%`;
+    		// if the table came back to the 47.32% width then resetting minRangeMoves
+    		instance.data.player.madness.minRangeMoves = res <= 47.32 ? 0 : instance.data.player.madness.minRangeMoves;
+
+    	}
+
+    },150);
+
     // if the number of tokens is higher than the (tokensPerRangeLoss * maxRange, basically if the tokens number is higher than the maximum range * tokensPerRangeLoss) changing the number of tokens to the maximum value based on the maxRange 
     this.data.player.vision.tokens = this.data.player.vision.tokens < (this.data.player.vision.tokensPerRangeLoss * this.data.player.vision.maxRange) ? this.data.player.vision.tokens : (this.data.player.vision.tokensPerRangeLoss * this.data.player.vision.maxRange);
     // if the number of tokens is smaller than the (((minRange-1) * tokensPerRangeLoss) + 1, basically if the tokens number is smaller than the minimum range) changing the number of tokens to the minimum value based on the minRange

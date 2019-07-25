@@ -23,21 +23,22 @@ background: hsl(210, 49%, 4%);
 .coin {
 background: hsl(60, 75%, 47%);
 }
-.prop {
-background: #000;
-}
 .door {
-background: #994d00;
+background: hsl(15, 100%, 8%);
+}
+.door.light {
+background: hsl(30, 100%, 30%);
 }
 .player {
 outline: 3px solid hsl(0, 80%, 35%);
 background: hsl(0, 70%, 48%);
 z-index: 0;
 }
-.light:not(.player) {
+.light:not(.door) {
 background: hsl(0, 79%, 18%);
 }
 .hud {
+display: none;
 position: absolute;
 right: 0;
 top: 20%;
