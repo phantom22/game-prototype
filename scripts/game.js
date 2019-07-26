@@ -11,8 +11,8 @@ class gameInstance {
     c = c && c.true.quantity && c.true.tokenRewards.base && c.true.tokenRewards.random.added && c.true.tokenRewards.random.removed ? c : undefined; 
     // if falsecoins quantity and all the rewards, base and randomized, are defined. if not then the coins object becomes undefined
     c = c && c.false.quantity && c.false.tokenRewards.base && c.false.tokenRewards.random.added && c.false.tokenRewards.random.removed ? c : undefined;
-    
-    md = md && !isNaN(md.minRangeMovesBeforeActivation + md.loss + md.gain + md.coins.true.negativeMadnessMultiplier + md.coins.true.positiveMadnessMultiplier + md.coins.false.negativeMadnessMultiplier + md.coins.false.positiveMadnessMultiplier) ? md : undefined;
+    // if madness playerDirectionDistorsion, distortionLoop, cap, minRangeMovesBeforeDistortion, loss, gain and the true and false coins madnessMultipliers are defined numbers
+    md = md && !isNaN(md.playerDirectionDistorsion + md.distortionLoop + md.cap + md.minRangeMovesBeforeDistortion + md.loss + md.gain + md.coins.true.madnessMultiplier + md.coins.false.madnessMultiplier) ? md : undefined;
     // if bannedTilesFromRandomizing is defined and it's an array. if not setting bannedTilesFromRandomizing to empty array
     b = b && Array.isArray(b) ? b : []; 
     // if grid is an array of numbers. if not but it's a number creating array of two equal numbers
@@ -80,7 +80,7 @@ class gameInstance {
   stringReward(string,tokensPerRangeLoss) {
 
     // if the string and the tokensPerRangeLoss are defined
-    if (string && tokensPerRangeLoss && !isNaN(tokensPerRangeLoss) && string.split(" ").length == 2) {
+    if (string && tokensPerRangeLoss && !isNaN(tokensPerRangeLoss)) {
 
       // splitting the string that always contain a space
       let a = string.split(" ");
@@ -89,7 +89,7 @@ class gameInstance {
       // a[1] is the one that contains at the start (slice(0,1)) the "+"" or the "-" and if so it's added to the a[0] number
       a[1] = a[1] && a[1].slice(0,1) == "+" || a[1] && a[1].slice(0,1) == "-" ? a[0] + Number(a[1]) : undefined;
       // if a[1] is defined then the function returns it, if not it's returned the a[0] number
-      return a[1] ? a[1] : a[0];
+      return !a[1] ? a[0] : a[1];
 
     }
 
@@ -215,7 +215,7 @@ class gameInstance {
 
   registerDoor() {
 
-  	// if there isn't a door in the register
+    // if there isn't a door in the register
     if (!this.data.map.door) {
 
       // mapping the bannedTilesFromRandomizing array to the register format (ex."x-y")
@@ -296,7 +296,7 @@ class gameInstance {
     if (m.element && m.element instanceof HTMLElement) {
 
       // inserting the table after the beginning of the body tag
-      document.body.insertAdjacentElement("beforeend",m.element);
+      document.body.insertAdjacentElement("afterbegin",m.element);
 
       // if the player position is an array of numbers
       if (p.position && Array.isArray(p.position) && !isNaN(p.position.reduce((a,b)=>a+b))) {
@@ -409,8 +409,10 @@ class gameInstance {
       // checking if the movement is done only on one axis, x or y and if the player.moves are set to 1 then it's not possible to move on the z axis
       if (Math.abs(nX - oX) <= mv && Math.abs(nY - oY) <= mv && Math.abs(nX - oX) + Math.abs(nY - oY) <= mv) {
 
-      	// check if last tile is a door
-      	let id = `${oX}-${oY}` == this.data.map.door.join("-") ? 3 : 0;
+        // check if last tile is a door
+        let id = `${oX}-${oY}` == this.data.map.door.join("-") ? 3 : 0;
+
+        this.data.player.direction = Math.abs(nX - oX) == 1 ? "x" : "y";
 
         // updating player position with the new coordinates
         this.data.player.position = [Number(nX),Number(nY)];
@@ -448,10 +450,10 @@ class gameInstance {
     switch (id) {
 
       // the truecoins have a bigger base reward than the falsecoins, and also a bigger randomized reward interval that is added and removed from the final token reward. also adding 1 to the true coins counter
-      case 2: this.data.player.coins.true += 1; this.data.player.madness.quantity = this.data.player.madness.quantity > 0 ? this.data.player.madness.quantity * this.data.map.madness.coins.true.positiveMadnessMultiplier : this.data.player.madness.quantity * this.data.map.madness.coins.true.negativeMadnessMultiplier; this.data.player.vision.tokens = t + tc.base + M.R(tcR.added[0],tcR.added[1]) - M.R(tcR.removed[0],tcR.removed[1]); break;
-      case 3: this.data.map.coins.true.quantity - this.data.player.coins.true == 0 ? alert("you won") : alert(`you found ${this.data.player.coins.true} coins of ${this.data.map.coins.true.quantity}`);
+      case 2: this.data.player.coins.true += 1; this.data.player.madness.quantity = this.data.player.madness.quantity > 0 ? this.data.player.madness.quantity * this.data.map.madness.coins.true.madnessMultiplier : 0; this.data.player.vision.tokens = t + tc.base + M.R(tcR.added[0],tcR.added[1]) - M.R(tcR.removed[0],tcR.removed[1]); break;
+      case 3: this.data.map.coins.true.quantity - this.data.player.coins.true == 0 ? alert("you won") : alert(`you found ${this.data.player.coins.true} coins of ${this.data.map.coins.true.quantity}`); break;
       // every tokenreward of the falsecoins is smaller than the truecoins. also adding 1 to the false coin counter
-      case 5: this.data.player.coins.false += 1; this.data.player.madness.quantity = this.data.player.madness.quantity > 0 ? this.data.player.madness.quantity * this.data.map.madness.coins.false.positiveMadnessMultiplier : this.data.player.madness.quantity * this.data.map.madness.coins.false.negativeMadnessMultiplier; this.data.player.vision.tokens = t + fc.base + M.R(fcR.added[0],fcR.added[1]) - M.R(fcR.removed[0],fcR.removed[1]); break;
+      case 5: this.data.player.coins.false += 1; this.data.player.madness.quantity = this.data.player.madness.quantity > 0 ? this.data.player.madness.quantity * this.data.map.madness.coins.false.madnessMultiplier : 0; this.data.player.vision.tokens = t + fc.base + M.R(fcR.added[0],fcR.added[1]) - M.R(fcR.removed[0],fcR.removed[1]); break;
 
     }
      
@@ -463,23 +465,35 @@ class gameInstance {
 
     // make sure that madness quantity stays between 0 and 1
     this.data.player.madness.quantity = this.data.player.madness.quantity < 0 ? 0 : this.data.player.madness.quantity;
-    this.data.player.madness.quantity = this.data.player.madness.quantity > 0.99 ? 0.99 : this.data.player.madness.quantity;
+    this.data.player.madness.quantity = this.data.player.madness.quantity > this.data.map.madness.cap ? this.data.map.madness.cap : this.data.player.madness.quantity;
 
-    if (this.data.player.madness.minRangeMoves >= this.data.map.madness.minRangeMovesBeforeActivation && this.data.player.madness.quantity > 0) {
+    // if the player has minRangeMove equal to minRangeMovesBeforeDistortion then resetting the players madness quantity
+    this.data.player.madness.quantity = this.data.player.madness.minRangeMoves == this.data.map.madness.minRangeMovesBeforeDistortion ? 0 : this.data.player.madness.quantity;
+    // this is needed for the background filter looping and not staying static
+    this.data.player.madness.quantity = Number(this.data.player.madness.quantity.toFixed(3)) == this.data.map.madness.cap ? this.data.map.madness.cap - (this.data.map.madness.gain * this.data.map.madness.distortionLoop) : this.data.player.madness.quantity;
 
-    	this.data.map.element.classList.add("madness");
-    	let feTurbolence = document.querySelector("feTurbulence"); let feDisplacementMap = document.querySelector("feDisplacementMap");
-    	let baseFrequency = `${this.data.player.madness.quantity} ${this.data.player.madness.quantity}`;
-    	let scale = Math.ceil(Number(this.data.player.madness.quantity.toFixed(2)) * 50);
-    	feTurbolence.setAttribute("baseFrequency",baseFrequency);
-    	feDisplacementMap.setAttribute("scale",scale);
+    // if player is in state of madness and madness quantity is higher than 0
+    if (this.data.player.madness.minRangeMoves >= this.data.map.madness.minRangeMovesBeforeDistortion && this.data.player.madness.quantity > 0) {
+
+      // adding the .maddness class to the table, this class links to the noise filter
+      this.data.map.element.classList.add("madness");
+      let feTurbolence = document.querySelector("feTurbulence"); let feDisplacementMap = document.querySelector("feDisplacementMap");
+      let baseFrequency = `${this.data.player.direction == "x" ? this.data.map.madness.playerDirectionDistorsion : this.data.player.madness.quantity} ${this.data.player.direction == "y" ? this.data.map.madness.playerDirectionDistorsion : this.data.player.madness.quantity}`;
+      let scale = Math.ceil(Number(this.data.player.madness.quantity.toFixed(2)) * 200);
+      // setting the distortion frequency
+      feTurbolence.setAttribute("baseFrequency",baseFrequency);
+      // setting the curve distortion
+      feDisplacementMap.setAttribute("scale",scale);
 
     }
 
+    // if players range is higher than minRange and the madness quantity was bringed back to 0
     if (this.data.player.vision.range > this.data.player.vision.minRange && this.data.player.madness.quantity == 0) {
 
-    	this.data.player.madness.minRangeMoves = 0;
-    	this.data.map.element.classList.remove("madness");
+      // resetting minRangeMoves to 0, this value makes sure that the next distortion doesn't start exactly when players range is equal to minRange
+      this.data.player.madness.minRangeMoves = 0;
+      // removing the filter link class from the table
+      this.data.map.element.classList.remove("madness");
 
     }
 

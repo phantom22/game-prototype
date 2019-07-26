@@ -34,7 +34,7 @@ let instance;
         let l = LEVELS; let a = L.slice(-12).split("d=")[1].split("&m=");
 
         // after all the .js scripts are loaded creating a game
-        instance = new gameInstance({position:true,moves:1,vision:{initialRange:l[a[0]].range,tokensPerRangeLoss:l[a[0]].loss,maxRange:l[a[0]].range+2,minRange:2},gamemode:l[a[0]].gamemode},{grid:l[a[1]].grid,meta:`${l[a[1]].meta}`,bannedTilesFromRandomizing:l[a[1]].bannedTilesFromRandomizing,madness:{minRangeMovesBeforeActivation:5,loss:-0.01,gain:0.01,coins:{true:{negativeMadnessMultiplier:2.5,positiveMadnessMultiplier:0.8},false:{negativeMadnessMultiplier:1.5,positiveMadnessMultiplier:0.9}}},coins:{true:{quantity:10,tokenRewards:{base:"*1.2",random:{added:[3,"*1.5 +1"],removed:[1,"*1.5 -3"]}}},false:{quantity:10,tokenRewards:{base:"*0.5",random:{added:[3,"*0.8 +1"],removed:[1,"*0.8 -2"]}}}}});
+        instance = new gameInstance({position:true,moves:1,vision:{initialRange:l[a[0]].range,tokensPerRangeLoss:l[a[0]].loss,maxRange:l[a[0]].range+2,minRange:2},gamemode:l[a[0]].gamemode},{grid:l[a[1]].grid,meta:`${l[a[1]].meta}`,bannedTilesFromRandomizing:l[a[1]].bannedTilesFromRandomizing,madness:{minRangeMovesBeforeDistortion:10,distortionLoop:15,playerDirectionDistorsion:0.09,loss:-0.025,gain:0.005,cap:0.25,coins:{true:{madnessMultiplier:0.4},false:{madnessMultiplier:0.6}}},coins:{true:{quantity:10,tokenRewards:{base:"*1.8",random:{added:[4,"*1.3"],removed:[0,"*0.7"]}}},false:{quantity:15,tokenRewards:{base:"*1.2",random:{added:[3,"*0.8"],removed:[0,"*0.3"]}}}}});
 
         // adding an event listener for the keybord press event
         document.addEventListener("keydown", function(event){
