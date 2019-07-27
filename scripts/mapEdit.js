@@ -6,16 +6,29 @@
   D.qSA("#edit",document,0).addEventListener("click",function(){
 
     // C = color, d = isDrawing, c1 = centerPoints1, c2 = centerPoints2
-    let C = 0; let d = false; let meta = []; let bannedTilesFromRandomizing = []; let c1; let c2;
+    let C = 0; let d = false; let meta = []; let bannedTilesFromRandomizing = []; let imported = false; let mapBannedTiles; let c1; let c2;
     // gettin the grid number/s from the #grid input value and splitting it
     let g = D.qSA("#grid",document,0).value.split(" ");
     // if grid didn't have any spaces in it but it's a number = [g,g]
     g = g.length == 1 ? [...g,...g].map(v=>Number(v)) : g;
+    // if grids first value is "level" and the second value is a number
+    g = g.length == 2 && typeof g[0] == "string" && g[0] == "level" && !isNaN(Number(g[1])) ? [g[0],Number(g[1])] : g;
     // if grid has 3 values, the first two values are the resolution numbers and the third one is the meta of the map
     g = g.length == 3 ? [Number(g[0]),Number(g[1]),g[2].slice(1,-1).split("").map(v=>Number(v))] : g;
 
     // if grid is defined and gridX and gridY is smaller than 101 and higher than 0
-    if (g && g.length <= 3 && g[0] <= 101 && g[1] <=101 && g[0] > 0 && g[1] > 0) {
+    if (g && g.length <= 3 && g[0] <= 101 && g[1] <=101 && g[0] > 0 && g[1] > 0 || g && g[0] == "level" && !isNaN(g[1])) {
+
+      if (g[0] == "level") {
+
+      	// setting imported to true
+      	imported = true;
+      	// setting map meta, map bannedTilesFromRandomizing and map grid based on the level index from the LEVELS list
+        meta = LEVELS[g[1]].meta.split("").map(v=>Number(v));
+        mapBannedTiles = LEVELS[g[1]].bannedTilesFromRandomizing;
+        g = LEVELS[g[1]].grid;
+
+      }
 
       // removing the .settings div
       D.rC(D.qSA(".settings")[0]);
@@ -23,18 +36,30 @@
       D.qSA("#export",document,0).style.display = "block";
 
       // if map meta isn't defined by the user
-      if (!g[2]) {
+      if (!g[2] && !meta) {
         // creating a meta string made only of zeros (air tiles)
         for (let i=0;i < g[0]*g[1];i++) {meta.push(0)}
       }
       // if map meta is defined by the user
-      else {
+      else if (!meta) {
         // setting meta to the g[2] value
         meta = g[2];
       }
 
       // creating a game
       let instance = new gameInstance({gamemode:3},{grid:[g[0],g[1]],meta:meta.join("")});
+
+      // if the map was imported from the already existing levels and mapBannedTiles is an array with length greater than 0
+      if (mapBannedTiles.length !== 0 && imported) {
+
+        mapBannedTiles.forEach(v=>{
+
+          // adding the .banned class to all the tile coordinates in the mapBannedTiles array
+          D.qSA(`[data-x="${v[0]}"][data-y="${v[1]}"]`)[0].classList.add("banned");
+
+        });
+
+      }
 
       // creating this var to easily get the tile id derived from the tile class
       let typeId = {"air":0,"wall":1,"coin":2,"door":3};
@@ -59,9 +84,9 @@
         }
 
         // on mousedown the d becomes true so it's possible to draw with the mouse1 pressed, if the class of the tile it's the same as the drawed block. else if C is equal to 2 it means that the drawed block will become banned, checking if the tile cointains already the .banned class yes = then removing it, no = adding it
-        v.addEventListener("mousedown",function(evt){if (!d) {d = true; if (d && C !== 2 && evt.target.className !== instance.tileClass(C)) {draw(evt.target)} else if (d && C == 2 && evt.target.classList.contains("air")) {evt.target.classList.contains("banned") ? evt.target.classList.remove("banned") : evt.target.classList.add("banned")}}});
+        v.addEventListener("mousedown",function(evt){if (!d) {d = true; if (d && C !== 2 && evt.target.className !== instance.tileClass(C) && !evt.target.classList.contains("banned")) {draw(evt.target)} else if (d && C == 2 && evt.target.classList.contains("air")) {evt.target.classList.contains("banned") ? evt.target.classList.remove("banned") : evt.target.classList.add("banned")}}});
         // if the mouse1 was already pressed then this event will work
-        v.addEventListener("mouseover", function(evt){ if (d && C !== 2 && evt.target.className !== instance.tileClass(C)) {draw(evt.target)}});
+        v.addEventListener("mouseover", function(evt){ if (d && C !== 2 && evt.target.className !== instance.tileClass(C) && !evt.target.classList.contains("banned")) {draw(evt.target)}});
 
       });
 
@@ -101,8 +126,8 @@
 
       });
 
-      // if map meta wasn't defined by the user
-      if (!g[2]) {
+      // if map meta wasn't defined by the user or it wasn't an imported map from the already existing levels
+      if (!g[2] && !imported) {
 
         // checks if a number is odd
         function isOdd(n) {if(!isNaN(n)){return n % 2 !== 0}}
