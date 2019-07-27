@@ -1,4 +1,6 @@
+// making the game instance accessible for debug purposes
 let instance;
+
 (function(){
 
   // getting the website url string
@@ -59,14 +61,14 @@ let instance;
           if (s) {
 
             // register querySelector
-            let r = instance.reg[`${s[0]}-${s[1]}`];
-            // if the tile is found in the reg
+            let r = instance.registry[`${s[0]}-${s[1]}`];
+            // if the tile is found in the registry
             id = r ? r.id : undefined;
             e = r ? r.element : undefined;
 
           }
 
-          // if the tile is found in the reg and its id in not 1 (wall) then move to that tile
+          // if the tile is found in the registry and its id in not 1 (wall) then move to that tile
           if (e && e instanceof HTMLElement && id !== 1) {instance.playerMove(e)}
 
         });

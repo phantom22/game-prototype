@@ -53,6 +53,9 @@ input:focus {
 .door {
 	background:  hsl(35, 70%, 45%);
 }
+.banned {
+	background: #66004d;
+}
 button:hover {
 	background: lightcoral;
 	color: black;
@@ -80,4 +83,7 @@ td:hover {
 }
 .door:hover {
 	background: #ff8000;
+}
+.banned:hover {
+	background: #990073;
 }

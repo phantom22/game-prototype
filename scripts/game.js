@@ -65,7 +65,7 @@ class gameInstance {
       if (r) {this.data.player.vision.range = r}
       
       // adding a register
-      this.reg = {};
+      this.registry = {};
       // creating a the game element (table)
       this.createMap();
       // updating register, based on the map.meta which contains all the tile ids
@@ -153,9 +153,9 @@ class gameInstance {
       else if (p.position == true) {
 
         // getting all the register coordinates, and mapping the bannedTilesFromRandomizing array to the register format (ex."x-y")
-        let reg = Object.keys(this.reg); let b = this.data.map.bannedTilesFromRandomizing.map(v=>`${v[0]}-${v[1]}`);
-        // filtering all the reg coordinates that are non-wall-tiles and are not contained in the bannedTilesFromRandomizing array, n is a random number between 0 and a.length - 1 and it's used to randomize a non-wall-tile to be registered as player
-        let a = reg.filter(v=>this.reg[v].id==0&&!b.includes(v)); let n = M.R(a.length); let XY = a[n].split("-").map(v=>Number(v));
+        let registry = Object.keys(this.registry); let b = this.data.map.bannedTilesFromRandomizing.map(v=>`${v[0]}-${v[1]}`);
+        // filtering all the registry coordinates that are non-wall-tiles and are not contained in the bannedTilesFromRandomizing array, n is a random number between 0 and a.length - 1 and it's used to randomize a non-wall-tile to be registered as player
+        let a = registry.filter(v=>this.registry[v].id==0&&!b.includes(v)); let n = M.R(a.length); let XY = a[n].split("-").map(v=>Number(v));
         // updating player.position with the randomized tile
         this.data.player.position = XY;
         // registering the randomized tile as player
@@ -170,10 +170,10 @@ class gameInstance {
         this.data.player.hud = {inventory:{slots:{0:false,1:false,2:false,3:false,4:false,5:false,6:false},selectedSlot:0}};
         // randomizing the truecoins and falsecoins and registering their coordinates in the register
         this.registerCoins();
+        // randomizing the door and registering its coordinates in the registry
+        this.registerDoor();
 
       }
-
-      this.registerDoor();
 
     }
 
@@ -202,8 +202,8 @@ class gameInstance {
 
     for (let i=0;i < (trueCoins + falseCoins);i++) {
 
-      // filtering all the reg coordinates that are non-wall-tiles and are not contained in the bannedTilesFromRandomizing array
-      let reg = Object.keys(this.reg); let a = reg.filter(v=>this.reg[v].id==0&&!b.includes(v));
+      // filtering all the registry coordinates that are non-wall-tiles and are not contained in the bannedTilesFromRandomizing array
+      let registry = Object.keys(this.registry); let a = registry.filter(v=>this.registry[v].id==0&&!b.includes(v));
       // n is a random number between 0 and a.length - 1 and it's used to randomize a non-wall-tile to be registered as truecoins or falsecoins, the id (2 = realcoins and 5 = falsecoins) is determined by the for() loop index
       let n = M.R(a.length); let id = i < trueCoins ? 2 : 5;
       // registering the randomized tile as realcoin or falsecoin
@@ -220,8 +220,8 @@ class gameInstance {
 
       // mapping the bannedTilesFromRandomizing array to the register format (ex."x-y")
       let M = T.Math; let b = this.data.map.bannedTilesFromRandomizing.map(v=>`${v[0]}-${v[1]}`);
-      // filtering all the reg coordinates that are non-wall-tiles and are not contained in the bannedTilesFromRandomizing array
-      let reg = Object.keys(this.reg); let a = reg.filter(v=>this.reg[v].id==0&&!b.includes(v));
+      // filtering all the registry coordinates that are non-wall-tiles and are not contained in the bannedTilesFromRandomizing array
+      let registry = Object.keys(this.registry); let a = registry.filter(v=>this.registry[v].id==0&&!b.includes(v));
       // n is a random number between 0 and a.length - 1 and it's used to randomize a non-wall-tile to be registered as a door
       let n = M.R(a.length);
       this.data.map.door = a[n].split("-").map(v=>Number(v));
@@ -242,7 +242,7 @@ class gameInstance {
       // querySelector for the register based on the x and y coordinates, and searching for the element in the map.element to be sure that the tile is part of the game
       let r = `${xy[0]}-${xy[1]}`; let e = D.qSA(`[data-x="${xy[0]}"][data-y="${xy[1]}"]`,m.element); 
       // adding the element to the register, the added object contains the tiles id, class and the element itself
-      this.reg[r] = {id:Number(typeId),class:this.tileClass(typeId),element:e[0]};
+      this.registry[r] = {id:Number(typeId),class:this.tileClass(typeId),element:e[0]};
 
     }
 
@@ -256,7 +256,7 @@ class gameInstance {
       // querySelector for the register based on the x and y coordinates
       let r = `${xy[0]}-${xy[1]}`;
       // checking if the element is in the register, removing all the in-game classes from the element, then updating the element with the class written in the register
-      if (this.reg[r]) {let reg = this.reg[r]; this.tileClear(xy); reg.element.classList.add(reg.class)}
+      if (this.registry[r]) {let registry = this.registry[r]; this.tileClear(xy); registry.element.classList.add(registry.class)}
 
     }
 
@@ -271,10 +271,10 @@ class gameInstance {
       let r = `${xy[0]}-${xy[1]}`;
 
       // checking if the element is in the register
-      if (this.reg[r]) {
+      if (this.registry[r]) {
 
         // removing all the in-game classes from the element
-        let eC = this.reg[r].element.classList;
+        let eC = this.registry[r].element.classList;
 
         eC.remove("air");
         eC.remove("wall");
@@ -316,7 +316,7 @@ class gameInstance {
       }
 
       // if gamemode == 3 (editor) updating each tile with their corresponding in-game class so the full map is shown
-      if (flag) {Object.keys(this.reg).forEach(v => {let xy = v.split("-"); this.tileUpdateDisplay(xy)})}
+      if (flag) {Object.keys(this.registry).forEach(v => {let xy = v.split("-"); this.tileUpdateDisplay(xy)})}
 
     }
 
@@ -352,9 +352,9 @@ class gameInstance {
         let currentTiles = this.sightRadius();
 
         // filtering off all the non-wall-tiles from the new radius of sight
-        let a = currentTiles.filter(v=>this.reg[`${v[0]}-${v[1]}`]!==undefined&&this.reg[`${v[0]}-${v[1]}`].id==0||this.reg[`${v[0]}-${v[1]}`].id==3);
+        let a = currentTiles.filter(v=>this.registry[`${v[0]}-${v[1]}`]!==undefined&&this.registry[`${v[0]}-${v[1]}`].id==0||this.registry[`${v[0]}-${v[1]}`].id==3);
         // adding to the filtered air tiles the .light class
-        a.forEach(v=>{let c=this.reg[`${v[0]}-${v[1]}`].element;c.classList.add("light")});
+        a.forEach(v=>{let c=this.registry[`${v[0]}-${v[1]}`].element;c.classList.add("light")});
 
         // updating the last updated tiles array
         this.data.player.vision.lastUpdatedTiles = currentTiles;
@@ -400,8 +400,8 @@ class gameInstance {
     // getting the tile coordinates
     let p = this.data.player; let mv = p.moves; let x = e.dataset.x; let y = e.dataset.y;
 
-    // if moves is defined, e is an element and the reg[querySelector].id !== 1 (is not a wall)
-    if (mv && e && e instanceof HTMLElement && this.reg[`${x}-${y}`].id !== 1) {
+    // if moves is defined, e is an element and the registry[querySelector].id !== 1 (is not a wall)
+    if (mv && e && e instanceof HTMLElement && this.registry[`${x}-${y}`].id !== 1) {
 
       // setting new coordinates and old coordinaties
       let nX = e.dataset.x; let nY = e.dataset.y; let oX = p.position[0]; let oY = p.position[1];
@@ -443,7 +443,7 @@ class gameInstance {
   tileEvents(xy) {
 
     // getting the tile id to determine which event is tied to it, getting the player range, tokensPerRangeLoss and the tokens
-    let id = this.reg[xy.join("-")].id; let r = this.data.player.vision.range; let l = this.data.player.vision.tokensPerRangeLoss; let t = this.data.player.vision.tokens; let M = T.Math;
+    let id = this.registry[xy.join("-")].id; let r = this.data.player.vision.range; let l = this.data.player.vision.tokensPerRangeLoss; let t = this.data.player.vision.tokens; let M = T.Math;
     // getting the truecoins and falsecoins base and randomized tokenrewards
     let tc = this.data.map.coins.true.tokenRewards; let fc = this.data.map.coins.false.tokenRewards; let tcR = tc.random; let fcR = fc.random;
 
