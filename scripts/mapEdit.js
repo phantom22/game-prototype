@@ -40,7 +40,7 @@
       let typeId = {"air":0,"wall":1,"coin":2,"door":3};
 
       // adding an event listener to all the tds of the game table
-      D.qSA(".air").forEach(v =>{
+      D.qSA("td").forEach(v =>{
 
         function draw(e) {
 
