@@ -1,6 +1,6 @@
-# **How to play the game?** *(index.html)*
-
 *Before you choose any level to play, here's some information that you should know before your first game experience.*
+
+# **How to play the game?** *(index.html)*
 
 Use `WASD` to move around and collect coins.
 Even though it seems that there are lots of coins on the map, there are **two types** of coins that are indistinguishable to the eye:
