@@ -15,7 +15,7 @@ Even though it seems that there are lots of coins on the map, there are **two ty
 
 # **How to create a map?** *(map-editor.html)*
 
-First of all, you need to know the `size` of the map that you want to create after you 've decided the grid resolution you have two ways of entering the values into the text field if it's a square shaped you can simply enter one *number*, if it's rectangle shaped then you have to enter *two numbers* separated by a `space`. 
+First of all, you need to know the `size` of the map that you want to create after you 've decided the grid resolution you have two ways of entering the values into the text field; if it's a square shaped map you can simply enter one *number*, if it's rectangle shaped then you have to enter *two numbers* separated by a `space`. 
 
 After you've entered the correct values and clicked the `edit button` you can now proceed in editing you first own map. The only controls that you should keep in mind are *Q*, *W*, and *E* (**note that it's possible to hold m1 and draw without clicking each tile**). 
 *  By pressing **Q** you will draw air blocks, a tile where the player can step on.
