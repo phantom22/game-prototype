@@ -78,12 +78,15 @@ td:hover {
 .wall:hover {
 	background: #ac3939;
 }
-.coin:hover {
-	background: #e8e87d;
-}
-.door:hover {
-	background: #ff8000;
-}
 .banned:hover {
 	background: #990073;
+}
+.screenshot .air {
+background: hsl(0, 79%, 18%);
+}
+.screenshot .wall {
+background: hsl(210, 49%, 4%);
+}
+.screenshot .banned {
+background: hsl(0, 85%, 5%); 
 }

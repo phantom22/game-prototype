@@ -1,7 +1,7 @@
 (function(){
 
   // getting number of leves
-  let T = TOOL.DOM; let lvls = LEVELS.length;
+  let T = TOOL.DOM; let lvls = LEVELS[0].length;
   // creating a table element, trI stands for every 2 tr which are a tr.title and a normal tr that contains the images, lvlI is needed to alternate 2 levels like 1-2,3-4,...etc
   let div = T.cE("div"); div.className = "center"; let tbl = T.cE("table"); let tbd = T.cE("tbody"); let trI = 0; lvlI = 1;
 
@@ -20,7 +20,7 @@
         tr.className = "title";
         p.textContent = `Level ${trI+lvlI}`;
         // if there is a level with such index
-        if (LEVELS[trI+lvlI-1]) {T.aC(p,v)};
+        if (LEVELS[0][trI+lvlI-1]) {T.aC(p,v)};
         // level index is incremented by 1 to alternate the level titles 1-2,3-4,...etc
         lvlI = lvlI == 1 ? lvlI + 1 : 1;
 
@@ -40,10 +40,10 @@
         let img = T.cE("img");
         img.className = "screenshot";
         // adding the dataURI of a level screenshot based on the trI and lvlI sum
-        img.src = `${SCREENSHOTS[trI+lvlI-1]}`;
+        img.src = `screenshots/${trI+lvlI-1}.png`;
         img.alt = `lvl${trI+lvlI}`;
         // if there is a level with such index
-        if (LEVELS[trI+lvlI-1]) {v.innerHTML = difficulty; T.aC(img,v)};
+        if (LEVELS[0][trI+lvlI-1]) {v.innerHTML = difficulty; T.aC(img,v)};
         // level index is incremented by 1 to alternate the level titles 1-2,3-4,...etc
         lvlI = lvlI == 1 ? lvlI + 1 : 1;
 
