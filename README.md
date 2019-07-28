@@ -1,6 +1,6 @@
-# **How to play the game?** *(index.html)*
-
 *Before you choose any level to play, here's some information that you should know before your first game experience.*
+
+# **How to play the game?** *(index.html)*
 
 Use `WASD` to move around and collect coins.
 Even though it seems that there are lots of coins on the map, there are **two types** of coins that are indistinguishable to the eye:
@@ -24,6 +24,8 @@ After you've entered the correct values and clicked the `edit button` you can no
 
 When you've finished your creation you can click the export button and you'll see a string of the parsed object of your map in the console.
 The `X` in the string stands for the **level's index** that you'll have to change after you insert your level into the variable `LEVELS`, situated in the `scripts/level.js` file.
+
+When clicking the `export button` the table will look exactly as it will look in the game, added this feature to help with *screenshots*. After you've finished the map now you can take an easy screenshot, with any browser add-on, of the map and drop it into the screenshots folder (**don't forget to re-name the screenshot with the correct level index!**), if you are not done with editing you can click on any tile and the table will return back as it was before.
 
 # **How to edit a map?** *(map-editor.html)*
 If you already placed the map into the `scripts/level.js` file, then you can write `level index` into the text field, **index** obviously stand for the index of the level placed in the `LEVELS` variable. After you've entered the correct index you can now click the `edit button` and continue your creation.

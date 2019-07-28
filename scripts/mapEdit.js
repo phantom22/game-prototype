@@ -23,9 +23,9 @@
 
       if (g[0] == "level") {
 
-      	// setting imported to true
-      	imported = true;
-      	// setting map meta, map bannedTilesFromRandomizing and map grid based on the level index from the LEVELS list
+        // setting imported to true
+        imported = true;
+        // setting map meta, map bannedTilesFromRandomizing and map grid based on the level index from the LEVELS list
         meta = LEVELS[0][g[1]].meta.split("").map(v=>Number(v));
         mapBannedTiles = LEVELS[0][g[1]].bannedTilesFromRandomizing;
         g = LEVELS[0][g[1]].grid;
@@ -38,12 +38,12 @@
       D.qSA("#export",document,0).style.display = "block";
 
       // if map meta isn't defined by the user
-      if (!g[2] && JSON.stringify(meta) == "[]") {
+      if (!imported && JSON.stringify(meta) == "[]" && !g[2]) {
         // creating a meta string made only of zeros (air tiles)
         for (let i=0;i < g[0]*g[1];i++) {meta.push(0)}
       }
       // if map meta is defined by the user
-      else if (JSON.stringify(meta) !== "[]") {
+      else if (!imported && g[2]) {
         // setting meta to the g[2] value
         meta = g[2];
       }
