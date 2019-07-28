@@ -113,7 +113,7 @@
 
 
         // exporting the game data into the console
-        console.log(`X:{\ngrid:[${g[0]},${g[1]}],\nbannedTilesFromRandomizing:${JSON.stringify(bannedTilesFromRandomizing)},\nmeta:"${m.join("")}"\n}`);
+        console.log(`{\ngrid:[${g[0]},${g[1]}],\nbannedTilesFromRandomizing:${JSON.stringify(bannedTilesFromRandomizing)},\nmeta:"${m.join("")}"\n}`);
 
       });
 

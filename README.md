@@ -23,7 +23,7 @@ After you've entered the correct values and clicked the `edit button` you can no
 *  by pressing **E** you define the air blocks that won't have any randomized object on them *(like coins, doors, and the player first position)*, this feature is useful for `closed areas` of tiles **where the player can't get to**. 
 
 When you've finished your creation you can click the export button and you'll see a string of the parsed object of your map in the console.
-The `X` in the string stands for the **level's index** that you'll have to change after you insert your level into the variable `LEVELS`, situated in the `scripts/level.js` file.
+Now copy the string (**withou brackets**) and paste it into the variable `LEVELS`, situated in the `scripts/level.js` file.
 
 When clicking the `export button` the table will look exactly as it will look in the game, added this feature to help with *screenshots*. After you've finished the map now you can take an easy screenshot, with any browser add-on, of the map and drop it into the screenshots folder (**don't forget to re-name the screenshot with the correct level index!**), if you are not done with editing you can click on any tile and the table will return back as it was before.
 
