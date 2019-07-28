@@ -33,8 +33,8 @@ If you already placed the map into the `scripts/level.js` file, then you can wri
 If the map was saved in a text file, just for future completion then you need to enter three values:
 *  `grid's first number`.
 *  `grid's second number` *(repeat it even if the map is square shaped)*.
-*  `map.meta`, an array of all the tile's ids that the map is made of *(must be in brackets)*.
+*  `map.meta`, a string of numbers that contains all the tile's ids that the map is made of *(must be in brackets)*.
 
-After you've entered all the correct values you can continue your creation.
+After you've entered all the correct values you can continue your creation by clicking the `edit button`.
 
 ### THANK YOU FOR READING!
