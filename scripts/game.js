@@ -12,7 +12,7 @@ class gameInstance {
     // if falsecoins quantity and all the rewards, base and randomized, are defined. if not then the coins object becomes undefined
     c = c && c.false.quantity && c.false.tokenRewards.base && c.false.tokenRewards.random.added && c.false.tokenRewards.random.removed ? c : undefined;
     // if madness playerDirectionDistorsion, distortionLoop, cap, minRangeMovesBeforeDistortion, loss, gain and the true and false coins madnessMultipliers are defined numbers
-    md = md && !isNaN(md.playerDirectionDistorsion + md.distortionLoop + md.cap + md.minRangeMovesBeforeDistortion + md.loss + md.gain + md.coins.true.madnessMultiplier + md.coins.false.madnessMultiplier) ? md : undefined;
+    md = md && !isNaN(md.distortionScaleMultiplier + md.playerDirectionDistorsion + md.distortionLoop + md.cap + md.minRangeMovesBeforeDistortion + md.loss + md.gain + md.coins.true.madnessMultiplier + md.coins.false.madnessMultiplier) ? md : undefined;
     // if bannedTilesFromRandomizing is defined and it's an array. if not setting bannedTilesFromRandomizing to empty array
     b = b && Array.isArray(b) ? b : []; 
     // if grid is an array of numbers. if not but it's a number creating array of two equal numbers
@@ -479,7 +479,7 @@ class gameInstance {
       this.data.map.element.classList.add("madness");
       let feTurbolence = document.querySelector("feTurbulence"); let feDisplacementMap = document.querySelector("feDisplacementMap");
       let baseFrequency = `${this.data.player.direction == "x" ? this.data.map.madness.playerDirectionDistorsion : this.data.player.madness.quantity} ${this.data.player.direction == "y" ? this.data.map.madness.playerDirectionDistorsion : this.data.player.madness.quantity}`;
-      let scale = Math.ceil(Number(this.data.player.madness.quantity.toFixed(2)) * 200);
+      let scale = Math.ceil(Number(this.data.player.madness.quantity.toFixed(2)) * Math.ceil(this.data.map.madness.distortionScaleMultiplier * 100));
       // setting the distortion frequency
       feTurbolence.setAttribute("baseFrequency",baseFrequency);
       // setting the curve distortion
