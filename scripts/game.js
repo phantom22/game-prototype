@@ -2,7 +2,7 @@ let T = TOOL;
 
 class gameInstance {
 
-  constructor(player = {position,moves,vision,gamemode}, map = {grid,meta}) {
+  constructor(player = {position,moves,vision,gamemode}, map = {grid,meta}, debug) {
 
     // assigning almost every value to a variable, flag is set to true if gamemode == 3 (editor)
     let pl = player; let p = pl.position; let mv = pl.moves; let v = pl.vision; let gm = pl.gamemode; let md = map.madness; let b = map.bannedTilesFromRandomizing; let g = map.grid; let m = map.meta; let r = v ? v.initialRange : undefined; let Mr = v ? v.maxRange : undefined; let mr = v ? v.minRange : undefined; let l = v ? v.tokensPerRangeLoss : undefined; let c = map.coins; let f = gm == 3 ? true : undefined;
@@ -37,6 +37,12 @@ class gameInstance {
 
     // if all these variables are defined or if the gamemode == 3 (editor) and map.grid and map.meta is defined
     if (g && !isNaN(m.reduce((a,b)=>a+b)) && typeof p !== "undefined" && mv && !isNaN(r) && !isNaN(l) && typeof gm !== "undefined" && c && b && md || gm == 3 && g && !isNaN(m.reduce((a,b)=>a+b))) {
+
+      if (debug) {
+
+	this.debug = {state:true,registry:[],keys:[]};
+
+      }
 
       // if coins are defined assigning to two variables the truecoins and the falsecoins token rewards
       let tR = c ? c.true.tokenRewards : undefined; let fR = c ? c.false.tokenRewards : undefined;
@@ -77,7 +83,48 @@ class gameInstance {
 
   }
 
+  debugKeyGen(){
+
+    let M = T.Math;
+
+    let n = M.R(1000000,10000000);
+    while (this.debug.keys.includes(n)) {n = M.R(1000000,10000000)}
+    this.debug.keys.push(n);
+
+    return n;
+
+  }
+
+  debugRegister(string,args,state,debugKey) {
+
+    let supportedStates = ["start","end"];
+
+    if (string && args && Array.isArray(args) && state && supportedStates.includes(state) && debugKey && !isNaN(debugKey)) {
+
+	if (state == "start") {
+
+          this.debug.registry.push({function:string,args:args,states:{[state]:new Date().toISOString()},key:debugKey});
+
+        }
+
+	else if (state == "end") {
+
+          this.debug.registry[this.debug.registry.map(v=>v.key==debugKey).indexOf(true)].states[state] = new Date().toISOString();
+
+	}
+
+    }
+
+  }
+
   stringReward(string,tokensPerRangeLoss) {
+
+    let debugKey;
+
+    if (typeof this.debug !== "undefined" && this.debug.state) {
+      debugKey = this.debugKeyGen();
+      this.debugRegister("stringReward",[string,tokensPerRangeLoss],"start",debugKey);
+    }
 
     // if the string and the tokensPerRangeLoss are defined
     if (string && tokensPerRangeLoss && !isNaN(tokensPerRangeLoss)) {
@@ -88,6 +135,9 @@ class gameInstance {
       a[0] = a[0].includes("*") && a[0].slice(0,1) == "*" ? Math.floor(tokensPerRangeLoss * Number(a[0].slice(1))) : a[0];
       // a[1] is the one that contains at the start (slice(0,1)) the "+"" or the "-" and if so it's added to the a[0] number
       a[1] = a[1] && a[1].slice(0,1) == "+" || a[1] && a[1].slice(0,1) == "-" ? a[0] + Number(a[1]) : undefined;
+
+      !this.debug.state ? false : this.debugRegister("stringReward",[],"end",debugKey);
+
       // if a[1] is defined then the function returns it, if not it's returned the a[0] number
       return !a[1] ? a[0] : a[1];
 
@@ -96,15 +146,29 @@ class gameInstance {
   }
 
   tileClass(typeId) {
+    
+    let debugKey;
+
+    if (typeof this.debug !== "undefined" && this.debug.state) {
+      debugKey = this.debugKeyGen();
+      this.debugRegister("tileClass",[typeId],"start",debugKey);
+    }
 
     // all the tile classes/types
     let tT = {0:"air",1:"wall",2:"coin",3:"door",4:"player",5:"coin"};
     // returning the tyle type string
-    if (!isNaN(typeId)) {return String(tT[typeId])}
+    if (!isNaN(typeId)) {!this.debug.state ? false : this.debugRegister("tileClass",[],"end",debugKey);return String(tT[typeId])}
 
   }
 
   createMap() {
+
+    let debugKey;
+
+    if (typeof this.debug !== "undefined" && this.debug.state) {
+      debugKey = this.debugKeyGen();
+      this.debugRegister("createMap",[],"start",debugKey);
+    }
 
     let D = T.DOM; let m = this.data.map;
 
@@ -121,9 +185,18 @@ class gameInstance {
 
     }
 
+    !this.debug.state ? false : this.debugRegister("createMap",[],"end",debugKey);
+
   }
 
   registerMap(flag) {
+
+    let debugKey;
+
+    if (typeof this.debug !== "undefined" && this.debug.state) {
+      debugKey = this.debugKeyGen();
+      this.debugRegister("registerMap",[],"start",debugKey);
+    }
 
     // getting the grid
     let M = T.Math; let m = this.data.map; let p = this.data.player; let g = m.grid;
@@ -177,9 +250,18 @@ class gameInstance {
 
     }
 
+    !this.debug.state ? false : this.debugRegister("registerMap",[],"end",debugKey);
+
   }
 
   updateSelectedSlot(id) {
+
+    let debugKey;
+
+    if (typeof this.debug !== "undefined" && this.debug.state) {
+      debugKey = this.debugKeyGen();
+      this.debugRegister("updateSelectedSlot",[id],"start",debugKey);
+    }
 
     let D = T.DOM; let s = D.qSA(".selected");
     // if a .selected element is found, removing its .selected class
@@ -193,9 +275,18 @@ class gameInstance {
     // adding to the querySelector[selectedSlot] the .selected class
     D.qSA(".hud td")[this.data.player.hud.inventory.selectedSlot].classList.add("selected");
 
+    !this.debug.state ? false : this.debugRegister("updateSelectedSlot",[],"end",debugKey);
+
   }
 
   registerCoins() {
+
+    let debugKey;
+
+    if (typeof this.debug !== "undefined" && this.debug.state) {
+      debugKey = this.debugKeyGen();
+      this.debugRegister("registerCoins",[],"start",debugKey);
+    }
 
     // getting true and false coins quantity for the loop for(), mapping the bannedTilesFromRandomizing array to the register format (ex."x-y")
     let M = T.Math; let trueCoins = this.data.map.coins.true.quantity; let falseCoins = this.data.map.coins.false.quantity;  let b = this.data.map.bannedTilesFromRandomizing.map(v=>`${v[0]}-${v[1]}`);
@@ -211,9 +302,18 @@ class gameInstance {
 
     }
 
+    !this.debug.state ? false : this.debugRegister("registerCoins",[],"end",debugKey);
+
   }
 
   registerDoor() {
+
+    let debugKey;
+
+    if (typeof this.debug !== "undefined" && this.debug.state) {
+      debugKey = this.debugKeyGen();
+      this.debugRegister("registerDoor",[],"start",debugKey);
+    }
 
     // if there isn't a door in the register
     if (!this.data.map.door) {
@@ -230,9 +330,18 @@ class gameInstance {
 
     }
 
+    !this.debug.state ? false : this.debugRegister("registerDoor",[],"end",debugKey);
+
   }
 
   registerTile(xy,typeId) {
+
+    let debugKey;
+
+    if (typeof this.debug !== "undefined" && this.debug.state) {
+      debugKey = this.debugKeyGen();
+      this.debugRegister("registerTile",[xy,typeId],"start",debugKey);
+    }
 
     let D = T.DOM; let m = this.data.map;
 
@@ -246,9 +355,18 @@ class gameInstance {
 
     }
 
+    !this.debug.state ? false : this.debugRegister("registerTile",[],"end",debugKey);
+
   }
 
   tileUpdateDisplay(xy) {
+
+    let debugKey;
+
+    if (typeof this.debug !== "undefined" && this.debug.state) {
+      debugKey = this.debugKeyGen();
+      this.debugRegister("tileUpdateDisplay",[xy],"start",debugKey);
+    }
 
     // if the coordinates is an array of numbers
     if (xy && Array.isArray(xy)) {
@@ -260,9 +378,18 @@ class gameInstance {
 
     }
 
+    !this.debug.state ? false : this.debugRegister("tileUpdateDisplay",[],"end",debugKey);
+
   }
 
   tileClear(xy) {
+
+    let debugKey;
+
+    if (typeof this.debug !== "undefined" && this.debug.state) {
+      debugKey = this.debugKeyGen();
+      this.debugRegister("tileClear",[xy],"start",debugKey);
+    }
 
     // if coordinates is an array of numbers
     if (xy && Array.isArray(xy)) {
@@ -286,9 +413,18 @@ class gameInstance {
 
     }
 
+    !this.debug.state ? false : this.debugRegister("tileClear",[],"end",debugKey);
+
   }
 
   mapRender(flag) {
+
+    let debugKey;
+
+    if (typeof this.debug !== "undefined" && this.debug.state) {
+      debugKey = this.debugKeyGen();
+      this.debugRegister("mapRender",[flag],"start",debugKey);
+    }
 
     let D = T.DOM; let m = this.data.map; let p = this.data.player;
 
@@ -320,9 +456,18 @@ class gameInstance {
 
     }
 
+    !this.debug.state ? false : this.debugRegister("mapRender",[],"end",debugKey);
+
   }
 
   playerSight() {
+
+    let debugKey;
+
+    if (typeof this.debug !== "undefined" && this.debug.state) {
+      debugKey = this.debugKeyGen();
+      this.debugRegister("playerSight",[],"start",debugKey);
+    }
 
     // getting the player position, gamemode id and the last updated tiles array
     let D = T.DOM; let p = this.data.player; let xy = p.position; let lUT = p.vision.lastUpdatedTiles; let gm = p.gamemode;
@@ -363,19 +508,35 @@ class gameInstance {
 
     }
 
+    !this.debug.state ? false : this.debugRegister("playerSight",[],"end",debugKey);
+
   }
 
   sightRange() {
+
+    let debugKey;
+
+    if (typeof this.debug !== "undefined" && this.debug.state) {
+      debugKey = this.debugKeyGen();
+      this.debugRegister("sightRange",[],"start",debugKey);
+    }
 
     // getting current player vision range
     let r = this.data.player.vision.range;
 
     // creating an array of all the relative coordinated to the player (based on the player range of sight) (ex. range = 5; returned array [-5,-4,-3,-2,-1,0,+1,+2,+3,+4,+5])
-    if (r && !isNaN(r)) {let n = -r; let range = []; for (let i=0;i<(r*2)+1;i++) {range.push(n); n += 1} return range}
+    if (r && !isNaN(r)) {let n = -r; let range = []; for (let i=0;i<(r*2)+1;i++) {range.push(n); n += 1} !this.debug.state ? false : this.debugRegister("sightRange",[],"end",debugKey); return range}
 
   }
 
   sightRadius() {
+
+    let debugKey;
+
+    if (typeof this.debug !== "undefined" && this.debug.state) {
+      debugKey = this.debugKeyGen();
+      this.debugRegister("sightRadius",[],"start",debugKey);
+    }
 
     // getting current player vision range
     let r = this.data.player.vision.range;
@@ -389,6 +550,8 @@ class gameInstance {
       // creating an array of the current radius of sight
       for (let i=0;i<ra.length;i++) {for (let I=0;I<ra.length;I++) {let X = I; let Y = i; let f = true; f = X==0&&Y==0||X==r*2&&Y==0||X==0&&Y==r*2||X==r*2&&Y==r*2||X==r&&Y==r ? false : true; if (f) {let n1 = x+ra[I]>=0&&x+ra[I]<g[0] ? x+ra[I]:false; let n2 = y+ra[i]>=0&&y+ra[i]<g[1] ? y+ra[i]:false; if (typeof n1=="number"&&typeof n2=="number") {sight.push([n1,n2])}}}}
 
+      !this.debug.state ? false : this.debugRegister("sightRadius",[],"end",debugKey);
+
       return sight
 
     }
@@ -396,6 +559,13 @@ class gameInstance {
   }
 
   playerMove(e) {
+
+    let debugKey;
+
+    if (typeof this.debug !== "undefined" && this.debug.state) {
+      debugKey = this.debugKeyGen();
+      this.debugRegister("playerMove",[e],"start",debugKey);
+    }
 
     // getting the tile coordinates
     let p = this.data.player; let mv = p.moves; let x = e.dataset.x; let y = e.dataset.y;
@@ -438,9 +608,18 @@ class gameInstance {
 
     }
 
+    !this.debug.state ? false : this.debugRegister("playerMove",[],"end",debugKey);
+
   }
 
   tileEvents(xy) {
+
+    let debugKey;
+
+    if (typeof this.debug !== "undefined" && this.debug.state) {
+      debugKey = this.debugKeyGen();
+      this.debugRegister("tileEvents",[xy],"start",debugKey);
+    }
 
     // getting the tile id to determine which event is tied to it, getting the player range, tokensPerRangeLoss and the tokens
     let id = this.registry[xy.join("-")].id; let r = this.data.player.vision.range; let l = this.data.player.vision.tokensPerRangeLoss; let t = this.data.player.vision.tokens; let M = T.Math;
@@ -505,6 +684,8 @@ class gameInstance {
     this.data.player.vision.tokens -= this.data.player.vision.tokens !== (((this.data.player.vision.minRange - 1) * this.data.player.vision.tokensPerRangeLoss) + 1) ? 1 : 0;
     // setting the range to ceil(tokens / tokensPerRangeLoss), if the result is smaller than the minRange setting the range to the minRange automatically
     this.data.player.vision.range = Math.ceil(this.data.player.vision.tokens / this.data.player.vision.tokensPerRangeLoss) >= this.data.player.vision.minRange ? Math.ceil(this.data.player.vision.tokens / this.data.player.vision.tokensPerRangeLoss) : this.data.player.vision.minRange;
+
+    !this.debug.state ? false : this.debugRegister("tileEvents",[],"end",debugKey);
 
   }
 
