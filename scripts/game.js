@@ -1,4 +1,4 @@
-let T = TOOL;
+const T = TOOL;
 
 class gameInstance {
 
@@ -40,7 +40,7 @@ class gameInstance {
 
       if (debug) {
 
-	this.debug = {state:true,registry:[],keys:[]};
+    this.debug = {state:true,registry:[],keys:[]};
 
       }
 
@@ -97,21 +97,32 @@ class gameInstance {
 
   debugRegister(string,args,state,debugKey) {
 
-    let supportedStates = ["start","end"];
+    let supportedStates = ["start","end"]; let maxRegisterLength = 10000;
 
     if (string && args && Array.isArray(args) && state && supportedStates.includes(state) && debugKey && !isNaN(debugKey)) {
 
-	if (state == "start") {
+      if (this.debug.registry.length > maxRegisterLength) {
 
-          this.debug.registry.push({function:string,args:args,states:{[state]:new Date().toISOString()},key:debugKey});
+      	this.debug.registry.shift();
 
-        }
+      }
 
-	else if (state == "end") {
+      if (state == "start") {
 
-          this.debug.registry[this.debug.registry.map(v=>v.key==debugKey).indexOf(true)].states[state] = new Date().toISOString();
+        this.debug.registry.push({function:string,args:args,states:{[state]:new Date().toISOString()},key:debugKey});
 
-	}
+      }
+
+      else if (state == "end") {
+
+      	let registerIndex = this.debug.registry.map(v=>v.key==debugKey).indexOf(true); let keyIndex = this.debug.keys.indexOf(debugKey);
+
+        this.debug.registry[registerIndex].states[state] = new Date().toISOString();
+        delete this.debug.registry[registerIndex].key;
+
+        this.debug.keys.splice(keyIndex, this.debug.keys.length == 1 ? 1 : keyIndex);
+
+      }
 
     }
 
