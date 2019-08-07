@@ -4,73 +4,66 @@ class gameInstance {
 
   constructor(player = {position,moves,vision,gamemode}, map = {grid,meta,coins,madness}, debug) {
 
-    let p = player; let vision = p.vision; let m = map; let coins = m.coins; let madness = m.madness; let mCoins = madness.coins; let flag = p.gamemode === 3 ? true : false;
+    let p = player; let vision = typeof p.vision !== "undefined" ? p.vision : undefined; let m = map; let coins = m.coins; let madness = typeof m.madness !== "undefined" ? m.madness : undefined; let mCoins = typeof m.madness !== "undefined" ? madness.coins : undefined; let flag = p.gamemode === 3 ? true : false;
 
-    p.position = typeof p.position === "boolean" || typeof p.position !== "undefined" && Array.isArray(p.position) && typeof p.position.reduce((a,b) => a+b) === "number" && p.position.length === 2 ? p.position : true; 
-    p.moves = typeof p.moves === "number" && p.moves > 0 ? Math.floor(p.moves) : 1; 
-    p.gamemode = typeof p.gamemode === "number" && p.gamemode > 0 ? Math.floor(p.gamemode) : 0; 
-    vision.initialRange = typeof vision.initialRange === "number" && vision.initialRange > 0 ? Math.floor(vision.initialRange) : 5; 
-    vision.tokensPerRangeLoss = typeof vision.tokensPerRangeLoss === "number" && vision.tokensPerRangeLoss > 0 ? Math.floor(vision.tokensPerRangeLoss) : 7; 
-    vision.minRange = typeof vision.minRange === "number" && vision.minRange >= 1 && vision.minRange <= vision.maxRange ? Math.floor(vision.minRange) : 2; 
-    vision.maxRange = typeof vision.maxRange === "number" && vision.maxRange >= 1 && vision.maxRange >= vision.minRange ? Math.floor(vision.maxRange) : initialRange + 2;
     m.grid = typeof m.grid !== "undefined" && Array.isArray(m.grid) && typeof m.grid.reduce((a,b) => a+b) === "number" && m.grid.length === 2 ? m.grid : undefined; 
     m.meta = typeof m.meta === "string" && m.meta.split("").length === m.grid[0] * m.grid[1] ? m.meta.split("").map(v=>Number(v)) : undefined;
-    
-    coins.true.quantity = typeof coins.true.quantity === "number" & coins.true.quantity >= 1 ? Math.floor(coins.true.quantity) : 10;
-    coins.false.quantity = typeof coins.false.quantity === "number" && coins.false.quantity >= 0 ? Math.floor(coins.false.quantity) : 10;
-    coins.true.tokenRewards.base = typeof coins.true.tokenRewards.base === "number" || typeof coins.true.tokenRewards.base === "string" ? coins.true.tokenRewards.base : "*1.8";
-    coins.false.tokenRewards.base = typeof coins.false.tokenRewards.base === "number" || typeof coins.false.tokenRewards.base === "string" ? coins.false.tokenRewards.base : "*1.2";
-    coins.true.tokenRewards.random.added = Array.isArray(coins.true.tokenRewards.random.added) && coins.true.tokenRewards.random.added.length === 2 ? coins.true.tokenRewards.random.added : [4,"*1.3"];
-    coins.false.tokenRewards.random.added = Array.isArray(coins.false.tokenRewards.random.added) && coins.false.tokenRewards.random.added.length === 2 ? coins.false.tokenRewards.random.added : [0,"*0.7"];
-    coins.true.tokenRewards.random.removed = Array.isArray(coins.true.tokenRewards.random.removed) && coins.true.tokenRewards.random.removed.length === 2 ? coins.true.tokenRewards.random.removed : [3,"*0.8"];
-    coins.false.tokenRewards.random.removed = Array.isArray(coins.false.tokenRewards.random.removed) && coins.false.tokenRewards.random.removed.length === 2 ? coins.false.tokenRewards.random.removed : [0, "*0.3"];
 
-    coins = p.gamemode === 3 ? undefined : coins;
+    if (!flag) {
 
-    madness.distortionScaleMultiplier = typeof madness.distortionScaleMultiplier === "number" && madness.distortionScaleMultiplier >= 0 ? madness.distortionScaleMultiplier : 1;
-    madness.playerDirectionDistortion = typeof madness.playerDirectionDistortion === "number" && madness.playerDirectionDistortion >= 0 && madness.playerDirectionDistortion <= 1 ? madness.playerDirectionDistortion : 0.05;
-    madness.distortionLoop = typeof madness.distortionLoop === "number" && madness.distortionLoop >= 0 ? Math.floor(madness.distortionLoop) : 15;
-    madness.cap = typeof madness.cap === "number" && madness.cap > 0 && madness.cap <= 1 ? madness.cap : 0.25;
-    madness.minRangeMovesBeforeDistortion = typeof madness.minRangeMovesBeforeDistortion === "number" && madness.minRangeMovesBeforeDistortion >= 0 ? Math.floor(madness.minRangeMovesBeforeDistortion) : 10;
-    madness.loss = typeof madness.loss === "number" && Math.sign(madness.loss) === -1 && Math.abs(madness.loss) > 0 && Math.abs(madness.loss) <= 1 ? madness.loss : -0.025;
-    madness.gain = typeof madness.gain === "number" && madness.gain > 0 && madness.gain <= 1 ? madness.gain : 0.005;
-    mCoins.true.madnessMultiplier = typeof mCoins.true.madnessMultiplier === "number" && mCoins.true.madnessMultiplier >= 0 && mCoins.true.madnessMultiplier < 1 ? mCoins.true.madnessMultiplier : 0.4;
-    mCoins.false.madnessMultiplier = typeof mCoins.false.madnessMultiplier === "number" && mCoins.false.madnessMultiplier >= mCoins.true.madnessMultiplier && mCoins.false.madnessMultiplier >= 0 && mCoins.false.madnessMultiplier < 1 ? mCoins.false.madnessMultiplier : 0.6;
-    m.bannedTilesFromRandomizing = Array.isArray(m.bannedTilesFromRandomizing) ? m.bannedTilesFromRandomizing.filter(v=>v.length===2) : [];
+      p.position = typeof p.position === "boolean" || typeof p.position !== "undefined" && Array.isArray(p.position) && typeof p.position.reduce((a,b) => a+b) === "number" && p.position.length === 2 ? p.position : true; 
+      p.moves = typeof p.moves === "number" && p.moves > 0 ? Math.floor(p.moves) : 1; 
+      p.gamemode = typeof p.gamemode === "number" && p.gamemode > 0 ? Math.floor(p.gamemode) : 0; 
+      vision.initialRange =  typeof p.vision !== "undefined" && typeof vision.initialRange === "number" && vision.initialRange > 0 ? Math.floor(vision.initialRange) : 5; 
+      vision.range = vision.initialRange;
+      vision.tokensPerRangeLoss = typeof vision.tokensPerRangeLoss === "number" && vision.tokensPerRangeLoss > 0 ? Math.floor(vision.tokensPerRangeLoss) : 7; 
+      vision.minRange = typeof vision.minRange === "number" && vision.minRange >= 1 && vision.minRange <= vision.maxRange ? Math.floor(vision.minRange) : 2; 
+      vision.maxRange = typeof vision.maxRange === "number" && vision.maxRange >= 1 && vision.maxRange >= vision.minRange ? Math.floor(vision.maxRange) : initialRange + 2;
+        
+      coins.true.quantity = typeof coins.true.quantity === "number" & coins.true.quantity >= 1 ? Math.floor(coins.true.quantity) : 10;
+      coins.false.quantity = typeof coins.false.quantity === "number" && coins.false.quantity >= 0 ? Math.floor(coins.false.quantity) : 10;
+      coins.true.tokenRewards.base = typeof coins.true.tokenRewards.base === "number" || typeof coins.true.tokenRewards.base === "string" ? coins.true.tokenRewards.base : "*1.8";
+      coins.false.tokenRewards.base = typeof coins.false.tokenRewards.base === "number" || typeof coins.false.tokenRewards.base === "string" ? coins.false.tokenRewards.base : "*1.2";
+      coins.true.tokenRewards.random.added = Array.isArray(coins.true.tokenRewards.random.added) && coins.true.tokenRewards.random.added.length === 2 ? coins.true.tokenRewards.random.added : [4,"*1.3"];
+      coins.false.tokenRewards.random.added = Array.isArray(coins.false.tokenRewards.random.added) && coins.false.tokenRewards.random.added.length === 2 ? coins.false.tokenRewards.random.added : [0,"*0.7"];
+      coins.true.tokenRewards.random.removed = Array.isArray(coins.true.tokenRewards.random.removed) && coins.true.tokenRewards.random.removed.length === 2 ? coins.true.tokenRewards.random.removed : [3,"*0.8"];
+      coins.false.tokenRewards.random.removed = Array.isArray(coins.false.tokenRewards.random.removed) && coins.false.tokenRewards.random.removed.length === 2 ? coins.false.tokenRewards.random.removed : [0, "*0.3"];
+
+      madness.distortionScaleMultiplier = typeof madness.distortionScaleMultiplier === "number" && madness.distortionScaleMultiplier >= 0 ? madness.distortionScaleMultiplier : 1;
+      madness.playerDirectionDistortion = typeof madness.playerDirectionDistortion === "number" && madness.playerDirectionDistortion >= 0 && madness.playerDirectionDistortion <= 1 ? madness.playerDirectionDistortion : 0.05;
+      madness.distortionLoop = typeof madness.distortionLoop === "number" && madness.distortionLoop >= 0 ? Math.floor(madness.distortionLoop) : 15;
+      madness.cap = typeof madness.cap === "number" && madness.cap > 0 && madness.cap <= 1 ? madness.cap : 0.25;
+      madness.minRangeMovesBeforeDistortion = typeof madness.minRangeMovesBeforeDistortion === "number" && madness.minRangeMovesBeforeDistortion >= 0 ? Math.floor(madness.minRangeMovesBeforeDistortion) : 10;
+      madness.loss = typeof madness.loss === "number" && Math.sign(madness.loss) === -1 && Math.abs(madness.loss) > 0 && Math.abs(madness.loss) <= 1 ? madness.loss : -0.025;
+      madness.gain = typeof madness.gain === "number" && madness.gain > 0 && madness.gain <= 1 ? madness.gain : 0.005;
+      mCoins.true.madnessMultiplier = typeof mCoins.true.madnessMultiplier === "number" && mCoins.true.madnessMultiplier >= 0 && mCoins.true.madnessMultiplier < 1 ? mCoins.true.madnessMultiplier : 0.4;
+      mCoins.false.madnessMultiplier = typeof mCoins.false.madnessMultiplier === "number" && mCoins.false.madnessMultiplier >= mCoins.true.madnessMultiplier && mCoins.false.madnessMultiplier >= 0 && mCoins.false.madnessMultiplier < 1 ? mCoins.false.madnessMultiplier : 0.6;
+      m.bannedTilesFromRandomizing = Array.isArray(m.bannedTilesFromRandomizing) ? m.bannedTilesFromRandomizing.filter(v=>v.length===2) : [];
+
+      coins = p.gamemode === 3 ? undefined : coins;
+
+      let tR = typeof coins !== "undefined" ? coins.true.tokenRewards : undefined; let fR = typeof coins !== "undefined" ? coins.false.tokenRewards : undefined; let l = vision.tokensPerRangeLoss;
+
+      tR.base = typeof tR.base == "string" ? this.stringReward(tR.base,l) : tR.base;
+      tR.random.added[0] = typeof tR.random.added[0] == "string" ? this.stringReward(tR.random.added[0],l) : tR.random.added[0];
+      tR.random.added[1] = typeof tR.random.added[1] == "string" ? this.stringReward(tR.random.added[1],l) : tR.random.added[1];
+      tR.random.removed[0] = typeof tR.random.removed[0] == "string" ? this.stringReward(tR.random.removed[0],l) : tR.random.removed[0];
+      tR.random.removed[1] = typeof tR.random.removed[1] == "string" ? this.stringReward(tR.random.removed[1],l) : tR.random.removed[1];
+      fR.base = typeof fR.base == "string" ? this.stringReward(fR.base,l) : fR.base;
+      fR.random.added[0] = typeof fR.random.added[0] == "string" ? this.stringReward(fR.random.added[0],l) : fR.random.added[0];
+      fR.random.added[1] = typeof fR.random.added[1] == "string" ? this.stringReward(fR.random.added[1],l) : fR.random.added[1];
+      fR.random.removed[0] = typeof fR.random.removed[0] == "string" ? this.stringReward(fR.random.removed[0],l) : fR.random.removed[0];
+      fR.random.removed[1] = typeof fR.random.removed[1] == "string" ? this.stringReward(fR.random.removed[1],l) : fR.random.removed[1];
+
+    }
+
+    if (debug) {this.debug = {state:true,registry:[],keys:[]}}
 
     // if all these variables are defined or if the gamemode == 3 (editor) and map.grid and map.meta is defined
     if (typeof m.grid !== "undefined" && typeof m.meta !== "undefined" && p.gamemode !== 3 || typeof m.grid !== "undefined" && typeof m.meta !== "undefined" && p.gamemode === 3) {
 
-      if (debug) {this.debug = {state:true,registry:[],keys:[]}}
-
-      // if coins are defined assigning to two variables the truecoins and the falsecoins token rewards
-      let tR = typeof coins !== "undefined" ? coins.true.tokenRewards : undefined; let fR = typeof coins !== "undefined" ? coins.false.tokenRewards : undefined;
-
-      // if coins is defined (if gamemode !== 3 (editor))
-      if (tR && fR) {
-
-      	let l = vision.tokensPerRangeLoss;
-
-        // checking if each of the tokenrewards values is a string, if yes passing its value to the stringReward function that can calculate the token reward
-        tR.base = typeof tR.base == "string" ? this.stringReward(tR.base,l) : tR.base;
-        tR.random.added[0] = typeof tR.random.added[0] == "string" ? this.stringReward(tR.random.added[0],l) : tR.random.added[0];
-        tR.random.added[1] = typeof tR.random.added[1] == "string" ? this.stringReward(tR.random.added[1],l) : tR.random.added[1];
-        tR.random.removed[0] = typeof tR.random.removed[0] == "string" ? this.stringReward(tR.random.removed[0],l) : tR.random.removed[0];
-        tR.random.removed[1] = typeof tR.random.removed[1] == "string" ? this.stringReward(tR.random.removed[1],l) : tR.random.removed[1];
-        fR.base = typeof fR.base == "string" ? this.stringReward(fR.base,l) : fR.base;
-        fR.random.added[0] = typeof fR.random.added[0] == "string" ? this.stringReward(fR.random.added[0],l) : fR.random.added[0];
-        fR.random.added[1] = typeof fR.random.added[1] == "string" ? this.stringReward(fR.random.added[1],l) : fR.random.added[1];
-        fR.random.removed[0] = typeof fR.random.removed[0] == "string" ? this.stringReward(fR.random.removed[0],l) : fR.random.removed[0];
-        fR.random.removed[1] = typeof fR.random.removed[1] == "string" ? this.stringReward(fR.random.removed[1],l) : fR.random.removed[1];
-
-      }
-
       // updating data
       this.data = {map:m,player:p};
-
-      // if initialRange is defined, setting range the same value as initialRange
-      if (vision.initialRange) {this.data.player.vision.range = vision.initialRange}
-      
       // adding a register
       this.registry = {};
       // creating a the game element (table)
@@ -104,7 +97,7 @@ class gameInstance {
 
       if (this.debug.registry.length > maxRegisterLength) {
 
-      	this.debug.registry.shift();
+          this.debug.registry.shift();
 
       }
 
@@ -116,7 +109,7 @@ class gameInstance {
 
       else if (state == "end") {
 
-      	let registerIndex = this.debug.registry.map(v=>v.key==debugKey).indexOf(true); let keyIndex = this.debug.keys.indexOf(debugKey);
+          let registerIndex = this.debug.registry.map(v=>v.key==debugKey).indexOf(true); let keyIndex = this.debug.keys.indexOf(debugKey);
 
         this.debug.registry[registerIndex].states[state] = new Date().toISOString();
         delete this.debug.registry[registerIndex].key;
@@ -148,7 +141,7 @@ class gameInstance {
       // a[1] is the one that contains at the start (slice(0,1)) the "+"" or the "-" and if so it's added to the a[0] number
       a[1] = a[1] && a[1].slice(0,1) == "+" || a[1] && a[1].slice(0,1) == "-" ? a[0] + Number(a[1]) : undefined;
 
-      !this.debug.state ? false : this.debugRegister("stringReward",[],"end",debugKey);
+      typeof this.debug !== "undefined" && this.debug.state ? false : this.debugRegister("stringReward",[],"end",debugKey);
 
       // if a[1] is defined then the function returns it, if not it's returned the a[0] number
       return !a[1] ? a[0] : a[1];
@@ -169,7 +162,7 @@ class gameInstance {
     // all the tile classes/types
     let tT = {0:"air",1:"wall",2:"coin",3:"door",4:"player",5:"coin"};
     // returning the tyle type string
-    if (!isNaN(typeId)) {!this.debug.state ? false : this.debugRegister("tileClass",[],"end",debugKey);return String(tT[typeId])}
+    if (!isNaN(typeId)) {typeof this.debug !== "undefined" && this.debug.state ? false : this.debugRegister("tileClass",[],"end",debugKey);return String(tT[typeId])}
 
   }
 
@@ -197,7 +190,7 @@ class gameInstance {
 
     }
 
-    !this.debug.state ? false : this.debugRegister("createMap",[],"end",debugKey);
+    typeof this.debug !== "undefined" && this.debug.state ? false : this.debugRegister("createMap",[],"end",debugKey);
 
   }
 
@@ -262,7 +255,7 @@ class gameInstance {
 
     }
 
-    !this.debug.state ? false : this.debugRegister("registerMap",[],"end",debugKey);
+    typeof this.debug !== "undefined" && this.debug.state ? false : this.debugRegister("registerMap",[],"end",debugKey);
 
   }
 
@@ -287,7 +280,7 @@ class gameInstance {
     // adding to the querySelector[selectedSlot] the .selected class
     D.qSA(".hud td")[this.data.player.hud.inventory.selectedSlot].classList.add("selected");
 
-    !this.debug.state ? false : this.debugRegister("updateSelectedSlot",[],"end",debugKey);
+    typeof this.debug !== "undefined" && this.debug.state ? false : this.debugRegister("updateSelectedSlot",[],"end",debugKey);
 
   }
 
@@ -314,7 +307,7 @@ class gameInstance {
 
     }
 
-    !this.debug.state ? false : this.debugRegister("registerCoins",[],"end",debugKey);
+    typeof this.debug !== "undefined" && this.debug.state ? false : this.debugRegister("registerCoins",[],"end",debugKey);
 
   }
 
@@ -342,7 +335,7 @@ class gameInstance {
 
     }
 
-    !this.debug.state ? false : this.debugRegister("registerDoor",[],"end",debugKey);
+    typeof this.debug !== "undefined" && this.debug.state ? false : this.debugRegister("registerDoor",[],"end",debugKey);
 
   }
 
@@ -367,7 +360,7 @@ class gameInstance {
 
     }
 
-    !this.debug.state ? false : this.debugRegister("registerTile",[],"end",debugKey);
+    typeof this.debug !== "undefined" && this.debug.state ? false : this.debugRegister("registerTile",[],"end",debugKey);
 
   }
 
@@ -390,7 +383,7 @@ class gameInstance {
 
     }
 
-    !this.debug.state ? false : this.debugRegister("tileUpdateDisplay",[],"end",debugKey);
+    typeof this.debug !== "undefined" && this.debug.state ? false : this.debugRegister("tileUpdateDisplay",[],"end",debugKey);
 
   }
 
@@ -425,7 +418,7 @@ class gameInstance {
 
     }
 
-    !this.debug.state ? false : this.debugRegister("tileClear",[],"end",debugKey);
+    typeof this.debug !== "undefined" && this.debug.state ? false : this.debugRegister("tileClear",[],"end",debugKey);
 
   }
 
@@ -468,7 +461,7 @@ class gameInstance {
 
     }
 
-    !this.debug.state ? false : this.debugRegister("mapRender",[],"end",debugKey);
+    typeof this.debug !== "undefined" && this.debug.state ? false : this.debugRegister("mapRender",[],"end",debugKey);
 
   }
 
@@ -520,7 +513,7 @@ class gameInstance {
 
     }
 
-    !this.debug.state ? false : this.debugRegister("playerSight",[],"end",debugKey);
+    typeof this.debug !== "undefined" && this.debug.state ? false : this.debugRegister("playerSight",[],"end",debugKey);
 
   }
 
@@ -537,7 +530,7 @@ class gameInstance {
     let r = this.data.player.vision.range;
 
     // creating an array of all the relative coordinated to the player (based on the player range of sight) (ex. range = 5; returned array [-5,-4,-3,-2,-1,0,+1,+2,+3,+4,+5])
-    if (r && !isNaN(r)) {let n = -r; let range = []; for (let i=0;i<(r*2)+1;i++) {range.push(n); n += 1} !this.debug.state ? false : this.debugRegister("sightRange",[],"end",debugKey); return range}
+    if (r && !isNaN(r)) {let n = -r; let range = []; for (let i=0;i<(r*2)+1;i++) {range.push(n); n += 1} typeof this.debug !== "undefined" && this.debug.state ? false : this.debugRegister("sightRange",[],"end",debugKey); return range}
 
   }
 
@@ -562,7 +555,7 @@ class gameInstance {
       // creating an array of the current radius of sight
       for (let i=0;i<ra.length;i++) {for (let I=0;I<ra.length;I++) {let X = I; let Y = i; let f = true; f = X==0&&Y==0||X==r*2&&Y==0||X==0&&Y==r*2||X==r*2&&Y==r*2||X==r&&Y==r ? false : true; if (f) {let n1 = x+ra[I]>=0&&x+ra[I]<g[0] ? x+ra[I]:false; let n2 = y+ra[i]>=0&&y+ra[i]<g[1] ? y+ra[i]:false; if (typeof n1=="number"&&typeof n2=="number") {sight.push([n1,n2])}}}}
 
-      !this.debug.state ? false : this.debugRegister("sightRadius",[],"end",debugKey);
+      typeof this.debug !== "undefined" && this.debug.state ? false : this.debugRegister("sightRadius",[],"end",debugKey);
 
       return sight
 
@@ -620,7 +613,7 @@ class gameInstance {
 
     }
 
-    !this.debug.state ? false : this.debugRegister("playerMove",[],"end",debugKey);
+    typeof this.debug !== "undefined" && this.debug.state ? false : this.debugRegister("playerMove",[],"end",debugKey);
 
   }
 
@@ -697,7 +690,7 @@ class gameInstance {
     // setting the range to ceil(tokens / tokensPerRangeLoss), if the result is smaller than the minRange setting the range to the minRange automatically
     this.data.player.vision.range = Math.ceil(this.data.player.vision.tokens / this.data.player.vision.tokensPerRangeLoss) >= this.data.player.vision.minRange ? Math.ceil(this.data.player.vision.tokens / this.data.player.vision.tokensPerRangeLoss) : this.data.player.vision.minRange;
 
-    !this.debug.state ? false : this.debugRegister("tileEvents",[],"end",debugKey);
+    typeof this.debug !== "undefined" && this.debug.state ? false : this.debugRegister("tileEvents",[],"end",debugKey);
 
   }
 
