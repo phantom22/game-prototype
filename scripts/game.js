@@ -2,53 +2,54 @@ const T = TOOL;
 
 class gameInstance {
 
-  constructor(player = {position,moves,vision,gamemode}, map = {grid,meta}, debug) {
+  constructor(player = {position,moves,vision,gamemode}, map = {grid,meta,coins,madness}, debug) {
 
-    // assigning almost every value to a variable, flag is set to true if gamemode == 3 (editor)
-    let pl = player; let p = pl.position; let mv = pl.moves; let v = pl.vision; let gm = pl.gamemode; let md = map.madness; let b = map.bannedTilesFromRandomizing; let g = map.grid; let m = map.meta; let r = v ? v.initialRange : undefined; let Mr = v ? v.maxRange : undefined; let mr = v ? v.minRange : undefined; let l = v ? v.tokensPerRangeLoss : undefined; let c = map.coins; let f = gm == 3 ? true : undefined;
+    let p = player; let vision = p.vision; let m = map; let coins = m.coins; let madness = m.madness; let mCoins = madness.coins; let flag = p.gamemode === 3 ? true : false;
 
-    // if truecoins quantity and all the rewards, base and randomized, are defined. if not then the coins object becomes undefined
-    c = c && c.true.quantity && c.true.tokenRewards.base && c.true.tokenRewards.random.added && c.true.tokenRewards.random.removed ? c : undefined; 
-    // if falsecoins quantity and all the rewards, base and randomized, are defined. if not then the coins object becomes undefined
-    c = c && c.false.quantity && c.false.tokenRewards.base && c.false.tokenRewards.random.added && c.false.tokenRewards.random.removed ? c : undefined;
-    // if madness playerDirectionDistorsion, distortionLoop, cap, minRangeMovesBeforeDistortion, loss, gain and the true and false coins madnessMultipliers are defined numbers
-    md = md && !isNaN(md.distortionScaleMultiplier + md.playerDirectionDistorsion + md.distortionLoop + md.cap + md.minRangeMovesBeforeDistortion + md.loss + md.gain + md.coins.true.madnessMultiplier + md.coins.false.madnessMultiplier) ? md : undefined;
-    // if bannedTilesFromRandomizing is defined and it's an array. if not setting bannedTilesFromRandomizing to empty array
-    b = b && Array.isArray(b) ? b : []; 
-    // if grid is an array of numbers. if not but it's a number creating array of two equal numbers
-    g = g && !Array.isArray(g) && !isNaN(g) ? [g,g] : g;
-    g = g && Array.isArray(g) && !isNaN(g.reduce((a,b)=>a+b)) ? g : undefined;
-    // if map is a string, which if splitted has the same length as the grid resolution (g[0]*g[1]), splitting the string into an array and checking if it's an array of numbers
-    m = m && m.split("").length == g[0]*g[1] ? m.split("").map(v=>Number(v)) : undefined;
-    // if player.position is defined as an array of coordinates or is set to true to be randomized instead. if not it's set to false (required for the gamemode == 3 (editor))
-    p = Array.isArray(p) && !isNaN(p.reduce((a,b)=>a+b)) || typeof p == "boolean" ? p : false;
-    // if initialRange is a number. if not setting to undefined
-    r = !isNaN(r) ? r : undefined;
-    // if maxRange is defined and it's equal or higher than the initialRange numnber. if not setting the maxRange number as initialRange + 2
-    Mr = Mr && Mr >= r ? Mr : r + 2;
-    // if minRange is defined and it's equal or smaller than the initialRange number. if not setting the minRange number to 2
-    mr = mr && mr <= r && mr >= 2 ? mr : 2;
-    // if tokensPerRangeLoss is a number. if not setting tokensPerRangeLoss to undefined
-    l = !isNaN(l) ? l : undefined;
-    // if player.moves is a number. if not setting player.moves to 1
-    mv = mv && !isNaN(mv) ? mv : 1;
-    // if player.gamemode is a number. if not setting player.gamemode to 0 (normal difficulty)
-    gm = !isNaN(gm) ? gm : 0;
+    p.position = typeof p.position === "boolean" || typeof p.position !== "undefined" && Array.isArray(p.position) && typeof p.position.reduce((a,b) => a+b) === "number" && p.position.length === 2 ? p.position : true; 
+    p.moves = typeof p.moves === "number" && p.moves > 0 ? Math.floor(p.moves) : 1; 
+    p.gamemode = typeof p.gamemode === "number" && p.gamemode > 0 ? Math.floor(p.gamemode) : 0; 
+    vision.initialRange = typeof vision.initialRange === "number" && vision.initialRange > 0 ? Math.floor(vision.initialRange) : 5; 
+    vision.tokensPerRangeLoss = typeof vision.tokensPerRangeLoss === "number" && vision.tokensPerRangeLoss > 0 ? Math.floor(vision.tokensPerRangeLoss) : 7; 
+    vision.minRange = typeof vision.minRange === "number" && vision.minRange >= 1 && vision.minRange <= vision.maxRange ? Math.floor(vision.minRange) : 2; 
+    vision.maxRange = typeof vision.maxRange === "number" && vision.maxRange >= 1 && vision.maxRange >= vision.minRange ? Math.floor(vision.maxRange) : initialRange + 2;
+    m.grid = typeof m.grid !== "undefined" && Array.isArray(m.grid) && typeof m.grid.reduce((a,b) => a+b) === "number" && m.grid.length === 2 ? m.grid : undefined; 
+    m.meta = typeof m.meta === "string" && m.meta.split("").length === m.grid[0] * m.grid[1] ? m.meta.split("").map(v=>Number(v)) : undefined;
+    
+    coins.true.quantity = typeof coins.true.quantity === "number" & coins.true.quantity >= 1 ? Math.floor(coins.true.quantity) : 10;
+    coins.false.quantity = typeof coins.false.quantity === "number" && coins.false.quantity >= 0 ? Math.floor(coins.false.quantity) : 10;
+    coins.true.tokenRewards.base = typeof coins.true.tokenRewards.base === "number" || typeof coins.true.tokenRewards.base === "string" ? coins.true.tokenRewards.base : "*1.8";
+    coins.false.tokenRewards.base = typeof coins.false.tokenRewards.base === "number" || typeof coins.false.tokenRewards.base === "string" ? coins.false.tokenRewards.base : "*1.2";
+    coins.true.tokenRewards.random.added = Array.isArray(coins.true.tokenRewards.random.added) && coins.true.tokenRewards.random.added.length === 2 ? coins.true.tokenRewards.random.added : [4,"*1.3"];
+    coins.false.tokenRewards.random.added = Array.isArray(coins.false.tokenRewards.random.added) && coins.false.tokenRewards.random.added.length === 2 ? coins.false.tokenRewards.random.added : [0,"*0.7"];
+    coins.true.tokenRewards.random.removed = Array.isArray(coins.true.tokenRewards.random.removed) && coins.true.tokenRewards.random.removed.length === 2 ? coins.true.tokenRewards.random.removed : [3,"*0.8"];
+    coins.false.tokenRewards.random.removed = Array.isArray(coins.false.tokenRewards.random.removed) && coins.false.tokenRewards.random.removed.length === 2 ? coins.false.tokenRewards.random.removed : [0, "*0.3"];
+
+    coins = p.gamemode === 3 ? undefined : coins;
+
+    madness.distortionScaleMultiplier = typeof madness.distortionScaleMultiplier === "number" && madness.distortionScaleMultiplier >= 0 ? madness.distortionScaleMultiplier : 1;
+    madness.playerDirectionDistortion = typeof madness.playerDirectionDistortion === "number" && madness.playerDirectionDistortion >= 0 && madness.playerDirectionDistortion <= 1 ? madness.playerDirectionDistortion : 0.05;
+    madness.distortionLoop = typeof madness.distortionLoop === "number" && madness.distortionLoop >= 0 ? Math.floor(madness.distortionLoop) : 15;
+    madness.cap = typeof madness.cap === "number" && madness.cap > 0 && madness.cap <= 1 ? madness.cap : 0.25;
+    madness.minRangeMovesBeforeDistortion = typeof madness.minRangeMovesBeforeDistortion === "number" && madness.minRangeMovesBeforeDistortion >= 0 ? Math.floor(madness.minRangeMovesBeforeDistortion) : 10;
+    madness.loss = typeof madness.loss === "number" && Math.sign(madness.loss) === -1 && Math.abs(madness.loss) > 0 && Math.abs(madness.loss) <= 1 ? madness.loss : -0.025;
+    madness.gain = typeof madness.gain === "number" && madness.gain > 0 && madness.gain <= 1 ? madness.gain : 0.005;
+    mCoins.true.madnessMultiplier = typeof mCoins.true.madnessMultiplier === "number" && mCoins.true.madnessMultiplier >= 0 && mCoins.true.madnessMultiplier < 1 ? mCoins.true.madnessMultiplier : 0.4;
+    mCoins.false.madnessMultiplier = typeof mCoins.false.madnessMultiplier === "number" && mCoins.false.madnessMultiplier >= mCoins.true.madnessMultiplier && mCoins.false.madnessMultiplier >= 0 && mCoins.false.madnessMultiplier < 1 ? mCoins.false.madnessMultiplier : 0.6;
+    m.bannedTilesFromRandomizing = Array.isArray(m.bannedTilesFromRandomizing) ? m.bannedTilesFromRandomizing.filter(v=>v.length===2) : [];
 
     // if all these variables are defined or if the gamemode == 3 (editor) and map.grid and map.meta is defined
-    if (g && !isNaN(m.reduce((a,b)=>a+b)) && typeof p !== "undefined" && mv && !isNaN(r) && !isNaN(l) && typeof gm !== "undefined" && c && b && md || gm == 3 && g && !isNaN(m.reduce((a,b)=>a+b))) {
+    if (typeof m.grid !== "undefined" && typeof m.meta !== "undefined" && p.gamemode !== 3 || typeof m.grid !== "undefined" && typeof m.meta !== "undefined" && p.gamemode === 3) {
 
-      if (debug) {
-
-    this.debug = {state:true,registry:[],keys:[]};
-
-      }
+      if (debug) {this.debug = {state:true,registry:[],keys:[]}}
 
       // if coins are defined assigning to two variables the truecoins and the falsecoins token rewards
-      let tR = c ? c.true.tokenRewards : undefined; let fR = c ? c.false.tokenRewards : undefined;
+      let tR = typeof coins !== "undefined" ? coins.true.tokenRewards : undefined; let fR = typeof coins !== "undefined" ? coins.false.tokenRewards : undefined;
 
       // if coins is defined (if gamemode !== 3 (editor))
-      if (c) {
+      if (tR && fR) {
+
+      	let l = vision.tokensPerRangeLoss;
 
         // checking if each of the tokenrewards values is a string, if yes passing its value to the stringReward function that can calculate the token reward
         tR.base = typeof tR.base == "string" ? this.stringReward(tR.base,l) : tR.base;
@@ -65,19 +66,19 @@ class gameInstance {
       }
 
       // updating data
-      this.data = {map:map,player:pl};
+      this.data = {map:m,player:p};
 
       // if initialRange is defined, setting range the same value as initialRange
-      if (r) {this.data.player.vision.range = r}
+      if (vision.initialRange) {this.data.player.vision.range = vision.initialRange}
       
       // adding a register
       this.registry = {};
       // creating a the game element (table)
       this.createMap();
       // updating register, based on the map.meta which contains all the tile ids
-      this.registerMap(f);
+      this.registerMap(flag);
       // appending the map and the hud to the page, randomizing player position and coins position
-      this.mapRender(f);
+      this.mapRender(flag);
 
     }
 
@@ -579,16 +580,16 @@ class gameInstance {
     }
 
     // getting the tile coordinates
-    let p = this.data.player; let mv = p.moves; let x = e.dataset.x; let y = e.dataset.y;
+    let p = this.data.player; let moves = p.moves; let x = e.dataset.x; let y = e.dataset.y;
 
     // if moves is defined, e is an element and the registry[querySelector].id !== 1 (is not a wall)
-    if (mv && e && e instanceof HTMLElement && this.registry[`${x}-${y}`].id !== 1) {
+    if (moves && e && e instanceof HTMLElement && this.registry[`${x}-${y}`].id !== 1) {
 
       // setting new coordinates and old coordinaties
       let nX = e.dataset.x; let nY = e.dataset.y; let oX = p.position[0]; let oY = p.position[1];
 
       // checking if the movement is done only on one axis, x or y and if the player.moves are set to 1 then it's not possible to move on the z axis
-      if (Math.abs(nX - oX) <= mv && Math.abs(nY - oY) <= mv && Math.abs(nX - oX) + Math.abs(nY - oY) <= mv) {
+      if (Math.abs(nX - oX) <= moves && Math.abs(nY - oY) <= moves && Math.abs(nX - oX) + Math.abs(nY - oY) <= moves) {
 
         // check if last tile is a door
         let id = `${oX}-${oY}` == this.data.map.door.join("-") ? 3 : 0;
@@ -668,7 +669,7 @@ class gameInstance {
       // adding the .maddness class to the table, this class links to the noise filter
       this.data.map.element.classList.add("madness");
       let feTurbolence = document.querySelector("feTurbulence"); let feDisplacementMap = document.querySelector("feDisplacementMap");
-      let baseFrequency = `${this.data.player.direction == "x" ? this.data.map.madness.playerDirectionDistorsion : this.data.player.madness.quantity} ${this.data.player.direction == "y" ? this.data.map.madness.playerDirectionDistorsion : this.data.player.madness.quantity}`;
+      let baseFrequency = `${this.data.player.direction == "x" ? this.data.map.madness.playerDirectionDistortion : this.data.player.madness.quantity} ${this.data.player.direction == "y" ? this.data.map.madness.playerDirectionDistortion : this.data.player.madness.quantity}`;
       let scale = Math.ceil(Number(this.data.player.madness.quantity.toFixed(2)) * Math.ceil(this.data.map.madness.distortionScaleMultiplier * 100));
       // setting the distortion frequency
       feTurbolence.setAttribute("baseFrequency",baseFrequency);
