@@ -2,7 +2,7 @@ const T = TOOL;
 
 class gameInstance { 
 
-  constructor( player = { position, moveDistance, vision, gamemode },  map = { grid, meta, coins, madness },  debug ) { 
+  constructor( player = { position, moveDistance, vision, gamemode }, map = { grid, meta, coins, madness }, debug = { state, maxRegistryLength } ) { 
 
     let p = player,
     vision = typeof p.vision !== "undefined" ? p.vision : void 0,
@@ -11,10 +11,14 @@ class gameInstance {
     mCoins = typeof map.madness !== "undefined" ? madness.coins : void 0,
     flag = p.gamemode === 3 ? true : false,
     trueCoinsTokenRewards,
-    falseCoinsTokenRewards;
+    falseCoinsTokenRewards,
+    state = typeof debug !== "undefined" ? debug.state : false,
+    maxRegistryLength = typeof debug !== "undefined" && typeof map.grid !== "undefined" && debug.maxRegistryLength > ( map.grid[0] * map.grid[1] ) ? debug.maxRegistryLength : ( ( map.grid[0] * map.grid[1] ) * 2 );
 
     map.grid = typeof map.grid !== "undefined" && Array.isArray( map.grid ) && typeof map.grid.reduce( ( a, b )  =>  a + b ) === "number" && map.grid.length === 2 ? map.grid : void 0;
     map.meta = typeof map.meta === "string" && map.meta.split( "" ).length === map.grid[0] * map.grid[1] ? map.meta.split( "" ).map( v => Number( v ) ) :  void 0;
+
+    this.debug = typeof state !== "undefined" && state === true ? { state: state, registry: [], keys: [], maxRegistryLength: maxRegistryLength } : void 0;
 
     if ( !flag ) {
 
@@ -64,8 +68,6 @@ class gameInstance {
 
     }
 
-    if ( debug ) { this.debug = { state: true, registry: [], keys: [] } }
-
     if ( typeof map.grid !== "undefined" && typeof map.meta !== "undefined" && p.gamemode !== 3 || typeof map.grid !== "undefined" && typeof map.meta !== "undefined" && p.gamemode === 3 ) {
 
       this.data = { map: map, player: p };
@@ -81,44 +83,44 @@ class gameInstance {
   debugKeyGen() {
 
     let M = T.Math,
-    n = M.R( 1000000, 10000000 );
+    key = M.R( 1000000, 10000000 );
 
-    while ( this.debug.keys.includes( n ) ) { n = M.R( 1000000, 10000000 ) }
-    this.debug.keys.push( n );
+    while ( this.debug.keys.includes( key ) ) { key = M.R( 1000000, 10000000 ) }
+    this.debug.keys.push( key );
 
-    return n
+    return key
 
   }
 
   debugRegister( string, args, state, debugKey ) {
 
     let supportedStates = ["start", "end"],
-    maxRegisterLength = 10000,
+    maxRegistryLength = this.debug.maxRegistryLength,
     registerIndex,
     keyIndex;
 
     if ( string && args && Array.isArray( args ) && state && supportedStates.includes( state ) && debugKey && !isNaN( debugKey ) ) {
 
-      if ( this.debug.registry.length > maxRegisterLength ) {
+      if ( this.debug.registry.length > maxRegistryLength ) {
 
         this.debug.registry.shift()
 
       }
 
-      if ( state === "start" ) {
+      if ( state == "start" ) {
 
-        this.debug.registry.push( { function: string, args: args, states: { [state]: new Date() .toISOString()  }, key: debugKey } )
+        this.debug.registry.push( { function: string, args: args, states: { [state]: new Date().toISOString() }, key: debugKey } )
 
       }
 
-      else if ( state === "end" ) {
+      else if ( state == "end" ) {
 
-        registerIndex = this.debug.registry.map( v => v.key === debugKey ).indexOf( true ); keyIndex = this.debug.keys.indexOf( debugKey );
+        registerIndex = this.debug.registry.map( v => v.key == debugKey ).indexOf( true ); keyIndex = this.debug.keys.indexOf( debugKey );
 
-        this.debug.registry[registerIndex].states[state] = new Date() .toISOString();
+        this.debug.registry[registerIndex].states[state] = new Date().toISOString();
         delete this.debug.registry[registerIndex].key;
 
-        this.debug.keys.splice( keyIndex,  this.debug.keys.length === 1 ? 1 :  keyIndex )
+        this.debug.keys.splice( keyIndex, this.debug.keys.length === 1 ? 1 : keyIndex )
 
       }
 
@@ -145,7 +147,7 @@ class gameInstance {
       array[0] = array[0].includes("*") && array[0].slice( 0, 1 ) === "*" ? Math.floor( tokensPerRangeLoss * Number( array[0].slice( 1 ) ) ) :  array[0];
       array[1] = array[1] && array[1].slice( 0, 1 ) === "+" || array[1] && array[1].slice( 0, 1 ) === "-" ? ( array[0] + Number( array[1] ) ) :  void 0;
 
-      typeof this.debug !== "undefined" && this.debug.state ? false :  this.debugRegister( "stringReward", [], "end", debugKey );
+      typeof debugKey === "undefined" ? false :  this.debugRegister( "stringReward", [], "end", debugKey );
 
       return !array[1] ? array[0] :  array[1];
 
@@ -167,7 +169,7 @@ class gameInstance {
 
     if ( !isNaN( typeId ) ) {
 
-    	typeof this.debug !== "undefined" && this.debug.state ? false :  this.debugRegister( "tileClass", [], "end", debugKey );
+    	typeof debugKey === "undefined" ? false :  this.debugRegister( "tileClass", [], "end", debugKey );
     	return String( tileType[typeId] )
 
     }
@@ -181,8 +183,8 @@ class gameInstance {
     map = this.data.map,
     tbl,
     tbd,
-    i,
-    I,
+    index,
+    Index,
     tr,
     td;
 
@@ -196,14 +198,31 @@ class gameInstance {
     if ( map.meta && !map.element ) {
 
       tbl = D.cE( "table" );  tbd = D.cE( "tbody" );
-      for ( i = 0; i < map.grid[1]; i++ ) { tr = D.cE( "tr" );  for ( I = 0; I < map.grid[0]; I++ ) { td = D.cE( "td" );  td.dataset.x = I;  td.dataset.y = i;  D.aC( td, tr ) } D.aC( tr, tbd ) }
+
+      for ( index = 0; index < map.grid[1]; index++ ) {
+
+      	tr = D.cE( "tr" );
+
+      	for ( Index = 0; Index < map.grid[0]; Index++ ) {
+
+      		td = D.cE( "td" );
+      		td.dataset.x = Index;
+      		td.dataset.y = index;
+      		D.aC( td, tr )
+
+      	}
+
+      	D.aC( tr, tbd )
+
+      }
+      
       D.aC( tbd, tbl );
 
       this.data.map.element = tbl;
 
     }
 
-    typeof this.debug !== "undefined" && this.debug.state ? false :  this.debugRegister( "createMap", [], "end", debugKey );
+    typeof debugKey === "undefined" ? false :  this.debugRegister( "createMap", [], "end", debugKey );
 
   }
 
@@ -214,13 +233,13 @@ class gameInstance {
     map = this.data.map,
     p = this.data.player,
     grid = map.grid,
-    i,
+    index,
     row,
     column,
     xy,
     registryKeys,
     airTiles,
-    n,
+    number,
     bannedTilesFromRandomizing;
 
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
@@ -232,10 +251,10 @@ class gameInstance {
 
     if ( map.meta && map.element instanceof HTMLElement ) {
 
-      for ( i = 0; i < map.meta.length; i++ ) {
+      for ( index = 0; index < map.meta.length; index++ ) {
 
-        row = i;  while ( row >= grid[0] ) { row = row - grid[0] };  column = Math.floor( i / grid[0] );
-        this.registerTile( [row, column], map.meta[i] )
+        row = index;  while ( row >= grid[0] ) { row = row - grid[0] };  column = Math.floor( index / grid[0] );
+        this.registerTile( [row, column], map.meta[index] )
 
       }
 
@@ -249,7 +268,7 @@ class gameInstance {
       else if ( p.position === true ) {
 
         registryKeys = Object.keys( this.registry );  bannedTilesFromRandomizing = this.data.map.bannedTilesFromRandomizing.map( v => `${ v[0] }-${ v[1] }` );
-        airTiles = registryKeys.filter( v => this.registry[v].id === 0 && !bannedTilesFromRandomizing.includes( v ) ); n = M.R( airTiles.length ); xy = airTiles[n].split( "-" ).map( v => Number( v ) );
+        airTiles = registryKeys.filter( v => this.registry[v].id === 0 && !bannedTilesFromRandomizing.includes( v ) ); number = M.R( airTiles.length ); xy = airTiles[number].split( "-" ).map( v => Number( v ) );
         this.data.player.position = xy;
         this.registerTile( xy, 4 )
 
@@ -265,7 +284,7 @@ class gameInstance {
 
     }
 
-    typeof this.debug !== "undefined" && this.debug.state ? false :  this.debugRegister( "registerMap", [], "end", debugKey );
+    typeof debugKey === "undefined" ? false :  this.debugRegister( "registerMap", [], "end", debugKey );
 
   }
 
@@ -288,7 +307,7 @@ class gameInstance {
     this.data.player.hud.inventory.selectedSlot = id && this.data.player.hud.inventory.selectedSlot > 0 ? this.data.player.hud.inventory.selectedSlot :  0;
     D.qSA( ".hud td" )[this.data.player.hud.inventory.selectedSlot].classList.add( "selected" );
 
-    typeof this.debug !== "undefined" && this.debug.state ? false :  this.debugRegister( "updateSelectedSlot", [], "end", debugKey )
+    typeof debugKey === "undefined" ? false :  this.debugRegister( "updateSelectedSlot", [], "end", debugKey )
 
   }
 
@@ -299,10 +318,10 @@ class gameInstance {
     trueCoins = this.data.map.coins.true.quantity,
     falseCoins = this.data.map.coins.false.quantity,
     bannedTilesFromRandomizing = this.data.map.bannedTilesFromRandomizing.map( v => `${ v[0] }-${ v[1] }` ),
-    i,
+    index,
     registry,
     airTiles,
-    n,
+    number,
     typeId;
 
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
@@ -312,16 +331,16 @@ class gameInstance {
 
     }
 
-    for ( i = 0; i < ( trueCoins + falseCoins ); i++ ) {
+    for ( index = 0; index < ( trueCoins + falseCoins ); index++ ) {
 
       registry = Object.keys( this.registry ); airTiles = registry.filter( v => this.registry[v].id === 0 && !bannedTilesFromRandomizing.includes( v ) );
-      n = M.R( airTiles.length ); typeId = i < trueCoins ? 2 : 5;
+      number = M.R( airTiles.length ); typeId = index < trueCoins ? 2 : 5;
 
-      this.registerTile( airTiles[n].split( "-" ), typeId )
+      this.registerTile( airTiles[number].split( "-" ), typeId )
 
     }
 
-    typeof this.debug !== "undefined" && this.debug.state ? false :  this.debugRegister( "registerCoins", [], "end", debugKey )
+    typeof debugKey === "undefined" ? false :  this.debugRegister( "registerCoins", [], "end", debugKey )
 
   }
 
@@ -332,7 +351,7 @@ class gameInstance {
     bannedTilesFromRandomizing = this.data.map.bannedTilesFromRandomizing.map( v => `${ v[0] }-${ v[1] }` ),
     registry,
     airTiles,
-    n;
+    number;
 
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
 
@@ -344,13 +363,13 @@ class gameInstance {
     if ( !this.data.map.door ) {
  
       registry = Object.keys( this.registry ); airTiles = registry.filter( v => this.registry[v].id === 0 && !bannedTilesFromRandomizing.includes( v ) );
-      n = M.R( airTiles.length );
-      this.data.map.door = airTiles[n].split( "-" ).map( v => Number( v ) );
+      number = M.R( airTiles.length );
+      this.data.map.door = airTiles[number].split( "-" ).map( v => Number( v ) );
       this.registerTile( this.data.map.door, 3 )
 
     }
 
-    typeof this.debug !== "undefined" && this.debug.state ? false :  this.debugRegister( "registerDoor", [], "end", debugKey )
+    typeof debugKey === "undefined" ? false :  this.debugRegister( "registerDoor", [], "end", debugKey )
 
   }
 
@@ -377,7 +396,7 @@ class gameInstance {
 
     }
 
-    typeof this.debug !== "undefined" && this.debug.state ? false :  this.debugRegister( "registerTile", [], "end", debugKey )
+    typeof debugKey === "undefined" ? false :  this.debugRegister( "registerTile", [], "end", debugKey )
 
   }
 
@@ -400,7 +419,7 @@ class gameInstance {
 
     }
 
-    typeof this.debug !== "undefined" && this.debug.state ? false :  this.debugRegister( "tileUpdateDisplay", [], "end", debugKey );
+    typeof debugKey === "undefined" ? false :  this.debugRegister( "tileUpdateDisplay", [], "end", debugKey );
 
   }
 
@@ -435,7 +454,7 @@ class gameInstance {
 
     }
 
-    typeof this.debug !== "undefined" && this.debug.state ? false :  this.debugRegister( "tileClear", [], "end", debugKey )
+    typeof debugKey === "undefined" ? false :  this.debugRegister( "tileClear", [], "end", debugKey )
 
   }
 
@@ -450,7 +469,7 @@ class gameInstance {
     div,
     tbl,
     tbd,
-    i,
+    index,
     tr,
     td;
 
@@ -473,7 +492,7 @@ class gameInstance {
         this.data.player.vision.tokens = p.vision.range * p.vision.tokensPerRangeLoss;
         
         slots = Number( Object.keys( this.data.player.hud.inventory.slots ).length ); div = D.cE( "div" ); div.className = "hud"; tbl = D.cE( "table" ); tbd = D.cE( "tbody" );
-        for ( i = 0; i < slots; i++ ) { tr = D.cE( "tr" ); td = D.cE( "td" ); td.dataset.id = i; D.aC( td, tr ); D.aC( tr, tbd ) }
+        for ( index = 0; index < slots; index++ ) { tr = D.cE( "tr" ); td = D.cE( "td" ); td.dataset.id = index; D.aC( td, tr ); D.aC( tr, tbd ) }
         D.aC( tbd, tbl ); D.aC( tbl, div ); D.aC( div );
 
         this.updateSelectedSlot()
@@ -493,7 +512,7 @@ class gameInstance {
 
     }
 
-    typeof this.debug !== "undefined" && this.debug.state ? false :  this.debugRegister( "mapRender", [], "end", debugKey )
+    typeof debugKey === "undefined" ? false :  this.debugRegister( "mapRender", [], "end", debugKey )
 
   }
 
@@ -543,7 +562,7 @@ class gameInstance {
 
     }
 
-    typeof this.debug !== "undefined" && this.debug.state ? false :  this.debugRegister( "playerSight", [], "end", debugKey )
+    typeof debugKey === "undefined" ? false :  this.debugRegister( "playerSight", [], "end", debugKey )
 
   }
 
@@ -551,8 +570,8 @@ class gameInstance {
 
     let debugKey,
     range = this.data.player.vision.range,
-    i,
-    n = ( -range ),
+    index,
+    number = ( -range ),
     sightRange = [];
 
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
@@ -564,14 +583,14 @@ class gameInstance {
 
     if ( range && !isNaN( range ) ) {
 
-      for ( i = 0; i < ( ( range * 2 ) + 1 ); i++ ) {
+      for ( index = 0; index < ( ( range * 2 ) + 1 ); index++ ) {
 
-      	sightRange.push( n );
-      	n += 1
+      	sightRange.push( number );
+      	number += 1
 
       }
 
-      typeof this.debug !== "undefined" && this.debug.state ? false :  this.debugRegister( "sightRange", [], "end", debugKey );
+      typeof debugKey === "undefined" ? false :  this.debugRegister( "sightRange", [], "end", debugKey );
 
       return sightRange
 
@@ -588,8 +607,8 @@ class gameInstance {
     x = xy[0],
     y = xy[1],
     sightRange,
-    i,
-    I,
+    index,
+    Index,
     X,
     Y,
     f,
@@ -609,17 +628,17 @@ class gameInstance {
 
       sightRange = this.sightRange();
 
-      for ( i = 0; i < sightRange.length; i++ ) {
+      for ( index = 0; index < sightRange.length; index++ ) {
 
-      	for ( I = 0; I < sightRange.length; I++ ) {
+      	for ( Index = 0; Index < sightRange.length; Index++ ) {
 
-      	  X = I; Y = i; f = true;
+      	  X = Index; Y = index; f = true;
       	  f = X === 0 && Y === 0 || X === ( range * 2 ) && Y === 0 || X === 0 && Y === ( range * 2 ) || X === ( range * 2 ) && Y === ( range * 2 ) || X === range && Y === range ? false :  true;
       	  
       	  if ( f ) {
 
-      	  	n1 = x+sightRange[I]>=0&&x+sightRange[I]<grid[0] ? x+sightRange[I]: false;
-      	  	n2 = y+sightRange[i]>=0&&y+sightRange[i]<grid[1] ? y+sightRange[i]: false; 
+      	  	n1 = ( x + sightRange[Index] ) >= 0 && ( x + sightRange[Index] ) < grid[0] ? ( x + sightRange[Index] ) : false;
+      	  	n2 = ( y + sightRange[index] ) >= 0 && ( y + sightRange[index] ) < grid[1] ? ( y + sightRange[index] ) : false; 
 
       	    if ( typeof n1 === "number" && typeof n2 === "number" ) { sightRadius.push( [n1, n2] ) }
 
@@ -629,7 +648,7 @@ class gameInstance {
 
       }
 
-      typeof this.debug !== "undefined" && this.debug.state ? false :  this.debugRegister( "sightRadius", [], "end", debugKey );
+      typeof debugKey === "undefined" ? false :  this.debugRegister( "sightRadius", [], "end", debugKey );
 
       return sightRadius
 
@@ -684,7 +703,7 @@ class gameInstance {
 
     }
 
-    typeof this.debug !== "undefined" && this.debug.state ? false :  this.debugRegister( "playerMove", [], "end", debugKey )
+    typeof debugKey === "undefined" ? false :  this.debugRegister( "playerMove", [], "end", debugKey )
 
   }
 
@@ -765,7 +784,7 @@ class gameInstance {
     this.data.player.vision.tokens -= this.data.player.vision.tokens !== ( ( ( this.data.player.vision.minRange - 1 ) * this.data.player.vision.tokensPerRangeLoss ) + 1 ) ? 1 : 0;
     this.data.player.vision.range = Math.ceil( this.data.player.vision.tokens / this.data.player.vision.tokensPerRangeLoss ) >= this.data.player.vision.minRange ? Math.ceil( this.data.player.vision.tokens / this.data.player.vision.tokensPerRangeLoss ) : this.data.player.vision.minRange;
 
-    typeof this.debug !== "undefined" && this.debug.state ? false :  this.debugRegister( "tileEvents", [], "end", debugKey )
+    typeof debugKey === "undefined" ? false :  this.debugRegister( "tileEvents", [], "end", debugKey )
 
   }
 
