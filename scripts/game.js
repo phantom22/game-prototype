@@ -199,11 +199,11 @@ class gameInstance {
 
       tbl = D.cE( "table" ); tbd = D.cE( "tbody" );
 
-      for ( index = 0;index < map.grid[1];index++ ) {
+      for ( index = 0;index < map.grid[1]; index++ ) {
 
       	tr = D.cE( "tr" );
 
-      	for ( Index = 0;Index < map.grid[0];Index++ ) {
+      	for ( Index = 0;Index < map.grid[0]; Index++ ) {
 
       		td = D.cE( "td" );
       		td.dataset.x = Index;
@@ -251,7 +251,7 @@ class gameInstance {
 
     if ( map.meta && map.element instanceof HTMLElement ) {
 
-      for ( index = 0;index < map.meta.length;index++ ) {
+      for ( index = 0;index < map.meta.length; index++ ) {
 
         row = index; while ( row >= grid[0] ) { row = row - grid[0] }; column = Math.floor( index / grid[0] );
         this.registerTile( [row, column], map.meta[index] )
@@ -331,10 +331,10 @@ class gameInstance {
 
     }
 
-    for ( index = 0;index < ( trueCoins + falseCoins );index++ ) {
+    for ( index = 0;index < ( trueCoins + falseCoins ); index++ ) {
 
-      registry = Object.keys( this.registry );airTiles = registry.filter( v => this.registry[v].id === 0 && !bannedTilesFromRandomizing.includes( v ) );
-      number = M.R( airTiles.length );typeId = index < trueCoins ? 2 : 5;
+      registry = Object.keys( this.registry ); airTiles = registry.filter( v => this.registry[v].id === 0 && !bannedTilesFromRandomizing.includes( v ) );
+      number = M.R( airTiles.length ); typeId = index < trueCoins ? 2 : 5;
 
       this.registerTile( airTiles[number].split( "-" ), typeId )
 
@@ -362,7 +362,7 @@ class gameInstance {
 
     if ( !this.data.map.door ) {
  
-      registry = Object.keys( this.registry );airTiles = registry.filter( v => this.registry[v].id === 0 && !bannedTilesFromRandomizing.includes( v ) );
+      registry = Object.keys( this.registry ); airTiles = registry.filter( v => this.registry[v].id === 0 && !bannedTilesFromRandomizing.includes( v ) );
       number = M.R( airTiles.length );
       this.data.map.door = airTiles[number].split( "-" ).map( v => Number( v ) );
       this.registerTile( this.data.map.door, 3 )
@@ -390,7 +390,7 @@ class gameInstance {
 
     if ( xy && Array.isArray( xy ) && !isNaN( typeId ) ) { 
 
-      registryQuery = `${ xy[0] }-${ xy[1] }`;element = D.qSA( `[data-x="${ xy[0] }"][data-y="${ xy[1] }"]`, map.element , 0);
+      registryQuery = `${ xy[0] }-${ xy[1] }`; element = D.qSA( `[data-x="${ xy[0] }"][data-y="${ xy[1] }"]`, map.element , 0);
 
       this.registry[registryQuery] = { id: Number( typeId ), class: this.tileClass( typeId ), element: element }
 
@@ -491,9 +491,9 @@ class gameInstance {
         this.data.player.madness = { quantity: 0, minRangeMoves: 0 };
         this.data.player.vision.tokens = p.vision.range * p.vision.tokensPerRangeLoss;
         
-        slots = Number( Object.keys( this.data.player.hud.inventory.slots ).length );div = D.cE( "div" );div.className = "hud";tbl = D.cE( "table" );tbd = D.cE( "tbody" );
-        for ( index = 0;index < slots;index++ ) { tr = D.cE( "tr" );td = D.cE( "td" );td.dataset.id = index;D.aC( td, tr );D.aC( tr, tbd ) }
-        D.aC( tbd, tbl );D.aC( tbl, div );D.aC( div );
+        slots = Number( Object.keys( this.data.player.hud.inventory.slots ).length ); div = D.cE( "div" );div.className = "hud"; tbl = D.cE( "table" ); tbd = D.cE( "tbody" );
+        for ( index = 0;index < slots; index++ ) { tr = D.cE( "tr" ); td = D.cE( "td" ); td.dataset.id = index; D.aC( td, tr ); D.aC( tr, tbd ) }
+        D.aC( tbd, tbl ); D.aC( tbl, div ); D.aC( div );
 
         this.updateSelectedSlot()
 
@@ -546,7 +546,7 @@ class gameInstance {
 
         D.qSA( ".wall" ).forEach( v => v.classList.remove( "wall" ) );
         D.qSA( ".light" ).forEach( v => v.classList.remove( "light" ) );
-        D.qSA( ".coin" ).forEach( v => { v.classList.remove( "coin" );v.classList.add( "air" ) } );
+        D.qSA( ".coin" ).forEach( v => { v.classList.remove( "coin" ); v.classList.add( "air" ) } );
 
         this.data.player.vision.lastUpdatedTiles = []
 
@@ -583,7 +583,7 @@ class gameInstance {
 
     if ( range && !isNaN( range ) ) {
 
-      for ( index = 0;index < ( ( range * 2 ) + 1 );index++ ) {
+      for ( index = 0;index < ( ( range * 2 ) + 1 ); index++ ) {
 
       	sightRange.push( number );
       	number += 1
@@ -628,9 +628,9 @@ class gameInstance {
 
       sightRange = this.sightRange();
 
-      for ( index = 0;index < sightRange.length;index++ ) {
+      for ( index = 0;index < sightRange.length; index++ ) {
 
-      	for ( Index = 0;Index < sightRange.length;Index++ ) {
+      	for ( Index = 0;Index < sightRange.length; Index++ ) {
 
       	  X = Index;Y = index;f = true;
       	  f = X === 0 && Y === 0 || X === ( range * 2 ) && Y === 0 || X === 0 && Y === ( range * 2 ) || X === ( range * 2 ) && Y === ( range * 2 ) || X === range && Y === range ? false : true;
