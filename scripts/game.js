@@ -2,9 +2,10 @@ const T = TOOL;
 
 class gameInstance { 
 
-  constructor( player = { position, moveDistance, vision, gamemode }, map = { grid, meta, coins, madness }, debug = { state, maxRegistryLength } ) { 
+  constructor( playerRules = { spawnPoint, moveDistance, vision, gamemode }, map = { grid, meta, coins, madness }, debug = { state, maxRegistryLength } ) { 
 
-    let p = player,
+    let p = playerRules,
+    player,
     vision = typeof p.vision !== "undefined" ? p.vision : void 0,
     coins = map.coins,
     madness = typeof map.madness !== "undefined" ? map.madness : void 0,
@@ -22,11 +23,10 @@ class gameInstance {
 
     if ( !flag ) {
 
-      p.position = typeof p.position === "boolean" || typeof p.position !== "undefined" && Array.isArray( p.position ) && typeof p.position.reduce( ( a, b )  =>  a + b ) === "number" && p.position.length === 2 ? p.position : true;
+      p.spawnPoint = typeof playerRules.spawnPoint === "boolean" || typeof playerRules.spawnPoint !== "undefined" && Array.isArray( playerRules.spawnPoint ) && typeof playerRules.spawnPoint.reduce( ( a, b )  =>  a + b ) === "number" && playerRules.spawnPoint.length === 2 ? playerRules.spawnPoint : true;
       p.moveDistance = typeof p.moveDistance === "number" && p.moveDistance > 0 ? Math.floor( p.moveDistance ) : 1;
       p.gamemode = typeof p.gamemode === "number" && p.gamemode > 0 ? Math.floor( p.gamemode ) : 0;
       vision.initialRange =  typeof p.vision !== "undefined" && typeof vision.initialRange === "number" && vision.initialRange > 0 ? Math.floor( vision.initialRange ) : 5;
-      vision.range = vision.initialRange;
       vision.tokensPerRangeLoss = typeof vision.tokensPerRangeLoss === "number" && vision.tokensPerRangeLoss > 0 ? Math.floor( vision.tokensPerRangeLoss ) : 7;
       vision.minRange = typeof vision.minRange === "number" && vision.minRange >= 1 && vision.minRange <= vision.maxRange ? Math.floor( vision.minRange ) : 2;
       vision.maxRange = typeof vision.maxRange === "number" && vision.maxRange >= 1 && vision.maxRange >= vision.minRange ? Math.floor( vision.maxRange ) : initialRange + 2;
@@ -55,22 +55,22 @@ class gameInstance {
 
       trueCoinsTokenRewards = typeof coins !== "undefined" ? coins.true.tokenRewards : void 0; falseCoinsTokenRewards = typeof coins !== "undefined" ? coins.false.tokenRewards : void 0; let tokensPerRangeLoss = vision.tokensPerRangeLoss;
 
-      trueCoinsTokenRewards.base = typeof trueCoinsTokenRewards.base === "string" ? this.stringReward( trueCoinsTokenRewards.base, vision.tokensPerRangeLoss ) : trueCoinsTokenRewards.base;
-      trueCoinsTokenRewards.random.added[0] = typeof trueCoinsTokenRewards.random.added[0] === "string" ? this.stringReward( trueCoinsTokenRewards.random.added[0], vision.tokensPerRangeLoss ) : trueCoinsTokenRewards.random.added[0];
-      trueCoinsTokenRewards.random.added[1] = typeof trueCoinsTokenRewards.random.added[1] === "string" ? this.stringReward( trueCoinsTokenRewards.random.added[1], vision.tokensPerRangeLoss ) : trueCoinsTokenRewards.random.added[1];
-      trueCoinsTokenRewards.random.removed[0] = typeof trueCoinsTokenRewards.random.removed[0] === "string" ? this.stringReward( trueCoinsTokenRewards.random.removed[0], vision.tokensPerRangeLoss ) : trueCoinsTokenRewards.random.removed[0];
-      trueCoinsTokenRewards.random.removed[1] = typeof trueCoinsTokenRewards.random.removed[1] === "string" ? this.stringReward( trueCoinsTokenRewards.random.removed[1], vision.tokensPerRangeLoss ) : trueCoinsTokenRewards.random.removed[1];
-      falseCoinsTokenRewards.base = typeof falseCoinsTokenRewards.base === "string" ? this.stringReward( falseCoinsTokenRewards.base, vision.tokensPerRangeLoss ) : falseCoinsTokenRewards.base;
-      falseCoinsTokenRewards.random.added[0] = typeof falseCoinsTokenRewards.random.added[0] === "string" ? this.stringReward( falseCoinsTokenRewards.random.added[0], vision.tokensPerRangeLoss ) : falseCoinsTokenRewards.random.added[0];
-      falseCoinsTokenRewards.random.added[1] = typeof falseCoinsTokenRewards.random.added[1] === "string" ? this.stringReward( falseCoinsTokenRewards.random.added[1], vision.tokensPerRangeLoss ) : falseCoinsTokenRewards.random.added[1];
-      falseCoinsTokenRewards.random.removed[0] = typeof falseCoinsTokenRewards.random.removed[0] === "string" ? this.stringReward( falseCoinsTokenRewards.random.removed[0], vision.tokensPerRangeLoss ) : falseCoinsTokenRewards.random.removed[0];
-      falseCoinsTokenRewards.random.removed[1] = typeof falseCoinsTokenRewards.random.removed[1] === "string" ? this.stringReward( falseCoinsTokenRewards.random.removed[1], vision.tokensPerRangeLoss ) : falseCoinsTokenRewards.random.removed[1]
+      trueCoinsTokenRewards.base = typeof trueCoinsTokenRewards.base === "string" ? this.stringToCoinTokenReward( trueCoinsTokenRewards.base, vision.tokensPerRangeLoss ) : trueCoinsTokenRewards.base;
+      trueCoinsTokenRewards.random.added[0] = typeof trueCoinsTokenRewards.random.added[0] === "string" ? this.stringToCoinTokenReward( trueCoinsTokenRewards.random.added[0], vision.tokensPerRangeLoss ) : trueCoinsTokenRewards.random.added[0];
+      trueCoinsTokenRewards.random.added[1] = typeof trueCoinsTokenRewards.random.added[1] === "string" ? this.stringToCoinTokenReward( trueCoinsTokenRewards.random.added[1], vision.tokensPerRangeLoss ) : trueCoinsTokenRewards.random.added[1];
+      trueCoinsTokenRewards.random.removed[0] = typeof trueCoinsTokenRewards.random.removed[0] === "string" ? this.stringToCoinTokenReward( trueCoinsTokenRewards.random.removed[0], vision.tokensPerRangeLoss ) : trueCoinsTokenRewards.random.removed[0];
+      trueCoinsTokenRewards.random.removed[1] = typeof trueCoinsTokenRewards.random.removed[1] === "string" ? this.stringToCoinTokenReward( trueCoinsTokenRewards.random.removed[1], vision.tokensPerRangeLoss ) : trueCoinsTokenRewards.random.removed[1];
+      falseCoinsTokenRewards.base = typeof falseCoinsTokenRewards.base === "string" ? this.stringToCoinTokenReward( falseCoinsTokenRewards.base, vision.tokensPerRangeLoss ) : falseCoinsTokenRewards.base;
+      falseCoinsTokenRewards.random.added[0] = typeof falseCoinsTokenRewards.random.added[0] === "string" ? this.stringToCoinTokenReward( falseCoinsTokenRewards.random.added[0], vision.tokensPerRangeLoss ) : falseCoinsTokenRewards.random.added[0];
+      falseCoinsTokenRewards.random.added[1] = typeof falseCoinsTokenRewards.random.added[1] === "string" ? this.stringToCoinTokenReward( falseCoinsTokenRewards.random.added[1], vision.tokensPerRangeLoss ) : falseCoinsTokenRewards.random.added[1];
+      falseCoinsTokenRewards.random.removed[0] = typeof falseCoinsTokenRewards.random.removed[0] === "string" ? this.stringToCoinTokenReward( falseCoinsTokenRewards.random.removed[0], vision.tokensPerRangeLoss ) : falseCoinsTokenRewards.random.removed[0];
+      falseCoinsTokenRewards.random.removed[1] = typeof falseCoinsTokenRewards.random.removed[1] === "string" ? this.stringToCoinTokenReward( falseCoinsTokenRewards.random.removed[1], vision.tokensPerRangeLoss ) : falseCoinsTokenRewards.random.removed[1]
 
     }
 
     if ( typeof map.grid !== "undefined" && typeof map.meta !== "undefined" && p.gamemode !== 3 || typeof map.grid !== "undefined" && typeof map.meta !== "undefined" && p.gamemode === 3 ) {
 
-      this.data = { map: map, player: p };
+      this.data = { map: map, playerRules: p, entities: { player1: {} } };
       this.registry = {};
       this.createMap();
       this.registerMap( flag );
@@ -115,7 +115,7 @@ class gameInstance {
 
       else if ( state == "end" ) {
 
-        registerIndex = this.debug.registry.map( v => v.key == debugKey ).indexOf( true );keyIndex = this.debug.keys.indexOf( debugKey );
+        registerIndex = this.debug.registry.map( v => v.key == debugKey ).indexOf( true ); keyIndex = this.debug.keys.indexOf( debugKey );
 
         this.debug.registry[registerIndex].states[state] = new Date().toISOString();
         delete this.debug.registry[registerIndex].key;
@@ -128,7 +128,7 @@ class gameInstance {
 
   }
 
-  stringReward( string, tokensPerRangeLoss ) {
+  stringToCoinTokenReward( string, tokensPerRangeLoss ) {
 
     let debugKey,
     array;
@@ -136,7 +136,7 @@ class gameInstance {
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
 
       debugKey = this.debugKeyGen();
-      this.debugRegister( "stringReward", [string, tokensPerRangeLoss], "start", debugKey )
+      this.debugRegister( "stringToCoinTokenReward", [string, tokensPerRangeLoss], "start", debugKey )
 
     }
 
@@ -147,7 +147,7 @@ class gameInstance {
       array[0] = array[0].includes("*") && array[0].slice( 0, 1 ) === "*" ? Math.floor( tokensPerRangeLoss * Number( array[0].slice( 1 ) ) ) : array[0];
       array[1] = array[1] && array[1].slice( 0, 1 ) === "+" || array[1] && array[1].slice( 0, 1 ) === "-" ? ( array[0] + Number( array[1] ) ) : void 0;
 
-      typeof debugKey === "undefined" ? false : this.debugRegister( "stringReward", [], "end", debugKey );
+      typeof debugKey === "undefined" ? false : this.debugRegister( "stringToCoinTokenReward", [], "end", debugKey );
 
       return !array[1] ? array[0] : array[1];
 
@@ -231,7 +231,7 @@ class gameInstance {
     let M = T.Math,
     debugKey,
     map = this.data.map,
-    p = this.data.player,
+    p = this.data.playerRules,
     grid = map.grid,
     index,
     row,
@@ -258,25 +258,24 @@ class gameInstance {
 
       }
 
-      if ( typeof p.position !== "boolean" && Array.isArray( p.position ) && !isNaN( p.position.reduce( ( a, b ) => a + b ) ) ) {
+      if ( typeof this.data.playerRules.spawnPoint !== "boolean" && Array.isArray( this.data.playerRules.spawnPoint ) && !isNaN( this.data.playerRules.spawnPoint.reduce( ( a, b ) => a + b ) ) ) {
 
-        xy = p.position;
+        xy = this.data.playerRules.spawnPoint;
         this.registerTile( xy, 4 )
 
       }
 
-      else if ( p.position === true ) {
+      else if ( this.data.playerRules.spawnPoint === true ) {
 
         registryKeys = Object.keys( this.registry ); bannedTilesFromRandomizing = this.data.map.bannedTilesFromRandomizing.map( v => `${ v[0] }-${ v[1] }` );
-        airTiles = registryKeys.filter( v => this.registry[v].id === 0 && !bannedTilesFromRandomizing.includes( v ) );number = M.R( airTiles.length );xy = airTiles[number].split( "-" ).map( v => Number( v ) );
-        this.data.player.position = xy;
+        airTiles = registryKeys.filter( v => this.registry[v].id === 0 && !bannedTilesFromRandomizing.includes( v ) ); number = M.R( airTiles.length ); xy = airTiles[number].split( "-" ).map( v => Number( v ) );
         this.registerTile( xy, 4 )
 
       }
 
       if ( !flag ) {
 
-        this.data.player.hud = { inventory: { slots: { 0: false, 1: false, 2: false, 3: false, 4: false, 5: false, 6: false }, selectedSlot: 0 } };
+        this.data.entities["player1"] = { position: xy, vision: { range: this.data.playerRules.vision.initialRange, tokens: ( this.data.playerRules.vision.initialRange * p.vision.tokensPerRangeLoss ) }, madness: { minRangeMoves: 0 } }
         this.registerCoins();
         this.registerDoor()
 
@@ -285,29 +284,6 @@ class gameInstance {
     }
 
     typeof debugKey === "undefined" ? false : this.debugRegister( "registerMap", [], "end", debugKey );
-
-  }
-
-  updateSelectedSlot( id ) {
-
-    let D = T.DOM,
-    debugKey,
-    selected = D.qSA( ".selected" );
-
-    if ( typeof this.debug !== "undefined" && this.debug.state ) {
-
-      debugKey = this.debugKeyGen();
-      this.debugRegister( "updateSelectedSlot", [id], "start", debugKey )
-
-    }
-
-    selected ? selected.forEach( v => v.classList.remove( "selected" ) ) : selected;
-    this.data.player.hud.inventory.selectedSlot = id && !isNaN( id ) || id === 0 ? id : this.data.player.hud.inventory.selectedSlot;
-    this.data.player.hud.inventory.selectedSlot = id && this.data.player.hud.inventory.selectedSlot < ( Object.keys( this.data.player.hud.inventory.slots ).length - 1 ) ? this.data.player.hud.inventory.selectedSlot : ( Object.keys( this.data.player.hud.inventory.slots ).length - 1 );
-    this.data.player.hud.inventory.selectedSlot = id && this.data.player.hud.inventory.selectedSlot > 0 ? this.data.player.hud.inventory.selectedSlot : 0;
-    D.qSA( ".hud td" )[this.data.player.hud.inventory.selectedSlot].classList.add( "selected" );
-
-    typeof debugKey === "undefined" ? false : this.debugRegister( "updateSelectedSlot", [], "end", debugKey )
 
   }
 
@@ -463,8 +439,8 @@ class gameInstance {
     let D = T.DOM,
     debugKey,
     map = this.data.map,
-    p = this.data.player,
-    xy = p.position,
+    p = this.data.playerRules,
+    xy = this.data.entities.player1.position,
     slots,
     div,
     tbl,
@@ -486,16 +462,10 @@ class gameInstance {
 
       if ( xy && Array.isArray( xy ) && !isNaN( xy.reduce( ( a, b ) => a + b ) ) && xy.length === 2 ) {
 
-        this.playerSight();this.tileUpdateDisplay( xy );
-        this.data.player.coins = { true: 0, false: 0 };
-        this.data.player.madness = { quantity: 0, minRangeMoves: 0 };
-        this.data.player.vision.tokens = p.vision.range * p.vision.tokensPerRangeLoss;
-        
-        slots = Number( Object.keys( this.data.player.hud.inventory.slots ).length ); div = D.cE( "div" );div.className = "hud"; tbl = D.cE( "table" ); tbd = D.cE( "tbody" );
-        for ( index = 0;index < slots; index++ ) { tr = D.cE( "tr" ); td = D.cE( "td" ); td.dataset.id = index; D.aC( td, tr ); D.aC( tr, tbd ) }
-        D.aC( tbd, tbl ); D.aC( tbl, div ); D.aC( div );
+        this.data.playerRules.coins = { true: 0, false: 0 };
+        this.data.playerRules.madness = { quantity: 0 };
 
-        this.updateSelectedSlot()
+        this.entitySight( "player1" ); this.tileUpdateDisplay( xy )
 
       }
 
@@ -516,103 +486,118 @@ class gameInstance {
 
   }
 
-  playerSight() { 
+  entitySight( entity ) { 
 
     let D = T.DOM,
     debugKey,
-    p = this.data.player,
-    xy = p.position,
-    lastUpdatedTiles = p.vision.lastUpdatedTiles,
+    p = this.data.playerRules,
+    xy,
+    lastUpdatedTiles,
     gamemode = p.gamemode,
     currentTiles,
-    airTiles;
+    airTiles,
+    currentAirTiles;
 
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
 
       debugKey = this.debugKeyGen();
-      this.debugRegister( "playerSight", [], "start", debugKey )
+      this.debugRegister( "entitySight", [entity], "start", debugKey )
 
     }
 
-    if ( !isNaN( xy.reduce( ( a, b ) => a + b ) ) ) {
+    if ( entity && typeof this.data.entities[entity] !== "undefined" ) {
 
-      if ( lastUpdatedTiles ) {
+      xy = this.data.entities[entity].position;
+      lastUpdatedTiles = this.data.entities[entity].lastUpdatedTiles
 
-        if ( gamemode === 1 ) {
+      if ( xy && !isNaN( xy.reduce( ( a, b ) => a + b ) ) && entity ) {
 
-          lastUpdatedTiles.forEach( v => { if( JSON.stringify( v ) !== JSON.stringify( xy ) ){ this.tileClear( v ) } } )
+        if ( lastUpdatedTiles ) {
+
+          if ( gamemode === 1 ) {
+
+            lastUpdatedTiles.forEach( v => { if( JSON.stringify( v ) !== JSON.stringify( xy ) ){ this.tileClear( v ) } } )
+
+          }
+
+          D.qSA( ".wall" ).forEach( v => v.classList.remove( "wall" ) );
+          D.qSA( ".light" ).forEach( v => v.classList.remove( "light" ) );
+          D.qSA( ".coin" ).forEach( v => { v.classList.remove( "coin" ); v.classList.add( "air" ) } );
+
+          this.data.entities[entity].lastUpdatedTiles = []
 
         }
 
-        D.qSA( ".wall" ).forEach( v => v.classList.remove( "wall" ) );
-        D.qSA( ".light" ).forEach( v => v.classList.remove( "light" ) );
-        D.qSA( ".coin" ).forEach( v => { v.classList.remove( "coin" ); v.classList.add( "air" ) } );
+        currentTiles = this.entitySightRadius( entity );
 
-        this.data.player.vision.lastUpdatedTiles = []
+        airTiles = currentTiles.filter( v => this.registry[`${ v[0] }-${ v[1] }`] !== undefined && this.registry[`${ v[0] }-${ v[1] }`].id === 0 || this.registry[`${ v[0] }-${ v[1] }`].id === 3 );
+        airTiles.forEach( v => { currentAirTiles = this.registry[`${ v[0] }-${ v[1] }`].element; currentAirTiles.classList.add( "light" ) } );
+
+        this.data.entities[entity].lastUpdatedTiles = currentTiles;
+        currentTiles.forEach( v  =>  this.tileUpdateDisplay( v ) )
 
       }
 
-      currentTiles = this.sightRadius();
-
-      airTiles = currentTiles.filter( v => this.registry[`${ v[0] }-${ v[1] }`] !== undefined && this.registry[`${ v[0] }-${ v[1] }`].id === 0 || this.registry[`${ v[0] }-${ v[1] }`].id === 3 );
-      airTiles.forEach( v => { let c=this.registry[`${ v[0] }-${ v[1] }`].element;c.classList.add( "light" ) } );
-
-      this.data.player.vision.lastUpdatedTiles = currentTiles;
-      currentTiles.forEach( v  =>  this.tileUpdateDisplay( v ) )
-
     }
 
-    typeof debugKey === "undefined" ? false : this.debugRegister( "playerSight", [], "end", debugKey )
+    typeof debugKey === "undefined" ? false : this.debugRegister( "entitySight", [], "end", debugKey )
 
   }
 
-  sightRange() {
+  entitySightRange( entity ) {
 
     let debugKey,
-    range = this.data.player.vision.range,
+    range,
     index,
-    number = ( -range ),
-    sightRange = [];
+    number,
+    entitySightRange = [];
 
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
 
       debugKey = this.debugKeyGen();
-      this.debugRegister( "sightRange", [], "start", debugKey )
+      this.debugRegister( "entitySightRange", [entity], "start", debugKey )
 
     }
 
-    if ( range && !isNaN( range ) ) {
+    if ( entity && typeof this.data.entities[entity] !== "undefined" ) {
 
-      for ( index = 0;index < ( ( range * 2 ) + 1 ); index++ ) {
+      range = this.data.entities[entity].vision.range;
+      number = ( -range );
 
-      	sightRange.push( number );
-      	number += 1
+      if ( range && !isNaN( range ) && entity ) {
+
+        for ( index = 0;index < ( ( range * 2 ) + 1 ); index++ ) {
+
+        	entitySightRange.push( number );
+        	number += 1
+
+        }
+
+        typeof debugKey === "undefined" ? false : this.debugRegister( "entitySightRange", [], "end", debugKey );
+
+        return entitySightRange
 
       }
-
-      typeof debugKey === "undefined" ? false : this.debugRegister( "sightRange", [], "end", debugKey );
-
-      return sightRange
 
     }
 
   }
 
-  sightRadius() {
+  entitySightRadius( entity ) {
 
     let debugKey,
-    p = this.data.player,
-    range = this.data.player.vision.range,
-    xy = p.position,
-    x = xy[0],
-    y = xy[1],
-    sightRange,
+    p = this.data.playerRules,
+    range,
+    xy,
+    x,
+    y,
+    entitySightRange,
     index,
     Index,
     X,
     Y,
     f,
-    sightRadius = [],
+    entitySightRadius = [],
     grid = this.data.map.grid,
     n1,
     n2;
@@ -620,49 +605,58 @@ class gameInstance {
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
 
       debugKey = this.debugKeyGen();
-      this.debugRegister( "sightRadius", [], "start", debugKey )
+      this.debugRegister( "entitySightRadius", [entity], "start", debugKey )
 
     }
 
-    if ( range && !isNaN( range ) ) {
+    if ( entity && typeof this.data.entities[entity] !== "undefined" ) {
 
-      sightRange = this.sightRange();
+      range = this.data.entities[entity].vision.range;
+      xy = this.data.entities[entity].position;
+      x = xy[0];
+      y = xy[1];
 
-      for ( index = 0;index < sightRange.length; index++ ) {
+      if ( range && !isNaN( range ) && entity ) {
 
-      	for ( Index = 0;Index < sightRange.length; Index++ ) {
+        entitySightRange = this.entitySightRange( entity );
 
-      	  X = Index;Y = index;f = true;
-      	  f = X === 0 && Y === 0 || X === ( range * 2 ) && Y === 0 || X === 0 && Y === ( range * 2 ) || X === ( range * 2 ) && Y === ( range * 2 ) || X === range && Y === range ? false : true;
-      	  
-      	  if ( f ) {
+        for ( index = 0;index < entitySightRange.length; index++ ) {
 
-      	  	n1 = ( x + sightRange[Index] ) >= 0 && ( x + sightRange[Index] ) < grid[0] ? ( x + sightRange[Index] ) : false;
-      	  	n2 = ( y + sightRange[index] ) >= 0 && ( y + sightRange[index] ) < grid[1] ? ( y + sightRange[index] ) : false;
+        	for ( Index = 0;Index < entitySightRange.length; Index++ ) {
 
-      	    if ( typeof n1 === "number" && typeof n2 === "number" ) { sightRadius.push( [n1, n2] ) }
+        	  X = Index; Y = index; f = true;
+        	  f = X === 0 && Y === 0 || X === ( range * 2 ) && Y === 0 || X === 0 && Y === ( range * 2 ) || X === ( range * 2 ) && Y === ( range * 2 ) || X === range && Y === range ? false : true;
+        	  
+        	  if ( f ) {
 
-      	  }
+        	  	n1 = ( x + entitySightRange[Index] ) >= 0 && ( x + entitySightRange[Index] ) < grid[0] ? ( x + entitySightRange[Index] ) : false;
+        	  	n2 = ( y + entitySightRange[index] ) >= 0 && ( y + entitySightRange[index] ) < grid[1] ? ( y + entitySightRange[index] ) : false;
 
-		}
+        	    if ( typeof n1 === "number" && typeof n2 === "number" ) { entitySightRadius.push( [n1, n2] ) }
+
+        	  }
+
+  		    }
+
+        }
+
+        typeof debugKey === "undefined" ? false : this.debugRegister( "entitySightRadius", [], "end", debugKey );
+
+        return entitySightRadius
 
       }
-
-      typeof debugKey === "undefined" ? false : this.debugRegister( "sightRadius", [], "end", debugKey );
-
-      return sightRadius
 
     }
 
   }
 
-  playerMove( e ) { 
+  entityMove( entity, element ) { 
 
     let debugKey,
-    p = this.data.player,
+    p = this.data.playerRules,
     moveDistance = p.moveDistance,
-    tileX = e.dataset.x,
-    tileY = e.dataset.y,
+    tileX = element.dataset.x,
+    tileY = element.dataset.y,
     newX,
     newY,
     oldX,
@@ -674,47 +668,50 @@ class gameInstance {
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
 
       debugKey = this.debugKeyGen();
-      this.debugRegister( "playerMove", [e], "start", debugKey )
+      this.debugRegister( "entityMove", [entity, element], "start", debugKey )
 
     }
 
-    if ( moveDistance && e && e instanceof HTMLElement && this.registry[`${ tileX }-${ tileY }`].id !== 1 ) {
+    if ( entity && typeof this.data.entities[entity] !== "undefined" && moveDistance && element && element instanceof HTMLElement && this.registry[`${ tileX }-${ tileY }`].id !== 1 ) {
 
-      newX = tileX;newY = tileY;oldX = p.position[0];oldY = p.position[1];
+      newX = tileX;
+      newY = tileY;
+      oldX = this.data.entities[entity].position[0];
+      oldY = this.data.entities[entity].position[1];
 
       if ( Math.abs( newX - oldX ) <= moveDistance && Math.abs( newY - oldY ) <= moveDistance && Math.abs( newX - oldX ) + Math.abs( newY - oldY ) <= moveDistance ) {
 
         typeId = `${ oldX }-${ oldY }` === this.data.map.door.join( "-" ) ? 3 : 0;
 
-        this.data.player.direction = Math.abs( newX - oldX ) === 1 ? "x" : "y";
-        this.data.player.position = [Number( newX ), Number( newY )];
+        this.data.playerRules.lastPlayerMoveDirection = Math.abs( newX - oldX ) === 1 ? "x" : "y";
+        this.data.entities[entity].position = [Number( newX ), Number( newY )];
 
         oldXY = [oldX, oldY];
         newXY = [newX, newY];
 
         this.registerTile( oldXY, typeId );
         this.tileUpdateDisplay( oldXY );
-        this.tileEvents( newXY );
+        this.tileEvents( newXY, entity );
         this.registerTile( newXY, 4 );
         this.tileUpdateDisplay( newXY );
-        this.playerSight()
+        this.entitySight( entity )
 
       }
 
     }
 
-    typeof debugKey === "undefined" ? false : this.debugRegister( "playerMove", [], "end", debugKey )
+    typeof debugKey === "undefined" ? false : this.debugRegister( "entityMove", [], "end", debugKey )
 
   }
 
-  tileEvents( xy ) { 
+  tileEvents( xy, entity ) {
 
     let M = T.Math,
     debugKey,
-    typeId = this.registry[xy.join( "-" )].id,
-    range = this.data.player.vision.range,
-    tokensPerRangeLoss = this.data.player.vision.tokensPerRangeLoss,
-    tokens = this.data.player.vision.tokens,
+    typeId,
+    range,
+    tokensPerRangeLoss = this.data.playerRules.vision.tokensPerRangeLoss,
+    tokens,
     trueCoinsTokenRewards = this.data.map.coins.true.tokenRewards,
     falseCoinsTokenRewards = this.data.map.coins.false.tokenRewards,
     trueCoinsRandomRewards = trueCoinsTokenRewards.random,
@@ -727,64 +724,77 @@ class gameInstance {
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
 
       debugKey = this.debugKeyGen();
-      this.debugRegister( "tileEvents", [xy], "start", debugKey )
+      this.debugRegister( "tileEvents", [xy, entity], "start", debugKey )
 
     }
 
-    switch ( typeId ) { 
+    if ( entity && typeof this.data.entities[entity] !== "undefined" ) {
 
-      case 2: 
-        this.data.player.coins.true += 1;
-        this.data.player.madness.quantity = this.data.player.madness.quantity > 0 ? this.data.player.madness.quantity * this.data.map.madness.coins.true.madnessMultiplier : 0;
-        this.data.player.vision.tokens = tokens + trueCoinsTokenRewards.base + M.R( trueCoinsRandomRewards.added[0], trueCoinsRandomRewards.added[1] ) - M.R( trueCoinsRandomRewards.removed[0], trueCoinsRandomRewards.removed[1] );
-      break;
+      range = this.data.entities[entity].vision.range;
+      tokens = this.data.entities[entity].vision.tokens;
 
-      case 3:
-        this.data.map.coins.true.quantity - this.data.player.coins.true === 0 ? alert( "you won" ) : alert( `you found ${ this.data.player.coins.true } coins of ${ this.data.map.coins.true.quantity }` );
-      break;
+      if ( xy && Array.isArray(xy) && xy.length === 2) {
 
-      case 5:
-        this.data.player.coins.false += 1;
-        this.data.player.madness.quantity = this.data.player.madness.quantity > 0 ? this.data.player.madness.quantity * this.data.map.madness.coins.false.madnessMultiplier : 0;
-        this.data.player.vision.tokens = tokens + falseCoinsTokenRewards.base + M.R( falseCoinsRandomRewards.added[0], falseCoinsRandomRewards.added[1] ) - M.R( falseCoinsRandomRewards.removed[0], falseCoinsRandomRewards.removed[1] );
-      break
+        typeId = this.registry[xy.join( "-" )].id;
+
+        switch ( typeId ) {
+
+          case 2: 
+            this.data.playerRules.coins.true += 1;
+            this.data.playerRules.madness.quantity = this.data.playerRules.madness.quantity > 0 ? this.data.playerRules.madness.quantity * this.data.map.madness.coins.true.madnessMultiplier : 0;
+            this.data.entities[entity].vision.tokens = tokens + trueCoinsTokenRewards.base + M.R( trueCoinsRandomRewards.added[0], trueCoinsRandomRewards.added[1] ) - M.R( trueCoinsRandomRewards.removed[0], trueCoinsRandomRewards.removed[1] );
+          break;
+
+          case 3:
+            this.data.map.coins.true.quantity - this.data.playerRules.coins.true === 0 ? alert( "you won" ) : alert( `you found ${ this.data.playerRules.coins.true } coins of ${ this.data.map.coins.true.quantity }` );
+          break;
+
+          case 5:
+            this.data.playerRules.coins.false += 1;
+            this.data.playerRules.madness.quantity = this.data.playerRules.madness.quantity > 0 ? this.data.playerRules.madness.quantity * this.data.map.madness.coins.false.madnessMultiplier : 0;
+            this.data.entities[entity].vision.tokens = tokens + falseCoinsTokenRewards.base + M.R( falseCoinsRandomRewards.added[0], falseCoinsRandomRewards.added[1] ) - M.R( falseCoinsRandomRewards.removed[0], falseCoinsRandomRewards.removed[1] );
+          break
+
+        }
+         
+        this.data.entities[entity].madness.minRangeMoves += this.data.entities[entity].vision.range === this.data.playerRules.vision.minRange ? 1 : 0;
+
+        this.data.playerRules.madness.quantity += this.data.entities[entity].vision.range > this.data.playerRules.vision.minRange ? this.data.map.madness.loss : this.data.map.madness.gain;
+
+        this.data.playerRules.madness.quantity = this.data.playerRules.madness.quantity < 0 ? 0 : this.data.playerRules.madness.quantity;
+        this.data.playerRules.madness.quantity = this.data.playerRules.madness.quantity > this.data.map.madness.cap ? this.data.map.madness.cap : this.data.playerRules.madness.quantity;
+
+        this.data.playerRules.madness.quantity = this.data.entities[entity].madness.minRangeMoves === this.data.map.madness.minRangeMovesBeforeDistortion ? 0 : this.data.playerRules.madness.quantity;
+        this.data.playerRules.madness.quantity = Number( this.data.playerRules.madness.quantity.toFixed( 3 ) ) === this.data.map.madness.cap ? this.data.map.madness.cap - ( this.data.map.madness.gain * this.data.map.madness.distortionLoop ) : this.data.playerRules.madness.quantity;
+
+        if ( this.data.entities[entity].madness.minRangeMoves >= this.data.map.madness.minRangeMovesBeforeDistortion && this.data.playerRules.madness.quantity > 0 ) {
+
+          this.data.map.element.classList.add( "madness" );
+          feTurbulence = document.querySelector( "feTurbulence" );feDisplacementMap = document.querySelector( "feDisplacementMap" );
+          baseFrequency = `${ this.data.playerRules.lastPlayerMoveDirection === "x" ? this.data.map.madness.playerDirectionDistortion : this.data.playerRules.madness.quantity } ${ this.data.playerRules.lastPlayerMoveDirection === "y" ? this.data.map.madness.playerDirectionDistortion : this.data.playerRules.madness.quantity }`;
+          scale = Math.ceil( Number( this.data.playerRules.madness.quantity.toFixed( 2 ) ) * Math.ceil( this.data.map.madness.distortionScaleMultiplier * 100 ) );
+          feTurbulence.setAttribute( "baseFrequency", baseFrequency );
+          feDisplacementMap.setAttribute( "scale", scale )
+
+        }
+
+        if ( this.data.entities[entity].vision.range > this.data.playerRules.vision.minRange && this.data.playerRules.madness.quantity === 0 ) {
+
+          this.data.entities[entity].madness.minRangeMoves = 0;
+          this.data.map.element.classList.remove( "madness" )
+
+        }
+
+        this.data.entities[entity].vision.tokens = this.data.entities[entity].vision.tokens < ( this.data.playerRules.vision.tokensPerRangeLoss * this.data.playerRules.vision.maxRange ) ? this.data.entities[entity].vision.tokens : ( this.data.playerRules.vision.tokensPerRangeLoss * this.data.playerRules.vision.maxRange );
+        this.data.entities[entity].vision.tokens = this.data.entities[entity].vision.tokens < ( ( ( this.data.playerRules.vision.minRange - 1 ) * this.data.playerRules.vision.tokensPerRangeLoss ) + 1 ) ? ( ( this.data.playerRules.vision.minRange - 1 ) * ( this.data.playerRules.vision.tokensPerRangeLoss ) + 1 ) : this.data.entities[entity].vision.tokens;
+        this.data.entities[entity].vision.tokens -= this.data.entities[entity].vision.tokens !== ( ( ( this.data.playerRules.vision.minRange - 1 ) * this.data.playerRules.vision.tokensPerRangeLoss ) + 1 ) ? 1 : 0;
+        this.data.entities[entity].vision.range = Math.ceil( this.data.entities[entity].vision.tokens / this.data.playerRules.vision.tokensPerRangeLoss ) >= this.data.playerRules.vision.minRange ? Math.ceil( this.data.entities[entity].vision.tokens / this.data.playerRules.vision.tokensPerRangeLoss ) : this.data.playerRules.vision.minRange;
+
+        typeof debugKey === "undefined" ? false : this.debugRegister( "tileEvents", [], "end", debugKey )
+
+      }
 
     }
-     
-    this.data.player.madness.minRangeMoves += this.data.player.vision.range === this.data.player.vision.minRange ? 1 : 0;
-
-    this.data.player.madness.quantity += this.data.player.vision.range > this.data.player.vision.minRange ? this.data.map.madness.loss : this.data.map.madness.gain;
-
-    this.data.player.madness.quantity = this.data.player.madness.quantity < 0 ? 0 : this.data.player.madness.quantity;
-    this.data.player.madness.quantity = this.data.player.madness.quantity > this.data.map.madness.cap ? this.data.map.madness.cap : this.data.player.madness.quantity;
-
-    this.data.player.madness.quantity = this.data.player.madness.minRangeMoves === this.data.map.madness.minRangeMovesBeforeDistortion ? 0 : this.data.player.madness.quantity;
-    this.data.player.madness.quantity = Number( this.data.player.madness.quantity.toFixed( 3 ) ) === this.data.map.madness.cap ? this.data.map.madness.cap - ( this.data.map.madness.gain * this.data.map.madness.distortionLoop ) : this.data.player.madness.quantity;
-
-    if ( this.data.player.madness.minRangeMoves >= this.data.map.madness.minRangeMovesBeforeDistortion && this.data.player.madness.quantity > 0 ) {
-
-      this.data.map.element.classList.add( "madness" );
-      feTurbulence = document.querySelector( "feTurbulence" );feDisplacementMap = document.querySelector( "feDisplacementMap" );
-      baseFrequency = `${ this.data.player.direction === "x" ? this.data.map.madness.playerDirectionDistortion : this.data.player.madness.quantity } ${ this.data.player.direction === "y" ? this.data.map.madness.playerDirectionDistortion : this.data.player.madness.quantity }`;
-      scale = Math.ceil( Number( this.data.player.madness.quantity.toFixed( 2 ) ) * Math.ceil( this.data.map.madness.distortionScaleMultiplier * 100 ) );
-      feTurbulence.setAttribute( "baseFrequency", baseFrequency );
-      feDisplacementMap.setAttribute( "scale", scale )
-
-    }
-
-    if ( this.data.player.vision.range > this.data.player.vision.minRange && this.data.player.madness.quantity === 0 ) {
-
-      this.data.player.madness.minRangeMoves = 0;
-      this.data.map.element.classList.remove( "madness" )
-
-    }
-
-    this.data.player.vision.tokens = this.data.player.vision.tokens < ( this.data.player.vision.tokensPerRangeLoss * this.data.player.vision.maxRange ) ? this.data.player.vision.tokens : ( this.data.player.vision.tokensPerRangeLoss * this.data.player.vision.maxRange );
-    this.data.player.vision.tokens = this.data.player.vision.tokens < ( ( ( this.data.player.vision.minRange - 1 ) * this.data.player.vision.tokensPerRangeLoss ) + 1 ) ? ( ( this.data.player.vision.minRange - 1 ) * ( this.data.player.vision.tokensPerRangeLoss ) + 1 ) : this.data.player.vision.tokens;
-    this.data.player.vision.tokens -= this.data.player.vision.tokens !== ( ( ( this.data.player.vision.minRange - 1 ) * this.data.player.vision.tokensPerRangeLoss ) + 1 ) ? 1 : 0;
-    this.data.player.vision.range = Math.ceil( this.data.player.vision.tokens / this.data.player.vision.tokensPerRangeLoss ) >= this.data.player.vision.minRange ? Math.ceil( this.data.player.vision.tokens / this.data.player.vision.tokensPerRangeLoss ) : this.data.player.vision.minRange;
-
-    typeof debugKey === "undefined" ? false : this.debugRegister( "tileEvents", [], "end", debugKey )
 
   }
 
