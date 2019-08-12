@@ -673,14 +673,9 @@ class gameInstance {
 
         if ( lastUpdatedTiles ) {
 
+          this.lastUpdatedTilesFog( lastUpdatedTiles )
 
-          if ( gamemode === 0 ) {
-
-            this.lastUpdatedTilesFog( lastUpdatedTiles )
-
-          }
-
-          else if ( gamemode === 1 ) {
+          if ( gamemode === 1 ) {
 
             lastUpdatedTiles.forEach( v => { if ( JSON.stringify( v ) !== JSON.stringify( coordinates ) ) { this.tileClear( v ) } } )
 
@@ -853,7 +848,8 @@ class gameInstance {
         this.tileEvents( newXY, entity );
         this.registerTile( newXY, this.tileClassToId( entity ) );
         this.tileUpdateDisplay( newXY );
-        this.entitySight( entity )
+        this.entitySight( entity );
+        
 
       }
 
