@@ -115,7 +115,7 @@
       let level = evt.target.offsetParent.nextElementSibling.alt.split("lvl")[1];
 
       // moving the location to "game/play.html" and adding the difficulty and the level in the location so "game/relativeSrcs.js" can understand what lvl and what difficulty needs to be loaded
-      document.location=`game/play.html?d=${difficulty}&m=${Number(level)-1}`;
+      document.location=`game/play.html?difficulty=${difficulty}&map=${Number(level)-1}&players=1`;
 
     });
 

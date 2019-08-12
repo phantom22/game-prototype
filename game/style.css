@@ -34,76 +34,25 @@ background: hsl(15, 100%, 8%);
 .door.light {
 background: hsl(30, 100%, 30%);
 }
-.player {
+.player1 {
 outline: 3px solid hsl(0, 80%, 35%);
 background: hsl(0, 70%, 48%);
-z-index: 0;
+}
+.player2 {
+outline: 3px solid hsl(240, 90%, 25%);
+background: hsl(240, 90%, 40%);
+}
+.player3 {
+outline: 3px solid hsl(120, 100%, 25%);
+background: hsl(120, 100%, 50%);
+}
+.player4 {
+outline: 3px solid hsl(30, 100%, 30%);
+background: hsl(30, 100%, 50%);
 }
 .light:not(.door) {
 background: hsl(0, 79%, 18%);
 }
 .madness {
 filter: url(#noise);
-}
-/*
-.madness .air {
-background: hsl(0, 10%, 5%); 
-}
-.madness .wall {
-background: hsl(210, 35%, 3%);
-}
-.madness .coin {
-background: hsl(70, 60%, 60%);
-}
-.madness .door {
-background: hsl(15, 30%, 8%);
-}
-.madness .door.light {
-background: hsl(30, 50%, 30%);
-}
-.madness .player {
-outline: 3px solid #00cccc;
-background: #00cccc;
-z-index: 0;
-}
-.madness .light:not(.door) {
-background: hsl(0, 20%, 18%);
-}
-*/
-.hud {
-display: none;
-position: absolute;
-right: 0;
-top: 20%;
-width: 4%;
-min-width: 77px;
-min-height: 500px;
-height: 60%;
-background: hsl(210, 49%, 4%);
-overflow: hidden;
-}
-.hud table {
-width: 100%;
-height: 100%;
-margin: 0;
-}
-.hud td {
-width: 13.5%;
-height: 13.5%;
-}
-.hud table, .hud tr, .hud td {
-border: none;
-}
-.hud td .index {
-position: relative;
-bottom: -40%;
-color: hsl(210, 49%, 30%);
-font-weight: bold;
-}
-.hud .selected {
-border: 3px solid hsl(0, 79%, 25%);
-background: hsl(210, 49%, 15%);
-}
-.hud td:not(.selected):hover {
-background: hsl(210, 49%, 10%);
 }

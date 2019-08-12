@@ -2,28 +2,30 @@ const T = TOOL;
 
 class gameInstance { 
 
-  constructor( playerRules = { spawnPoint, moveDistance, vision, gamemode }, map = { grid, meta, coins, madness }, debug = { state, maxRegistryLength } ) { 
+  constructor( playerRules = { spawnPoints, moveDistance, vision, gamemode, playerQuantity }, map = { grid, meta, coins, madness, tileClasses }, debug = { state, maxRegistryLength } ) { 
 
     let p = playerRules,
-    player,
     vision = typeof p.vision !== "undefined" ? p.vision : void 0,
     coins = map.coins,
     madness = typeof map.madness !== "undefined" ? map.madness : void 0,
     mCoins = typeof map.madness !== "undefined" ? madness.coins : void 0,
-    flag = p.gamemode === 3 ? true : false,
+    flag = p.gamemode === 3 ? true : void 0,
     trueCoinsTokenRewards,
     falseCoinsTokenRewards,
-    state = typeof debug !== "undefined" ? debug.state : false,
+    index,
+    state = typeof debug !== "undefined" ? debug.state : void 0,
     maxRegistryLength = typeof debug !== "undefined" && typeof map.grid !== "undefined" && debug.maxRegistryLength > ( map.grid[0] * map.grid[1] ) ? debug.maxRegistryLength : ( ( map.grid[0] * map.grid[1] ) * 2 );
 
     map.grid = typeof map.grid !== "undefined" && Array.isArray( map.grid ) && typeof map.grid.reduce( ( a, b )  =>  a + b ) === "number" && map.grid.length === 2 ? map.grid : void 0;
-    map.meta = typeof map.meta === "string" && map.meta.split( "" ).length === map.grid[0] * map.grid[1] ? map.meta.split( "" ).map( v => Number( v ) ) : void 0;
+    map.meta = typeof map.meta === "string" && map.meta.split("").length === map.grid[0] * map.grid[1] ? map.meta.split("").map( v => Number( v ) ) : void 0;
+    map.tileClasses = typeof map.tileClasses !== "undefined" && Array.isArray( map.tileClasses ) ? map.tileClasses : ["air", "wall", "coin1", "coin2", "door", "player1", "player2", "player3", "player4" ];
 
     this.debug = typeof state !== "undefined" && state === true ? { state: state, registry: [], keys: [], maxRegistryLength: maxRegistryLength } : void 0;
 
     if ( !flag ) {
 
-      p.spawnPoint = typeof playerRules.spawnPoint === "boolean" || typeof playerRules.spawnPoint !== "undefined" && Array.isArray( playerRules.spawnPoint ) && typeof playerRules.spawnPoint.reduce( ( a, b )  =>  a + b ) === "number" && playerRules.spawnPoint.length === 2 ? playerRules.spawnPoint : true;
+      p.playerQuantity = typeof p.playerQuantity === "number" && p.playerQuantity >= 1 && p.playerQuantity <= 4 ? p.playerQuantity : 1;
+      p.spawnPoints = typeof playerRules.spawnPoints === "boolean" || typeof playerRules.spawnPoints !== "undefined" && Array.isArray( playerRules.spawnPoints ) && typeof playerRules.spawnPoints.reduce( ( a, b ) => a + b ) === "number" && playerRules.spawnPoints.filter( v => Array.isArray( v ) && typeof v.reduce( ( a, b ) => a + b ) === "number" && v.length === 2 ).length === playerRules.playerQuantity ? playerRules.spawnPoints : true;
       p.moveDistance = typeof p.moveDistance === "number" && p.moveDistance > 0 ? Math.floor( p.moveDistance ) : 1;
       p.gamemode = typeof p.gamemode === "number" && p.gamemode > 0 ? Math.floor( p.gamemode ) : 0;
       vision.initialRange =  typeof p.vision !== "undefined" && typeof vision.initialRange === "number" && vision.initialRange > 0 ? Math.floor( vision.initialRange ) : 5;
@@ -70,7 +72,8 @@ class gameInstance {
 
     if ( typeof map.grid !== "undefined" && typeof map.meta !== "undefined" && p.gamemode !== 3 || typeof map.grid !== "undefined" && typeof map.meta !== "undefined" && p.gamemode === 3 ) {
 
-      this.data = { map: map, playerRules: p, entities: { player1: {} } };
+      this.data = { map: map, playerRules: p, entities: {} };
+      if  (!flag) { for ( index = 0; index < this.data.playerRules.playerQuantity; index++ ) { this.data.entities[`player${ index + 1 }`] = {} } }
       this.registry = {};
       this.createMap();
       this.registerMap( flag );
@@ -99,7 +102,7 @@ class gameInstance {
     registerIndex,
     keyIndex;
 
-    if ( string && args && Array.isArray( args ) && state && supportedStates.includes( state ) && debugKey && !isNaN( debugKey ) ) {
+    if ( string && args && Array.isArray( args ) && state && supportedStates.includes( state ) && debugKey && typeof debugKey === "number" ) {
 
       if ( this.debug.registry.length > maxRegistryLength ) {
 
@@ -140,7 +143,7 @@ class gameInstance {
 
     }
 
-    if ( string && tokensPerRangeLoss && !isNaN( tokensPerRangeLoss ) ) {
+    if ( string && tokensPerRangeLoss && typeof tokensPerRangeLoss === "number" ) {
 
       array = string.split(" ");
 
@@ -155,22 +158,43 @@ class gameInstance {
 
   }
 
-  tileClass( typeId ) {
+  tileIdToClass( tileId ) {
 
     let debugKey,
-    tileType = ["air", "wall", "coin", "door", "player", "coin" ];
+    tileClasses = this.data.map.tileClasses;
 
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
 
       debugKey = this.debugKeyGen();
-      this.debugRegister( "tileClass", [typeId], "start", debugKey )
+      this.debugRegister( "tileIdToClass", [tileId], "start", debugKey )
 
     }
 
-    if ( !isNaN( typeId ) ) {
+    if ( typeof tileId === "number" ) {
 
-    	typeof debugKey === "undefined" ? false : this.debugRegister( "tileClass", [], "end", debugKey );
-    	return String( tileType[typeId] )
+      typeof debugKey === "undefined" ? false : this.debugRegister( "tileIdToClass", [], "end", debugKey );
+      return String( tileClasses[tileId] ).includes( "coin" ) ? "coin" : String( tileClasses[tileId] )
+
+    }
+
+  }
+
+  tileClassToId( tileClass ) {
+
+    let debugKey,
+    tileClasses = this.data.map.tileClasses;
+
+    if ( typeof this.debug !== "undefined" && this.debug.state ) {
+
+      debugKey = this.debugKeyGen();
+      this.debugRegister( "tileClassToId", [tileClass], "start", debugKey )
+
+    }
+
+    if ( typeof tileClass !== "undefined" ) {
+
+      typeof debugKey === "undefined" ? false : this.debugRegister( "tileClassToId", [], "end", debugKey );
+      return Number( tileClasses.indexOf(tileClass) )
 
     }
 
@@ -181,8 +205,8 @@ class gameInstance {
     let D = T.DOM,
     debugKey,
     map = this.data.map,
-    tbl,
-    tbd,
+    table,
+    tbody,
     index,
     Index,
     tr,
@@ -197,28 +221,28 @@ class gameInstance {
 
     if ( map.meta && !map.element ) {
 
-      tbl = D.cE( "table" ); tbd = D.cE( "tbody" );
+      table = D.cE( "table" ); tbody = D.cE( "tbody" );
 
       for ( index = 0;index < map.grid[1]; index++ ) {
 
-      	tr = D.cE( "tr" );
+        tr = D.cE( "tr" );
 
-      	for ( Index = 0;Index < map.grid[0]; Index++ ) {
+        for ( Index = 0;Index < map.grid[0]; Index++ ) {
 
-      		td = D.cE( "td" );
-      		td.dataset.x = Index;
-      		td.dataset.y = index;
-      		D.aC( td, tr )
+          td = D.cE( "td" );
+          td.dataset.x = Index;
+          td.dataset.y = index;
+          D.aC( td, tr )
 
-      	}
+        }
 
-      	D.aC( tr, tbd )
+        D.aC( tr, tbody )
 
       }
       
-      D.aC( tbd, tbl );
+      D.aC( tbody, table );
 
-      this.data.map.element = tbl;
+      this.data.map.element = table;
 
     }
 
@@ -236,11 +260,12 @@ class gameInstance {
     index,
     row,
     column,
-    xy,
+    coordinates,
     registryKeys,
     airTiles,
     number,
-    bannedTilesFromRandomizing;
+    bannedTilesFromRandomizing,
+    randomizedPositions = [];
 
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
 
@@ -258,24 +283,38 @@ class gameInstance {
 
       }
 
-      if ( typeof this.data.playerRules.spawnPoint !== "boolean" && Array.isArray( this.data.playerRules.spawnPoint ) && !isNaN( this.data.playerRules.spawnPoint.reduce( ( a, b ) => a + b ) ) ) {
+      if ( typeof this.data.playerRules.spawnPoints !== "boolean" && Array.isArray( this.data.playerRules.spawnPoints ) && typeof this.data.playerRules.spawnPoints.reduce( ( a, b ) => a + b ) === "number" ) {
 
-        xy = this.data.playerRules.spawnPoint;
-        this.registerTile( xy, 4 )
+        coordinates = this.data.playerRules.spawnPoints;
+
+        for ( index = 0; index < coordinates.length; index++ ) {
+
+          this.registerTile( coordinates[index], this.tileClassToId( `player${ index + 1 }` ) )
+
+        }
 
       }
 
-      else if ( this.data.playerRules.spawnPoint === true ) {
+      else if ( this.data.playerRules.spawnPoints === true ) {
 
-        registryKeys = Object.keys( this.registry ); bannedTilesFromRandomizing = this.data.map.bannedTilesFromRandomizing.map( v => `${ v[0] }-${ v[1] }` );
-        airTiles = registryKeys.filter( v => this.registry[v].id === 0 && !bannedTilesFromRandomizing.includes( v ) ); number = M.R( airTiles.length ); xy = airTiles[number].split( "-" ).map( v => Number( v ) );
-        this.registerTile( xy, 4 )
+        for ( index = 0; index < this.data.playerRules.playerQuantity; index++ ) {
+
+          registryKeys = Object.keys( this.registry ); bannedTilesFromRandomizing = this.data.map.bannedTilesFromRandomizing.map( v => `${ v[0] }-${ v[1] }` );
+          airTiles = registryKeys.filter( v => this.registry[v].id === 0 && !bannedTilesFromRandomizing.includes( v ) ); number = M.R( airTiles.length ); coordinates = airTiles[number].split( "-" ).map( v => Number( v ) );
+          randomizedPositions.push( coordinates ); this.registerTile( coordinates, this.tileClassToId( `player${ index + 1 }` ) )
+
+        }
 
       }
 
       if ( !flag ) {
 
-        this.data.entities["player1"] = { position: xy, vision: { range: this.data.playerRules.vision.initialRange, tokens: ( this.data.playerRules.vision.initialRange * p.vision.tokensPerRangeLoss ) }, madness: { minRangeMoves: 0 } }
+        for ( index = 0; index < this.data.playerRules.playerQuantity; index++ ) {
+
+          this.data.entities[`player${ index + 1 }`] = { position: randomizedPositions[index], vision: { range: this.data.playerRules.vision.initialRange, tokens: ( this.data.playerRules.vision.initialRange * p.vision.tokensPerRangeLoss ) }, madness: { minRangeMoves: 0 } }
+        
+        }
+
         this.registerCoins();
         this.registerDoor()
 
@@ -298,7 +337,7 @@ class gameInstance {
     registry,
     airTiles,
     number,
-    typeId;
+    tileId;
 
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
 
@@ -310,9 +349,9 @@ class gameInstance {
     for ( index = 0;index < ( trueCoins + falseCoins ); index++ ) {
 
       registry = Object.keys( this.registry ); airTiles = registry.filter( v => this.registry[v].id === 0 && !bannedTilesFromRandomizing.includes( v ) );
-      number = M.R( airTiles.length ); typeId = index < trueCoins ? 2 : 5;
+      number = M.R( airTiles.length ); tileId = index < trueCoins ? this.tileClassToId( "coin1" )  : this.tileClassToId( "coin2" ) ;
 
-      this.registerTile( airTiles[number].split( "-" ), typeId )
+      this.registerTile( airTiles[number].split( "-" ), tileId )
 
     }
 
@@ -341,7 +380,7 @@ class gameInstance {
       registry = Object.keys( this.registry ); airTiles = registry.filter( v => this.registry[v].id === 0 && !bannedTilesFromRandomizing.includes( v ) );
       number = M.R( airTiles.length );
       this.data.map.door = airTiles[number].split( "-" ).map( v => Number( v ) );
-      this.registerTile( this.data.map.door, 3 )
+      this.registerTile( this.data.map.door, this.tileClassToId( "door" ) )
 
     }
 
@@ -349,7 +388,7 @@ class gameInstance {
 
   }
 
-  registerTile( xy, typeId ) {
+  registerTile( coordinates, tileId ) {
 
     let D = T.DOM,
     debugKey,
@@ -360,15 +399,15 @@ class gameInstance {
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
 
       debugKey = this.debugKeyGen();
-      this.debugRegister( "registerTile", [xy, typeId], "start", debugKey )
+      this.debugRegister( "registerTile", [coordinates, tileId], "start", debugKey )
 
     }
 
-    if ( xy && Array.isArray( xy ) && !isNaN( typeId ) ) { 
+    if ( coordinates && Array.isArray( coordinates ) && typeof tileId === "number" ) {
 
-      registryQuery = `${ xy[0] }-${ xy[1] }`; element = D.qSA( `[data-x="${ xy[0] }"][data-y="${ xy[1] }"]`, map.element , 0);
+      registryQuery = `${ coordinates[0] }-${ coordinates[1] }`; element = D.qSA( `[data-x="${ coordinates[0] }"][data-y="${ coordinates[1] }"]`, map.element , 0);
 
-      this.registry[registryQuery] = { id: Number( typeId ), class: this.tileClass( typeId ), element: element }
+      this.registry[registryQuery] = { id: Number( tileId ), class: this.tileIdToClass( tileId ), element: element }
 
     }
 
@@ -376,7 +415,7 @@ class gameInstance {
 
   }
 
-  tileUpdateDisplay( xy ) {
+  tileUpdateDisplay( coordinates ) {
 
     let debugKey,
     registryQuery;
@@ -384,14 +423,14 @@ class gameInstance {
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
 
       debugKey = this.debugKeyGen();
-      this.debugRegister( "tileUpdateDisplay", [xy], "start", debugKey )
+      this.debugRegister( "tileUpdateDisplay", [coordinates], "start", debugKey )
 
     }
 
-    if ( xy && Array.isArray( xy ) ) {
+    if ( coordinates && Array.isArray( coordinates ) ) {
 
-      registryQuery = `${ xy[0] }-${ xy[1] }`;
-      if ( this.registry[registryQuery] ) { this.tileClear( xy );this.registry[registryQuery].element.classList.add( this.registry[registryQuery].class ) }
+      registryQuery = `${ coordinates[0] }-${ coordinates[1] }`;
+      if ( this.registry[registryQuery] ) { this.tileClear( coordinates );this.registry[registryQuery].element.classList.add( this.registry[registryQuery].class ) }
 
     }
 
@@ -399,7 +438,7 @@ class gameInstance {
 
   }
 
-  tileClear( xy ) {
+  tileClear( coordinates ) {
 
     let debugKey,
     registryQuery,
@@ -408,13 +447,13 @@ class gameInstance {
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
 
       debugKey = this.debugKeyGen();
-      this.debugRegister( "tileClear", [xy], "start", debugKey )
+      this.debugRegister( "tileClear", [coordinates], "start", debugKey )
 
     }
 
-    if ( xy && Array.isArray( xy ) ) {
+    if ( coordinates && Array.isArray( coordinates ) ) {
 
-      registryQuery = `${ xy[0] }-${ xy[1] }`;
+      registryQuery = `${ coordinates[0] }-${ coordinates[1] }`;
 
       if ( this.registry[registryQuery] ) {
 
@@ -424,7 +463,10 @@ class gameInstance {
         elementClassList.remove( "wall" );
         elementClassList.remove( "coin" );
         elementClassList.remove( "door" );
-        elementClassList.remove( "player" )
+        elementClassList.remove( "player1" );
+        elementClassList.remove( "player2" );
+        elementClassList.remove( "player3" );
+        elementClassList.remove( "player4" )
 
       }
 
@@ -434,17 +476,128 @@ class gameInstance {
 
   }
 
+  lastUpdatedTilesFog( lastUpdatedTiles ) {
+
+    let debugKey,
+    registryQuery,
+    tileId,
+    elementClassList;
+
+    if ( typeof this.debug !== "undefined" && this.debug.state ) {
+
+      debugKey = this.debugKeyGen();
+      this.debugRegister( "lastUpdatedTilesFog", [lastUpdatedTiles], "start", debugKey )
+
+    }
+
+    if ( lastUpdatedTiles && Array.isArray( lastUpdatedTiles ) ) {
+
+      lastUpdatedTiles.forEach( v => { 
+
+        registryQuery = `${v[0]}-${v[1]}`;
+        tileId = this.registry[registryQuery].id;
+        elementClassList = this.registry[registryQuery].element.classList;
+
+        switch ( tileId ) {
+
+          case this.tileClassToId( "wall" ):
+            elementClassList.remove( "wall" );
+          break;
+
+          case this.tileClassToId( "air" ):
+            elementClassList.remove( "light" );
+          break;
+
+          case this.tileClassToId( "player1" ):
+            elementClassList.remove( "light" );
+          break;
+
+          case this.tileClassToId( "player2" ):
+            elementClassList.remove( "light" );
+          break;
+
+          case this.tileClassToId( "player3" ):
+            elementClassList.remove( "light" );
+          break;
+
+          case this.tileClassToId( "player4" ):
+            elementClassList.remove( "light" );
+          break;
+
+          case this.tileClassToId( "coin1" ):
+            elementClassList.remove( "coin" ); elementClassList.add( "air" );
+          break;
+
+          case this.tileClassToId( "coin2" ):
+            elementClassList.remove( "coin" ); elementClassList.add( "air" );
+          break;
+
+        }
+
+      } )
+
+    }
+
+    typeof debugKey === "undefined" ? false : this.debugRegister( "lastUpdatedTilesFog", [], "end", debugKey )
+
+  }
+
+  currentTilesLighting( currentTiles ) {
+
+
+    let debugKey,
+    registryQuery,
+    tileId,
+    elementClassList;
+
+    if ( typeof this.debug !== "undefined" && this.debug.state ) {
+
+      debugKey = this.debugKeyGen();
+      this.debugRegister( "currentTilesLighting", [currentTiles], "start", debugKey )
+
+    }
+
+    if ( currentTiles && Array.isArray( currentTiles ) ) {
+
+      currentTiles.forEach( v => {
+
+        registryQuery = `${v[0]}-${v[1]}`;
+        tileId = this.registry[registryQuery].id;
+        elementClassList = this.registry[registryQuery].element.classList;
+
+        switch ( tileId ) {
+
+          case this.tileClassToId( "air" ):
+            elementClassList.add( "light" );
+          break;
+
+          case this.tileClassToId( "door" ):
+            elementClassList.add( "light" );
+          break;
+
+        }
+
+        this.tileUpdateDisplay( v )
+
+      } )
+
+    }
+
+    typeof debugKey === "undefined" ? false : this.debugRegister( "currentTilesLighting", [], "end", debugKey )
+
+  }
+
   mapRender( flag ) {
 
     let D = T.DOM,
     debugKey,
     map = this.data.map,
     p = this.data.playerRules,
-    xy = this.data.entities.player1.position,
+    coordinates,
     slots,
     div,
-    tbl,
-    tbd,
+    table,
+    tbody,
     index,
     tr,
     td;
@@ -460,23 +613,29 @@ class gameInstance {
 
       document.body.insertAdjacentElement( "afterbegin", map.element );
 
-      if ( xy && Array.isArray( xy ) && !isNaN( xy.reduce( ( a, b ) => a + b ) ) && xy.length === 2 ) {
+      this.data.playerRules.coins = { true: 0, false: 0 };
+      this.data.playerRules.madness = { quantity: 0 };
 
-        this.data.playerRules.coins = { true: 0, false: 0 };
-        this.data.playerRules.madness = { quantity: 0 };
+      for ( index = 0; index < this.data.playerRules.playerQuantity; index++ ) {
 
-        this.entitySight( "player1" ); this.tileUpdateDisplay( xy )
+        coordinates = this.data.entities[`player${ index + 1 }`].position;
+
+        if ( coordinates && Array.isArray( coordinates ) && typeof coordinates.reduce( ( a, b ) => a + b ) === "number" && coordinates.length === 2 ) {
+
+          this.entitySight( `player${ index + 1 }` ); this.tileUpdateDisplay( coordinates )
+
+        }
 
       }
 
       if ( flag ) {
 
-      	Object.keys( this.registry ).forEach( v  =>  {
+        Object.keys( this.registry ).forEach( v  =>  {
 
-      		let xy = v.split( "-" );
-      		this.tileUpdateDisplay( xy )
+          let coordinates = v.split( "-" );
+          this.tileUpdateDisplay( coordinates )
 
-      	} )
+        } )
 
       }
 
@@ -491,7 +650,7 @@ class gameInstance {
     let D = T.DOM,
     debugKey,
     p = this.data.playerRules,
-    xy,
+    coordinates,
     lastUpdatedTiles,
     gamemode = p.gamemode,
     currentTiles,
@@ -507,34 +666,34 @@ class gameInstance {
 
     if ( entity && typeof this.data.entities[entity] !== "undefined" ) {
 
-      xy = this.data.entities[entity].position;
-      lastUpdatedTiles = this.data.entities[entity].lastUpdatedTiles
+      coordinates = this.data.entities[entity].position;
+      lastUpdatedTiles = this.data.entities[entity].lastUpdatedTiles;
 
-      if ( xy && !isNaN( xy.reduce( ( a, b ) => a + b ) ) && entity ) {
+      if ( coordinates && typeof coordinates.reduce( ( a, b ) => a + b ) === "number" ) {
 
         if ( lastUpdatedTiles ) {
 
-          if ( gamemode === 1 ) {
 
-            lastUpdatedTiles.forEach( v => { if( JSON.stringify( v ) !== JSON.stringify( xy ) ){ this.tileClear( v ) } } )
+          if ( gamemode === 0 ) {
+
+            this.lastUpdatedTilesFog( lastUpdatedTiles )
 
           }
 
-          D.qSA( ".wall" ).forEach( v => v.classList.remove( "wall" ) );
-          D.qSA( ".light" ).forEach( v => v.classList.remove( "light" ) );
-          D.qSA( ".coin" ).forEach( v => { v.classList.remove( "coin" ); v.classList.add( "air" ) } );
+          else if ( gamemode === 1 ) {
+
+            lastUpdatedTiles.forEach( v => { if ( JSON.stringify( v ) !== JSON.stringify( coordinates ) ) { this.tileClear( v ) } } )
+
+          }
 
           this.data.entities[entity].lastUpdatedTiles = []
 
         }
 
         currentTiles = this.entitySightRadius( entity );
-
-        airTiles = currentTiles.filter( v => this.registry[`${ v[0] }-${ v[1] }`] !== undefined && this.registry[`${ v[0] }-${ v[1] }`].id === 0 || this.registry[`${ v[0] }-${ v[1] }`].id === 3 );
-        airTiles.forEach( v => { currentAirTiles = this.registry[`${ v[0] }-${ v[1] }`].element; currentAirTiles.classList.add( "light" ) } );
+        this.currentTilesLighting( currentTiles );
 
         this.data.entities[entity].lastUpdatedTiles = currentTiles;
-        currentTiles.forEach( v  =>  this.tileUpdateDisplay( v ) )
 
       }
 
@@ -564,12 +723,12 @@ class gameInstance {
       range = this.data.entities[entity].vision.range;
       number = ( -range );
 
-      if ( range && !isNaN( range ) && entity ) {
+      if ( range && typeof range === "number" ) {
 
-        for ( index = 0;index < ( ( range * 2 ) + 1 ); index++ ) {
+        for ( index = 0; index < ( ( range * 2 ) + 1 ); index++ ) {
 
-        	entitySightRange.push( number );
-        	number += 1
+          entitySightRange.push( number );
+          number += 1
 
         }
 
@@ -588,7 +747,7 @@ class gameInstance {
     let debugKey,
     p = this.data.playerRules,
     range,
-    xy,
+    coordinates,
     x,
     y,
     entitySightRange,
@@ -596,11 +755,11 @@ class gameInstance {
     Index,
     X,
     Y,
-    f,
+    flag,
     entitySightRadius = [],
     grid = this.data.map.grid,
-    n1,
-    n2;
+    row,
+    column;
 
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
 
@@ -612,31 +771,31 @@ class gameInstance {
     if ( entity && typeof this.data.entities[entity] !== "undefined" ) {
 
       range = this.data.entities[entity].vision.range;
-      xy = this.data.entities[entity].position;
-      x = xy[0];
-      y = xy[1];
+      coordinates = this.data.entities[entity].position;
+      x = coordinates[0];
+      y = coordinates[1];
 
-      if ( range && !isNaN( range ) && entity ) {
+      if ( range && typeof range === "number" && entity ) {
 
         entitySightRange = this.entitySightRange( entity );
 
-        for ( index = 0;index < entitySightRange.length; index++ ) {
+        for ( index = 0; index < entitySightRange.length; index++ ) {
 
-        	for ( Index = 0;Index < entitySightRange.length; Index++ ) {
+          for ( Index = 0; Index < entitySightRange.length; Index++ ) {
 
-        	  X = Index; Y = index; f = true;
-        	  f = X === 0 && Y === 0 || X === ( range * 2 ) && Y === 0 || X === 0 && Y === ( range * 2 ) || X === ( range * 2 ) && Y === ( range * 2 ) || X === range && Y === range ? false : true;
-        	  
-        	  if ( f ) {
+            X = Index; Y = index; flag = true;
+            flag = X === 0 && Y === 0 || X === ( range * 2 ) && Y === 0 || X === 0 && Y === ( range * 2 ) || X === ( range * 2 ) && Y === ( range * 2 ) || X === range  && Y === range  ? false : true;
+            
+            if ( flag ) {
 
-        	  	n1 = ( x + entitySightRange[Index] ) >= 0 && ( x + entitySightRange[Index] ) < grid[0] ? ( x + entitySightRange[Index] ) : false;
-        	  	n2 = ( y + entitySightRange[index] ) >= 0 && ( y + entitySightRange[index] ) < grid[1] ? ( y + entitySightRange[index] ) : false;
+              row = ( x + entitySightRange[Index] ) >= 0 && ( x + entitySightRange[Index] ) < grid[0] ? ( x + entitySightRange[Index] ) : false;
+              column = ( y + entitySightRange[index] ) >= 0 && ( y + entitySightRange[index] ) < grid[1] ? ( y + entitySightRange[index] ) : false;
 
-        	    if ( typeof n1 === "number" && typeof n2 === "number" ) { entitySightRadius.push( [n1, n2] ) }
+              if ( typeof row === "number" && typeof column === "number" ) { entitySightRadius.push( [row, column] ) }
 
-        	  }
+            }
 
-  		    }
+          }
 
         }
 
@@ -661,7 +820,7 @@ class gameInstance {
     newY,
     oldX,
     oldY,
-    typeId,
+    tileId,
     oldXY,
     newXY;
 
@@ -681,7 +840,7 @@ class gameInstance {
 
       if ( Math.abs( newX - oldX ) <= moveDistance && Math.abs( newY - oldY ) <= moveDistance && Math.abs( newX - oldX ) + Math.abs( newY - oldY ) <= moveDistance ) {
 
-        typeId = `${ oldX }-${ oldY }` === this.data.map.door.join( "-" ) ? 3 : 0;
+        tileId = `${ oldX }-${ oldY }` === this.data.map.door.join( "-" ) ? this.tileClassToId( "door" ) : this.tileClassToId( "air" );
 
         this.data.playerRules.lastPlayerMoveDirection = Math.abs( newX - oldX ) === 1 ? "x" : "y";
         this.data.entities[entity].position = [Number( newX ), Number( newY )];
@@ -689,10 +848,10 @@ class gameInstance {
         oldXY = [oldX, oldY];
         newXY = [newX, newY];
 
-        this.registerTile( oldXY, typeId );
+        this.registerTile( oldXY, tileId );
         this.tileUpdateDisplay( oldXY );
         this.tileEvents( newXY, entity );
-        this.registerTile( newXY, 4 );
+        this.registerTile( newXY, this.tileClassToId( entity ) );
         this.tileUpdateDisplay( newXY );
         this.entitySight( entity )
 
@@ -704,11 +863,11 @@ class gameInstance {
 
   }
 
-  tileEvents( xy, entity ) {
+  tileEvents( coordinates, entity ) {
 
     let M = T.Math,
     debugKey,
-    typeId,
+    tileId,
     range,
     tokensPerRangeLoss = this.data.playerRules.vision.tokensPerRangeLoss,
     tokens,
@@ -724,7 +883,7 @@ class gameInstance {
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
 
       debugKey = this.debugKeyGen();
-      this.debugRegister( "tileEvents", [xy, entity], "start", debugKey )
+      this.debugRegister( "tileEvents", [coordinates, entity], "start", debugKey )
 
     }
 
@@ -733,23 +892,23 @@ class gameInstance {
       range = this.data.entities[entity].vision.range;
       tokens = this.data.entities[entity].vision.tokens;
 
-      if ( xy && Array.isArray(xy) && xy.length === 2) {
+      if ( coordinates && Array.isArray( coordinates ) && coordinates.length === 2) {
 
-        typeId = this.registry[xy.join( "-" )].id;
+        tileId = this.registry[coordinates.join( "-" )].id;
 
-        switch ( typeId ) {
+        switch ( tileId ) {
 
-          case 2: 
+          case this.tileClassToId( "coin1" ): 
             this.data.playerRules.coins.true += 1;
             this.data.playerRules.madness.quantity = this.data.playerRules.madness.quantity > 0 ? this.data.playerRules.madness.quantity * this.data.map.madness.coins.true.madnessMultiplier : 0;
             this.data.entities[entity].vision.tokens = tokens + trueCoinsTokenRewards.base + M.R( trueCoinsRandomRewards.added[0], trueCoinsRandomRewards.added[1] ) - M.R( trueCoinsRandomRewards.removed[0], trueCoinsRandomRewards.removed[1] );
           break;
 
-          case 3:
+          case this.tileClassToId( "door" ):
             this.data.map.coins.true.quantity - this.data.playerRules.coins.true === 0 ? alert( "you won" ) : alert( `you found ${ this.data.playerRules.coins.true } coins of ${ this.data.map.coins.true.quantity }` );
           break;
 
-          case 5:
+          case this.tileClassToId( "coin2" ):
             this.data.playerRules.coins.false += 1;
             this.data.playerRules.madness.quantity = this.data.playerRules.madness.quantity > 0 ? this.data.playerRules.madness.quantity * this.data.map.madness.coins.false.madnessMultiplier : 0;
             this.data.entities[entity].vision.tokens = tokens + falseCoinsTokenRewards.base + M.R( falseCoinsRandomRewards.added[0], falseCoinsRandomRewards.added[1] ) - M.R( falseCoinsRandomRewards.removed[0], falseCoinsRandomRewards.removed[1] );
