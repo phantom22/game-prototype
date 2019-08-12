@@ -2,7 +2,12 @@
 
 # **How to play the game?** *(index.html)*
 
-Use `WASD` to move around and collect coins.
+To move around and collect coins use:
+* `WASD` if player1
+* `IJKL` if player2
+* `Arrows` if player3
+* `GVBN` if player4
+
 Even though it seems that there are lots of coins on the map, there are **two types** of coins that are indistinguishable to the eye:
 * [**true**]() need to be collected so the player can escape through the door and win the game, they have a `higher` chance of dealing with the player's madness.
 * [**false**]() aren't exactly as important as the first type but they help the player not going insane with a `slight` chance of reducing the player's madness.
