@@ -108,7 +108,7 @@ let instance;
 
           if (keyBindings[0].includes(k)) {
 
-            // W A newTile D
+            // W A S D
             bindings = keyBindings[0];
 
             index = 1;
