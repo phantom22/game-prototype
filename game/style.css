@@ -1,23 +1,18 @@
 body {
 background: black;
+height: 96vh;
 }
 table, tr, td {
 border-collapse: collapse;
 border: none;
 }
 table {
-margin: 20px auto;
+margin: 1px auto;
 }
 svg {
 width: 0;
 height: 0;
 position: absolute;
-}
-td {
-height: 15px;
-width: 15px;
-min-height: 15px;
-min-width: 15px;
 }
 .air {
 background: hsl(0, 85%, 5%); 
@@ -34,19 +29,19 @@ background: hsl(15, 100%, 8%);
 .door.light {
 background: hsl(30, 100%, 30%);
 }
-.player1 {
+.player.red {
 outline: 3px solid hsl(0, 80%, 35%);
 background: hsl(0, 70%, 48%);
 }
-.player2 {
+.player.blue {
 outline: 3px solid hsl(240, 90%, 25%);
 background: hsl(240, 90%, 40%);
 }
-.player3 {
+.player.green {
 outline: 3px solid hsl(120, 100%, 25%);
 background: hsl(120, 100%, 50%);
 }
-.player4 {
+.player.orange {
 outline: 3px solid hsl(30, 100%, 30%);
 background: hsl(30, 100%, 50%);
 }
@@ -55,4 +50,8 @@ background: hsl(0, 79%, 18%);
 }
 .madness {
 filter: url(#noise);
+}
+.killer {
+background: #993399;
+outline: 3px solid #993399;
 }

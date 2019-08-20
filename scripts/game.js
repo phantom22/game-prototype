@@ -2,7 +2,7 @@ const T = TOOL;
 
 class gameInstance { 
 
-  constructor( playerRules = { spawnPoints, moveDistance, vision, gamemode, playerQuantity }, map = { grid, meta, coins, madness, tileClasses }, debug = { state, maxRegistryLength } ) { 
+  constructor( playerRules = { spawnPoints, moveDistance, vision, gamemode, playerQuantity }, map = { grid, meta, coins, madness, tileClasses }, killerRules = { vision, movesBeforeDisappearing, playerMadnessMovesBeforeSpawn, spawn }, debug = { state, maxRegistryLength } ) { 
 
     let p = playerRules,
     vision = typeof p.vision !== "undefined" ? p.vision : void 0,
@@ -14,16 +14,18 @@ class gameInstance {
     falseCoinsTokenRewards,
     index,
     state = typeof debug !== "undefined" ? debug.state : void 0,
-    maxRegistryLength = typeof debug !== "undefined" && typeof map.grid !== "undefined" && debug.maxRegistryLength > ( map.grid[0] * map.grid[1] ) ? debug.maxRegistryLength : ( ( map.grid[0] * map.grid[1] ) * 2 );
+    maxRegistryLength = typeof debug !== "undefined" && typeof map.grid !== "undefined" && debug.maxRegistryLength > ( map.grid[0] * map.grid[1] ) ? debug.maxRegistryLength : ( ( map.grid[0] * map.grid[1] ) * 2 ),
+    k = !flag && typeof killerRules !== "undefined" ? killerRules : undefined,
+    keyBindings = [ [87,83,65,68], [73,75,74,76], [38,40,37,39], [71,66,86,78] ],
+    playerColors = [ "red", "blue", "green", "orange" ];
 
     map.grid = typeof map.grid !== "undefined" && Array.isArray( map.grid ) && typeof map.grid.reduce( ( a, b )  =>  a + b ) === "number" && map.grid.length === 2 ? map.grid : void 0;
     map.meta = typeof map.meta === "string" && map.meta.split("").length === map.grid[0] * map.grid[1] ? map.meta.split("").map( v => Number( v ) ) : void 0;
     map.tileClasses = typeof map.tileClasses !== "undefined" && Array.isArray( map.tileClasses ) ? map.tileClasses : ["air", "wall", "coin1", "coin2", "door", "player1", "player2", "player3", "player4" ];
 
-    this.debug = typeof state !== "undefined" && state === true ? { state: state, registry: [], keys: [], maxRegistryLength: maxRegistryLength } : void 0;
-
     if ( !flag ) {
 
+      p.madnessMoves = 0;
       p.playerQuantity = typeof p.playerQuantity === "number" && p.playerQuantity >= 1 && p.playerQuantity <= 4 ? p.playerQuantity : 1;
       p.spawnPoints = typeof playerRules.spawnPoints === "boolean" || typeof playerRules.spawnPoints !== "undefined" && Array.isArray( playerRules.spawnPoints ) && typeof playerRules.spawnPoints.reduce( ( a, b ) => a + b ) === "number" && playerRules.spawnPoints.filter( v => Array.isArray( v ) && typeof v.reduce( ( a, b ) => a + b ) === "number" && v.length === 2 ).length === playerRules.playerQuantity ? playerRules.spawnPoints : true;
       p.moveDistance = typeof p.moveDistance === "number" && p.moveDistance > 0 ? Math.floor( p.moveDistance ) : 1;
@@ -33,6 +35,12 @@ class gameInstance {
       vision.minRange = typeof vision.minRange === "number" && vision.minRange >= 1 && vision.minRange <= vision.maxRange ? Math.floor( vision.minRange ) : 2;
       vision.maxRange = typeof vision.maxRange === "number" && vision.maxRange >= 1 && vision.maxRange >= vision.minRange ? Math.floor( vision.maxRange ) : initialRange + 2;
 
+      k.vision.range =  typeof k.vision !== "undefined" && typeof k.vision.range === "number" && k.vision.range > 0 ? Math.floor( k.vision.range ) : 5;
+      k.playerMadnessMovesBeforeSpawn = typeof k.playerMadnessMovesBeforeSpawn === "number" && k.playerMadnessMovesBeforeSpawn >= 1 ? Math.floor( k.playerMadnessMovesBeforeSpawn ) : 15;
+      k.spawn.minDistanceFromObsession = typeof k.spawn.minDistanceFromObsession === "number" && typeof k.spawn.maxDistanceFromObsession === "number" && k.spawn.minDistanceFromObsession >= 5 && k.spawn.minDistanceFromObsession <= ( map.grid[1] - 5 ) && k.spawn.minDistanceFromObsession <= k.spawn.maxDistanceFromObsession ? Math.floor( k.spawn.minDistanceFromObsession ) : ( map.grid[1] - 5 );
+      k.spawn.maxDistanceFromObsession = typeof k.spawn.maxDistanceFromObsession === "number" && typeof k.spawn.minDistanceFromObsession === "number" && k.spawn.maxDistanceFromObsession >= 5 && k.spawn.maxDistanceFromObsession <= map.grid[1] && k.spawn.maxDistanceFromObsession >= k.spawn.minDistanceFromObsession ?  Math.floor( k.spawn.maxDistanceFromObsession ) : map.grid[1];
+      k.movesBeforeDisappearing = typeof k.movesBeforeDisappearing === "number" && k.movesBeforeDisappearing >= k.spawn.minDistanceFromObsession ? Math.floor( k.movesBeforeDisappearing ) : k.spawn.minDistanceFromObsession;
+
       coins.true.quantity = typeof coins.true.quantity === "number" & coins.true.quantity >= 1 ? Math.floor( coins.true.quantity ) : 10;
       coins.false.quantity = typeof coins.false.quantity === "number" && coins.false.quantity >= 0 ? Math.floor( coins.false.quantity ) : 10;
       coins.true.tokenRewards.base = typeof coins.true.tokenRewards.base === "number" || typeof coins.true.tokenRewards.base === "string" ? coins.true.tokenRewards.base : "*1.8";
@@ -41,6 +49,7 @@ class gameInstance {
       coins.false.tokenRewards.random.added = Array.isArray( coins.false.tokenRewards.random.added ) && coins.false.tokenRewards.random.added.length === 2 ? coins.false.tokenRewards.random.added : [0, "*0.7"];
       coins.true.tokenRewards.random.removed = Array.isArray( coins.true.tokenRewards.random.removed ) && coins.true.tokenRewards.random.removed.length === 2 ? coins.true.tokenRewards.random.removed : [3, "*0.8"];
       coins.false.tokenRewards.random.removed = Array.isArray( coins.false.tokenRewards.random.removed ) && coins.false.tokenRewards.random.removed.length === 2 ? coins.false.tokenRewards.random.removed : [0,  "*0.3"];
+      coins.true.positions = []; coins.false.positions = [];
 
       madness.distortionScaleMultiplier = typeof madness.distortionScaleMultiplier === "number" && madness.distortionScaleMultiplier >= 0 ? madness.distortionScaleMultiplier : 1;
       madness.playerDirectionDistortion = typeof madness.playerDirectionDistortion === "number" && madness.playerDirectionDistortion >= 0 && madness.playerDirectionDistortion <= 1 ? madness.playerDirectionDistortion : 0.05;
@@ -52,6 +61,8 @@ class gameInstance {
       mCoins.true.madnessMultiplier = typeof mCoins.true.madnessMultiplier === "number" && mCoins.true.madnessMultiplier >= 0 && mCoins.true.madnessMultiplier < 1 ? mCoins.true.madnessMultiplier : 0.4;
       mCoins.false.madnessMultiplier = typeof mCoins.false.madnessMultiplier === "number" && mCoins.false.madnessMultiplier >= mCoins.true.madnessMultiplier && mCoins.false.madnessMultiplier >= 0 && mCoins.false.madnessMultiplier < 1 ? mCoins.false.madnessMultiplier : 0.6;
       map.bannedTilesFromRandomizing = Array.isArray( map.bannedTilesFromRandomizing ) ? map.bannedTilesFromRandomizing.filter( v => v.length===2 ) : [];
+
+      madness.state = false;
 
       coins = p.gamemode === 3 ? void 0 : coins;
 
@@ -72,12 +83,19 @@ class gameInstance {
 
     if ( typeof map.grid !== "undefined" && typeof map.meta !== "undefined" && p.gamemode !== 3 || typeof map.grid !== "undefined" && typeof map.meta !== "undefined" && p.gamemode === 3 ) {
 
-      this.data = { map: map, playerRules: p, entities: {} };
-      if  (!flag) { for ( index = 0; index < this.data.playerRules.playerQuantity; index++ ) { this.data.entities[`player${ index + 1 }`] = {} } }
+      this.data = { map: map, playerRules: p, killerRules: k, entities: {}, playerSettings: {} };
+
+      if (!flag) {
+
+        for ( index = 0; index < this.data.playerRules.playerQuantity; index++ ) { this.data.entities[`player${ index + 1 }`] = {}; this.data.playerSettings[`player${index + 1}`] = { color: playerColors[index], keyBindings: keyBindings[index] }; if ( ( index + 1 ) === this.data.playerRules.playerQuantity && ( index + 1 ) < keyBindings.length ) { this.data.playerSettings.killer = { keyBindings: keyBindings[index+1] } } }
+
+      }
+
+      if ( typeof state === true ) { this.debug = { state: state, registry: [], keys: [], maxRegistryLength: maxRegistryLength } }
       this.registry = {};
       this.createMap();
       this.registerMap( flag );
-      this.mapRender( flag );
+      this.mapRender( flag )
 
     }
 
@@ -150,7 +168,7 @@ class gameInstance {
       array[0] = array[0].includes("*") && array[0].slice( 0, 1 ) === "*" ? Math.floor( tokensPerRangeLoss * Number( array[0].slice( 1 ) ) ) : array[0];
       array[1] = array[1] && array[1].slice( 0, 1 ) === "+" || array[1] && array[1].slice( 0, 1 ) === "-" ? ( array[0] + Number( array[1] ) ) : void 0;
 
-      typeof debugKey === "undefined" ? false : this.debugRegister( "stringToCoinTokenReward", [], "end", debugKey );
+      typeof debugKey === "undefined" ? void 0 : this.debugRegister( "stringToCoinTokenReward", [], "end", debugKey );
 
       return !array[1] ? array[0] : array[1];
 
@@ -161,7 +179,9 @@ class gameInstance {
   tileIdToClass( tileId ) {
 
     let debugKey,
-    tileClasses = this.data.map.tileClasses;
+    tileClasses = this.data.map.tileClasses,
+    tileClass,
+    playerColor;
 
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
 
@@ -172,8 +192,18 @@ class gameInstance {
 
     if ( typeof tileId === "number" ) {
 
-      typeof debugKey === "undefined" ? false : this.debugRegister( "tileIdToClass", [], "end", debugKey );
-      return String( tileClasses[tileId] ).includes( "coin" ) ? "coin" : String( tileClasses[tileId] )
+      tileClass = String( tileClasses[tileId] );
+      tileClass = tileClass.includes( "coin" ) ? "coin" : tileClass;
+      
+      if ( tileClass.includes( "player" ) ) {
+
+        playerColor = this.data.playerSettings[tileClass].color;
+        tileClass = `player ${playerColor}`;
+
+      }
+
+      typeof debugKey === "undefined" ? void 0 : this.debugRegister( "tileIdToClass", [], "end", debugKey );
+      return tileClass
 
     }
 
@@ -193,7 +223,7 @@ class gameInstance {
 
     if ( typeof tileClass !== "undefined" ) {
 
-      typeof debugKey === "undefined" ? false : this.debugRegister( "tileClassToId", [], "end", debugKey );
+      typeof debugKey === "undefined" ? void 0 : this.debugRegister( "tileClassToId", [], "end", debugKey );
       return Number( tileClasses.indexOf(tileClass) )
 
     }
@@ -246,7 +276,7 @@ class gameInstance {
 
     }
 
-    typeof debugKey === "undefined" ? false : this.debugRegister( "createMap", [], "end", debugKey );
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "createMap", [], "end", debugKey );
 
   }
 
@@ -276,7 +306,7 @@ class gameInstance {
 
     if ( map.meta && map.element instanceof HTMLElement ) {
 
-      for ( index = 0;index < map.meta.length; index++ ) {
+      for ( index = 0; index < map.meta.length; index++ ) {
 
         row = index; while ( row >= grid[0] ) { row = row - grid[0] }; column = Math.floor( index / grid[0] );
         this.registerTile( [row, column], map.meta[index] )
@@ -299,7 +329,7 @@ class gameInstance {
 
         for ( index = 0; index < this.data.playerRules.playerQuantity; index++ ) {
 
-          registryKeys = Object.keys( this.registry ); bannedTilesFromRandomizing = this.data.map.bannedTilesFromRandomizing.map( v => `${ v[0] }-${ v[1] }` );
+          registryKeys = Object.keys( this.registry ); bannedTilesFromRandomizing = this.data.map.bannedTilesFromRandomizing.map( v => v.join( "-" ) );
           airTiles = registryKeys.filter( v => this.registry[v].id === 0 && !bannedTilesFromRandomizing.includes( v ) ); number = M.R( airTiles.length ); coordinates = airTiles[number].split( "-" ).map( v => Number( v ) );
           randomizedPositions.push( coordinates ); this.registerTile( coordinates, this.tileClassToId( `player${ index + 1 }` ) )
 
@@ -311,8 +341,8 @@ class gameInstance {
 
         for ( index = 0; index < this.data.playerRules.playerQuantity; index++ ) {
 
-          this.data.entities[`player${ index + 1 }`] = { position: randomizedPositions[index], vision: { range: this.data.playerRules.vision.initialRange, tokens: ( this.data.playerRules.vision.initialRange * p.vision.tokensPerRangeLoss ) }, madness: { minRangeMoves: 0 } }
-        
+          this.data.entities[`player${ index + 1 }`] = { position: randomizedPositions[index], vision: { range: this.data.playerRules.vision.initialRange, tokens: ( this.data.playerRules.vision.initialRange * p.vision.tokensPerRangeLoss ) }, madness: { minRangeMoves: 0 }, entityBehavior: "player" }
+
         }
 
         this.registerCoins();
@@ -322,7 +352,7 @@ class gameInstance {
 
     }
 
-    typeof debugKey === "undefined" ? false : this.debugRegister( "registerMap", [], "end", debugKey );
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "registerMap", [], "end", debugKey );
 
   }
 
@@ -332,12 +362,13 @@ class gameInstance {
     debugKey,
     trueCoins = this.data.map.coins.true.quantity,
     falseCoins = this.data.map.coins.false.quantity,
-    bannedTilesFromRandomizing = this.data.map.bannedTilesFromRandomizing.map( v => `${ v[0] }-${ v[1] }` ),
+    bannedTilesFromRandomizing = this.data.map.bannedTilesFromRandomizing.map( v => v.join( "-" ) ),
     index,
     registry,
     airTiles,
     number,
-    tileId;
+    tileId,
+    coordinates;
 
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
 
@@ -346,16 +377,20 @@ class gameInstance {
 
     }
 
-    for ( index = 0;index < ( trueCoins + falseCoins ); index++ ) {
+    for ( index = 0; index < ( trueCoins + falseCoins ); index++ ) {
 
       registry = Object.keys( this.registry ); airTiles = registry.filter( v => this.registry[v].id === 0 && !bannedTilesFromRandomizing.includes( v ) );
-      number = M.R( airTiles.length ); tileId = index < trueCoins ? this.tileClassToId( "coin1" )  : this.tileClassToId( "coin2" ) ;
+      number = M.R( airTiles.length ); tileId = index < trueCoins ? this.tileClassToId( "coin1" ) : this.tileClassToId( "coin2" );
+      coordinates = airTiles[number].split( "-" ).map( v => Number( v ) );
 
-      this.registerTile( airTiles[number].split( "-" ), tileId )
+      this.registerTile( coordinates, tileId );
+
+      if ( tileId === this.tileClassToId( "coin1" ) ) { this.data.map.coins.true.positions.push( coordinates ) }
+      else if ( tileId === this.tileClassToId( "coin2" ) ) { this.data.map.coins.false.positions.push( coordinates ) }
 
     }
 
-    typeof debugKey === "undefined" ? false : this.debugRegister( "registerCoins", [], "end", debugKey )
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "registerCoins", [], "end", debugKey )
 
   }
 
@@ -363,7 +398,7 @@ class gameInstance {
 
     let M = T.Math,
     debugKey,
-    bannedTilesFromRandomizing = this.data.map.bannedTilesFromRandomizing.map( v => `${ v[0] }-${ v[1] }` ),
+    bannedTilesFromRandomizing = this.data.map.bannedTilesFromRandomizing.map( v => v.join( "-" ) ),
     registry,
     airTiles,
     number;
@@ -384,7 +419,7 @@ class gameInstance {
 
     }
 
-    typeof debugKey === "undefined" ? false : this.debugRegister( "registerDoor", [], "end", debugKey )
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "registerDoor", [], "end", debugKey )
 
   }
 
@@ -405,20 +440,21 @@ class gameInstance {
 
     if ( coordinates && Array.isArray( coordinates ) && typeof tileId === "number" ) {
 
-      registryQuery = `${ coordinates[0] }-${ coordinates[1] }`; element = D.qSA( `[data-x="${ coordinates[0] }"][data-y="${ coordinates[1] }"]`, map.element , 0);
+      registryQuery = coordinates.join( "-" ); element = D.qSA( `[data-x="${ coordinates[0] }"][data-y="${ coordinates[1] }"]`, map.element , 0);
 
       this.registry[registryQuery] = { id: Number( tileId ), class: this.tileIdToClass( tileId ), element: element }
 
     }
 
-    typeof debugKey === "undefined" ? false : this.debugRegister( "registerTile", [], "end", debugKey )
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "registerTile", [], "end", debugKey )
 
   }
 
   tileUpdateDisplay( coordinates ) {
 
     let debugKey,
-    registryQuery;
+    registryQuery,
+    registryItem;
 
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
 
@@ -429,16 +465,24 @@ class gameInstance {
 
     if ( coordinates && Array.isArray( coordinates ) ) {
 
-      registryQuery = `${ coordinates[0] }-${ coordinates[1] }`;
-      if ( this.registry[registryQuery] ) { this.tileClear( coordinates );this.registry[registryQuery].element.classList.add( this.registry[registryQuery].class ) }
+      registryQuery = coordinates.join( "-" );
+
+      if ( typeof this.registry[registryQuery] !== "undefined" ) {
+
+        registryItem = this.registry[registryQuery];
+        this.tileClear( coordinates ); 
+
+        registryItem.id !== this.tileClassToId( "player1" ) && registryItem.id !== this.tileClassToId( "player2" ) && registryItem.id !== this.tileClassToId( "player3" ) && registryItem.id !== this.tileClassToId( "player4" ) ? this.registry[registryQuery].element.classList.add( this.registry[registryQuery].class ) : this.registry[registryQuery].class.split(" ").forEach( v => this.registry[registryQuery].element.classList.add( v ) )
+
+      }
 
     }
 
-    typeof debugKey === "undefined" ? false : this.debugRegister( "tileUpdateDisplay", [], "end", debugKey );
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "tileUpdateDisplay", [], "end", debugKey );
 
   }
 
-  tileClear( coordinates ) {
+  tileClear( coordinates, flag ) {
 
     let debugKey,
     registryQuery,
@@ -447,13 +491,13 @@ class gameInstance {
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
 
       debugKey = this.debugKeyGen();
-      this.debugRegister( "tileClear", [coordinates], "start", debugKey )
+      this.debugRegister( "tileClear", [coordinates, flag], "start", debugKey )
 
     }
 
     if ( coordinates && Array.isArray( coordinates ) ) {
 
-      registryQuery = `${ coordinates[0] }-${ coordinates[1] }`;
+      registryQuery = coordinates.join( "-" );
 
       if ( this.registry[registryQuery] ) {
 
@@ -462,17 +506,19 @@ class gameInstance {
         elementClassList.remove( "air" );
         elementClassList.remove( "wall" );
         elementClassList.remove( "coin" );
-        elementClassList.remove( "door" );
-        elementClassList.remove( "player1" );
-        elementClassList.remove( "player2" );
-        elementClassList.remove( "player3" );
-        elementClassList.remove( "player4" )
+        elementClassList.remove( "player" );
+        elementClassList.remove( "red" );
+        elementClassList.remove( "blue" );
+        elementClassList.remove( "green" );
+        elementClassList.remove( "orange" );
+        elementClassList.remove( "killer" );
+        typeof flag !== "undefined" && flag === true ? elementClassList.remove( "light" ) : void 0
 
       }
 
     }
 
-    typeof debugKey === "undefined" ? false : this.debugRegister( "tileClear", [], "end", debugKey )
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "tileClear", [], "end", debugKey )
 
   }
 
@@ -494,7 +540,7 @@ class gameInstance {
 
       lastUpdatedTiles.forEach( v => { 
 
-        registryQuery = `${v[0]}-${v[1]}`;
+        registryQuery = v.join( "-" );
         tileId = this.registry[registryQuery].id;
         elementClassList = this.registry[registryQuery].element.classList;
 
@@ -524,6 +570,10 @@ class gameInstance {
             elementClassList.remove( "light" );
           break;
 
+          case this.tileClassToId( "killer" ):
+            elementClassList.remove( "light" );
+          break;
+
           case this.tileClassToId( "coin1" ):
             elementClassList.remove( "coin" ); elementClassList.add( "air" );
           break;
@@ -538,7 +588,7 @@ class gameInstance {
 
     }
 
-    typeof debugKey === "undefined" ? false : this.debugRegister( "lastUpdatedTilesFog", [], "end", debugKey )
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "lastUpdatedTilesFog", [], "end", debugKey )
 
   }
 
@@ -561,7 +611,7 @@ class gameInstance {
 
       currentTiles.forEach( v => {
 
-        registryQuery = `${v[0]}-${v[1]}`;
+        registryQuery = v.join( "-" );
         tileId = this.registry[registryQuery].id;
         elementClassList = this.registry[registryQuery].element.classList;
 
@@ -583,7 +633,7 @@ class gameInstance {
 
     }
 
-    typeof debugKey === "undefined" ? false : this.debugRegister( "currentTilesLighting", [], "end", debugKey )
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "currentTilesLighting", [], "end", debugKey )
 
   }
 
@@ -600,7 +650,8 @@ class gameInstance {
     tbody,
     index,
     tr,
-    td;
+    td,
+    tileResolution;
 
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
 
@@ -610,6 +661,11 @@ class gameInstance {
     }
 
     if ( map.element && map.element instanceof HTMLElement ) {
+
+      tileResolution = ( ( window.screen.availHeight / this.data.map.grid[1] ) * 0.8859 );
+
+      this.data.map.element.style.height = `${ tileResolution * this.data.map.grid[1] }px`;
+      this.data.map.element.style.width = `${ tileResolution * this.data.map.grid[0] }px`;
 
       document.body.insertAdjacentElement( "afterbegin", map.element );
 
@@ -641,7 +697,7 @@ class gameInstance {
 
     }
 
-    typeof debugKey === "undefined" ? false : this.debugRegister( "mapRender", [], "end", debugKey )
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "mapRender", [], "end", debugKey )
 
   }
 
@@ -667,6 +723,7 @@ class gameInstance {
     if ( entity && typeof this.data.entities[entity] !== "undefined" ) {
 
       coordinates = this.data.entities[entity].position;
+      this.tileUpdateDisplay( coordinates );
       lastUpdatedTiles = this.data.entities[entity].lastUpdatedTiles;
 
       if ( coordinates && typeof coordinates.reduce( ( a, b ) => a + b ) === "number" ) {
@@ -677,7 +734,7 @@ class gameInstance {
 
           if ( gamemode === 1 ) {
 
-            lastUpdatedTiles.forEach( v => { if ( JSON.stringify( v ) !== JSON.stringify( coordinates ) ) { this.tileClear( v ) } } )
+            lastUpdatedTiles.forEach( v => { if ( v.join( "-" ) !== coordinates.join( "-" ) ) { this.tileClear( v ) } } )
 
           }
 
@@ -694,7 +751,7 @@ class gameInstance {
 
     }
 
-    typeof debugKey === "undefined" ? false : this.debugRegister( "entitySight", [], "end", debugKey )
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "entitySight", [], "end", debugKey )
 
   }
 
@@ -727,7 +784,7 @@ class gameInstance {
 
         }
 
-        typeof debugKey === "undefined" ? false : this.debugRegister( "entitySightRange", [], "end", debugKey );
+        typeof debugKey === "undefined" ? void 0 : this.debugRegister( "entitySightRange", [], "end", debugKey );
 
         return entitySightRange
 
@@ -779,7 +836,7 @@ class gameInstance {
           for ( Index = 0; Index < entitySightRange.length; Index++ ) {
 
             X = Index; Y = index; flag = true;
-            flag = X === 0 && Y === 0 || X === ( range * 2 ) && Y === 0 || X === 0 && Y === ( range * 2 ) || X === ( range * 2 ) && Y === ( range * 2 ) || X === range  && Y === range  ? false : true;
+            flag = X === 0 && Y === 0 || X === ( range * 2 ) && Y === 0 || X === 0 && Y === ( range * 2 ) || X === ( range * 2 ) && Y === ( range * 2 ) || X === range  && Y === range  ? void 0 : true;
             
             if ( flag ) {
 
@@ -794,7 +851,7 @@ class gameInstance {
 
         }
 
-        typeof debugKey === "undefined" ? false : this.debugRegister( "entitySightRadius", [], "end", debugKey );
+        typeof debugKey === "undefined" ? void 0 : this.debugRegister( "entitySightRadius", [], "end", debugKey );
 
         return entitySightRadius
 
@@ -804,38 +861,47 @@ class gameInstance {
 
   }
 
-  entityMove( entity, element ) { 
+  entityMove( entity, coordinates ) { 
 
     let debugKey,
     p = this.data.playerRules,
     moveDistance = p.moveDistance,
-    tileX = element.dataset.x,
-    tileY = element.dataset.y,
+    registryItem,
     newX,
     newY,
     oldX,
     oldY,
     tileId,
     oldXY,
-    newXY;
+    newXY,
+    flag,
+    trueCoinPositions = this.data.map.coins.true.positions.map( v => v.join("-") ),
+    falseCoinPositions = this.data.map.coins.false.positions.map( v => v.join("-") );
 
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
 
       debugKey = this.debugKeyGen();
-      this.debugRegister( "entityMove", [entity, element], "start", debugKey )
+      this.debugRegister( "entityMove", [entity, coordinates], "start", debugKey )
 
     }
 
-    if ( entity && typeof this.data.entities[entity] !== "undefined" && moveDistance && element && element instanceof HTMLElement && this.registry[`${ tileX }-${ tileY }`].id !== 1 ) {
+    if ( entity && typeof this.data.entities[entity] !== "undefined" && moveDistance && typeof coordinates !== "undefined" && Array.isArray( coordinates ) ) {
 
-      newX = tileX;
-      newY = tileY;
+      newX = coordinates[0];
+      newY = coordinates[1];
       oldX = this.data.entities[entity].position[0];
       oldY = this.data.entities[entity].position[1];
+      registryItem = this.registry[ coordinates.join( "-" ) ];
+      flag = registryItem.id !== this.tileClassToId( "wall" ) && registryItem.id !== this.tileClassToId( "player1" ) && registryItem.id !== this.tileClassToId( "player2" ) && registryItem.id !== this.tileClassToId( "player3" ) && registryItem.id !== this.tileClassToId( "player4" ) && registryItem.id !== this.tileClassToId( "killer" ) ? void 0 : true;
 
-      if ( Math.abs( newX - oldX ) <= moveDistance && Math.abs( newY - oldY ) <= moveDistance && Math.abs( newX - oldX ) + Math.abs( newY - oldY ) <= moveDistance ) {
+      if ( !flag && Math.abs( newX - oldX ) <= moveDistance && Math.abs( newY - oldY ) <= moveDistance && Math.abs( newX - oldX ) + Math.abs( newY - oldY ) <= moveDistance ) {
 
-        tileId = `${ oldX }-${ oldY }` === this.data.map.door.join( "-" ) ? this.tileClassToId( "door" ) : this.tileClassToId( "air" );
+        oldXY = `${ oldX }-${ oldY }`;
+        tileId = oldXY === this.data.map.door.join( "-" ) ? this.tileClassToId( "door" ) : this.tileClassToId( "air" );
+
+        // if killer steps on a coin
+        tileId = entity === "killer" && trueCoinPositions.includes( oldXY ) ? this.tileClassToId( "coin1" ) : tileId;
+        tileId = entity === "killer" && falseCoinPositions.includes( oldXY ) ? this.tileClassToId( "coin2" ) : tileId;
 
         this.data.playerRules.lastPlayerMoveDirection = Math.abs( newX - oldX ) === 1 ? "x" : "y";
         this.data.entities[entity].position = [Number( newX ), Number( newY )];
@@ -846,16 +912,20 @@ class gameInstance {
         this.registerTile( oldXY, tileId );
         this.tileUpdateDisplay( oldXY );
         this.tileEvents( newXY, entity );
-        this.registerTile( newXY, this.tileClassToId( entity ) );
-        this.tileUpdateDisplay( newXY );
-        this.entitySight( entity );
-        
+
+        typeof this.data.entities[entity] !== "undefined" ? this.registerTile( newXY, this.tileClassToId( entity ) ) : this.registerTile( newXY, this.tileClassToId( "air" ) );
+        typeof this.data.entities[entity] !== "undefined" ? this.tileUpdateDisplay( newXY ) : void 0;
+
+        if (  typeof this.data.entities[entity] === "undefined" ) { this.tileClear( oldXY, true ) }
+
+        typeof this.data.entities[entity] !== "undefined" ? this.entitySight( entity ) : void 0;
+        typeof this.data.entities[entity] !== "undefined" ? this.tileClear( oldXY ) : void 0
 
       }
 
     }
 
-    typeof debugKey === "undefined" ? false : this.debugRegister( "entityMove", [], "end", debugKey )
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "entityMove", [], "end", debugKey )
 
   }
 
@@ -871,10 +941,7 @@ class gameInstance {
     falseCoinsTokenRewards = this.data.map.coins.false.tokenRewards,
     trueCoinsRandomRewards = trueCoinsTokenRewards.random,
     falseCoinsRandomRewards = falseCoinsTokenRewards.random,
-    feTurbulence,
-    feDisplacementMap,
-    baseFrequency,
-    scale;
+    obsession = typeof entity !== "undefined" && entity.includes( "killer" ) && typeof this.data.entities[ this.data.entities[entity].obsession ] !== "undefined" ? this.data.entities[entity].obsession : undefined;
 
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
 
@@ -883,7 +950,7 @@ class gameInstance {
 
     }
 
-    if ( entity && typeof this.data.entities[entity] !== "undefined" ) {
+    if ( entity && typeof this.data.entities[entity] !== "undefined" && this.data.entities[entity].entityBehavior === "player" ) {
 
       range = this.data.entities[entity].vision.range;
       tokens = this.data.entities[entity].vision.tokens;
@@ -913,41 +980,287 @@ class gameInstance {
         }
          
         this.data.entities[entity].madness.minRangeMoves += this.data.entities[entity].vision.range === this.data.playerRules.vision.minRange ? 1 : 0;
+        this.data.playerRules.madnessMoves += this.data.map.madness.state === true && this.data.entities[entity].vision.range === this.data.playerRules.vision.minRange ? 1 : 0;
 
-        this.data.playerRules.madness.quantity += this.data.entities[entity].vision.range > this.data.playerRules.vision.minRange ? this.data.map.madness.loss : this.data.map.madness.gain;
+        if ( this.data.killerRules.playerMadnessMovesBeforeSpawn === this.data.playerRules.madnessMoves ) {
 
-        this.data.playerRules.madness.quantity = this.data.playerRules.madness.quantity < 0 ? 0 : this.data.playerRules.madness.quantity;
-        this.data.playerRules.madness.quantity = this.data.playerRules.madness.quantity > this.data.map.madness.cap ? this.data.map.madness.cap : this.data.playerRules.madness.quantity;
-
-        this.data.playerRules.madness.quantity = this.data.entities[entity].madness.minRangeMoves === this.data.map.madness.minRangeMovesBeforeDistortion ? 0 : this.data.playerRules.madness.quantity;
-        this.data.playerRules.madness.quantity = Number( this.data.playerRules.madness.quantity.toFixed( 3 ) ) === this.data.map.madness.cap ? this.data.map.madness.cap - ( this.data.map.madness.gain * this.data.map.madness.distortionLoop ) : this.data.playerRules.madness.quantity;
-
-        if ( this.data.entities[entity].madness.minRangeMoves >= this.data.map.madness.minRangeMovesBeforeDistortion && this.data.playerRules.madness.quantity > 0 ) {
-
-          this.data.map.element.classList.add( "madness" );
-          feTurbulence = document.querySelector( "feTurbulence" );feDisplacementMap = document.querySelector( "feDisplacementMap" );
-          baseFrequency = `${ this.data.playerRules.lastPlayerMoveDirection === "x" ? this.data.map.madness.playerDirectionDistortion : this.data.playerRules.madness.quantity } ${ this.data.playerRules.lastPlayerMoveDirection === "y" ? this.data.map.madness.playerDirectionDistortion : this.data.playerRules.madness.quantity }`;
-          scale = Math.ceil( Number( this.data.playerRules.madness.quantity.toFixed( 2 ) ) * Math.ceil( this.data.map.madness.distortionScaleMultiplier * 100 ) );
-          feTurbulence.setAttribute( "baseFrequency", baseFrequency );
-          feDisplacementMap.setAttribute( "scale", scale )
+          this.spawnKiller( entity );
 
         }
 
-        if ( this.data.entities[entity].vision.range > this.data.playerRules.vision.minRange && this.data.playerRules.madness.quantity === 0 ) {
-
-          this.data.entities[entity].madness.minRangeMoves = 0;
-          this.data.map.element.classList.remove( "madness" )
-
-        }
+        this.updateMadnessFilter( entity );
 
         this.data.entities[entity].vision.tokens = this.data.entities[entity].vision.tokens < ( this.data.playerRules.vision.tokensPerRangeLoss * this.data.playerRules.vision.maxRange ) ? this.data.entities[entity].vision.tokens : ( this.data.playerRules.vision.tokensPerRangeLoss * this.data.playerRules.vision.maxRange );
         this.data.entities[entity].vision.tokens = this.data.entities[entity].vision.tokens < ( ( ( this.data.playerRules.vision.minRange - 1 ) * this.data.playerRules.vision.tokensPerRangeLoss ) + 1 ) ? ( ( this.data.playerRules.vision.minRange - 1 ) * ( this.data.playerRules.vision.tokensPerRangeLoss ) + 1 ) : this.data.entities[entity].vision.tokens;
         this.data.entities[entity].vision.tokens -= this.data.entities[entity].vision.tokens !== ( ( ( this.data.playerRules.vision.minRange - 1 ) * this.data.playerRules.vision.tokensPerRangeLoss ) + 1 ) ? 1 : 0;
         this.data.entities[entity].vision.range = Math.ceil( this.data.entities[entity].vision.tokens / this.data.playerRules.vision.tokensPerRangeLoss ) >= this.data.playerRules.vision.minRange ? Math.ceil( this.data.entities[entity].vision.tokens / this.data.playerRules.vision.tokensPerRangeLoss ) : this.data.playerRules.vision.minRange;
 
-        typeof debugKey === "undefined" ? false : this.debugRegister( "tileEvents", [], "end", debugKey )
+        typeof debugKey === "undefined" ? void 0 : this.debugRegister( "tileEvents", [], "end", debugKey )
 
       }
+
+    }
+
+    else if ( entity && typeof this.data.entities[entity] !== "undefined" && this.data.entities[entity].entityBehavior === "killer" && obsession ) {
+
+      this.data.entities[entity].movesBeforeDisappearing -= this.data.entities[entity].movesBeforeDisappearing >= 1 ? 1 : 0;
+      this.updateMadnessFilter( entity );
+
+      if ( Math.abs( this.data.entities.killer.position[0] - this.data.entities[obsession].position[0] ) === 0 && Math.abs( this.data.entities.killer.position[1] - this.data.entities[obsession].position[1] ) === 1 || Math.abs( this.data.entities.killer.position[0] - this.data.entities[obsession].position[0] ) === 1 && Math.abs( this.data.entities.killer.position[1] - this.data.entities[obsession].position[1] ) === 0 ) {
+
+        this.entityRemove( obsession );
+        this.data.entities[entity].movesBeforeDisappearing = 0
+
+      }
+
+      if ( this.data.entities[entity].movesBeforeDisappearing === 0 ) {
+
+        this.entityRemove( entity );
+        this.data.playerRules.madnessMoves = 0
+
+      }
+
+    }
+
+  }
+
+  spawnKiller( entity ) {
+
+    let M = T.Math,
+    debugKey,
+    bannedTilesFromRandomizing = this.data.map.bannedTilesFromRandomizing.map( v => v.join( "-" ) ),
+    index,
+    registry,
+    airTiles,
+    number,
+    tileId,
+    coordinates,
+    obsessionPosition;
+
+    if ( typeof this.debug !== "undefined" && this.debug.state ) {
+
+      debugKey = this.debugKeyGen();
+      this.debugRegister( "spawnKiller", [entity], "start", debugKey )
+
+    }
+
+    if ( !this.data.entities.killer && entity && !entity.includes( "killer" ) && typeof this.data.entities[entity] !== "undefined" ) {
+
+      obsessionPosition = this.data.entities[entity].position;
+
+      registry = Object.keys( this.registry ); airTiles = registry.filter( v => this.registry[v].id === 0 && !bannedTilesFromRandomizing.includes( v ) ); //airTiles = airTiles.filter( v => Math.abs( v[0] - obsessionPosition[0] ) >= this.data.killerRules.spawn.minDistanceFromObsession && Math.abs( v[0] - obsessionPosition[0] ) <= this.data.killerRules.spawn.maxDistanceFromObsession || Math.abs( v[1] - obsessionPosition[1] ) >= this.data.killerRules.spawn.minDistanceFromObsession && Math.abs( v[1] - obsessionPosition[1] ) <= this.data.killerRules.spawn.maxDistanceFromObsession );
+      number = M.R( airTiles.length ); tileId = this.tileClassToId( "killer" ); coordinates = airTiles[number].split( "-" ).map( v => Number( v ) );
+
+      this.registerTile( coordinates, tileId );
+      this.tileUpdateDisplay( coordinates );
+
+      this.data.entities.killer = { entityBehavior: "killer", position: coordinates, vision: { range: this.data.killerRules.vision.range }, movesBeforeDisappearing: this.data.killerRules.movesBeforeDisappearing, obsession: entity }
+
+    }
+
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "spawnKiller", [], "end", debugKey )
+
+  }
+
+  entityUP( entity ) {
+
+    let debugKey,
+    t;
+
+    if ( typeof this.debug !== "undefined" && this.debug.state ) {
+
+      debugKey = this.debugKeyGen();
+      this.debugRegister( "entityUP", [entity], "start", debugKey )
+
+    }
+
+    if ( typeof this.data.entities[entity] !== "undefined" ) {
+
+      typeof debugKey === "undefined" ? void 0 : this.debugRegister( "entityUP", [], "end", debugKey );
+
+      return [ this.data.entities[entity].position[0], ( this.data.entities[entity].position[1] - 1 ) ]
+
+    }
+
+  }
+
+  entityDOWN( entity ) {
+
+    let debugKey,
+    t;
+
+    if ( typeof this.debug !== "undefined" && this.debug.state ) {
+
+      debugKey = this.debugKeyGen();
+      this.debugRegister( "entityDOWN", [entity], "start", debugKey )
+
+    }
+
+    if ( typeof this.data.entities[entity] !== "undefined" ) {
+
+      typeof debugKey === "undefined" ? void 0 : this.debugRegister( "entityDOWN", [], "end", debugKey );
+
+      return [ this.data.entities[entity].position[0], ( this.data.entities[entity].position[1] + 1) ]
+
+    }
+
+  }
+
+  entityLEFT( entity ) {
+
+    let debugKey,
+    t;
+
+    if ( typeof this.debug !== "undefined" && this.debug.state ) {
+
+      debugKey = this.debugKeyGen();
+      this.debugRegister( "entityLEFT", [entity], "start", debugKey )
+
+    }
+
+    if ( typeof this.data.entities[entity] !== "undefined" ) {
+
+      typeof debugKey === "undefined" ? void 0 : this.debugRegister( "entityLEFT", [], "end", debugKey );
+
+      return [ ( this.data.entities[entity].position[0] - 1 ), this.data.entities[entity].position[1] ]
+
+    }
+
+  }
+
+  entityRIGHT( entity ) {
+
+    let debugKey,
+    t;
+
+    if ( typeof this.debug !== "undefined" && this.debug.state ) {
+
+      debugKey = this.debugKeyGen();
+      this.debugRegister( "entityRIGHT", [entity], "start", debugKey )
+
+    }
+
+    if ( typeof this.data.entities[entity] !== "undefined" ) {
+
+      typeof debugKey === "undefined" ? void 0 : this.debugRegister( "entityRIGHT", [], "end", debugKey );
+
+      return [ ( this.data.entities[entity].position[0] + 1), this.data.entities[entity].position[1] ]
+
+    }
+
+  }
+
+  entitiesSight( entity ) {
+
+    let debugKey,
+    entityIndex;
+
+    if ( typeof this.debug !== "undefined" && this.debug.state ) {
+
+      debugKey = this.debugKeyGen();
+      this.debugRegister( "entitiesSight", [entity], "start", debugKey )
+
+    }
+
+    if ( typeof this.data.entities[entity] !== "undefined" ) {
+
+      entityIndex = entity.includes( "player" ) ? Number( entity.slice( -1 ) ) : 5;
+
+
+      entityIndex !== 1 ? this.entitySight( "player1" ) : void 0;
+      entityIndex !== 2 ? this.entitySight( "player2" ) : void 0;
+      entityIndex !== 3 ? this.entitySight( "player3" ) : void 0;
+      entityIndex !== 4 ? this.entitySight( "player4" ) : void 0;
+      entityIndex !== 5 ? this.entitySight( "killer" ) : void 0
+
+    }
+
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "entitiesSight", [], "end", debugKey )
+
+  }
+
+  entityRemove( entity ) {
+
+    let debugKey;
+
+    if ( typeof this.debug !== "undefined" && this.debug.state ) {
+
+      debugKey = this.debugKeyGen();
+      this.debugRegister( "entityRemove", [entity], "start", debugKey )
+
+    }
+
+    if ( typeof this.data.entities[entity] !== "undefined" ) {
+
+      this.registerTile( this.data.entities[entity].position, this.tileClassToId( "air" ) );
+      this.tileClear( this.data.entities[entity].position );
+      this.data.entities[entity].lastUpdatedTiles.forEach( v => { if ( !this.registry[ v.join( "-" ) ].element.classList.contains( "player" ) ) { this.tileClear( v, true ) } } );
+      this.entitiesSight( entity );
+      delete this.data.entities[entity];
+
+    }
+
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "entityRemove", [], "end", debugKey )
+
+  }
+
+  updateMadnessFilter( entity ) {
+
+    let debugKey,
+    feTurbulence,
+    feDisplacementMap,
+    baseFrequency,
+    scale;
+
+    if ( typeof this.debug !== "undefined" && this.debug.state ) {
+
+      debugKey = this.debugKeyGen();
+      this.debugRegister( "updateMadnessFilter", [entity], "start", debugKey )
+
+    }
+
+    if (  entity && typeof this.data.entities[entity] !== "undefined" ) {
+
+      if ( this.data.entities[entity].entityBehavior === "player" ) {
+
+        this.data.playerRules.madness.quantity += this.data.entities[entity].vision.range > this.data.playerRules.vision.minRange ? this.data.map.madness.loss : this.data.map.madness.gain;
+
+      }
+
+      else if ( this.data.entities[entity].entityBehavior === "killer" ) {
+
+        this.data.playerRules.madness.quantity += ( this.data.map.madness.gain * 2 );
+
+      }
+
+      this.data.playerRules.madness.quantity = this.data.playerRules.madness.quantity < 0 ? 0 : this.data.playerRules.madness.quantity;
+      this.data.playerRules.madness.quantity = this.data.playerRules.madness.quantity > this.data.map.madness.cap ? this.data.map.madness.cap : this.data.playerRules.madness.quantity;
+
+      this.data.playerRules.madness.quantity = this.data.entities[entity].entityBehavior !== "killer" && this.data.entities[entity].madness.minRangeMoves === this.data.map.madness.minRangeMovesBeforeDistortion ? 0 : this.data.playerRules.madness.quantity;
+      this.data.playerRules.madness.quantity = Number( this.data.playerRules.madness.quantity.toFixed( 3 ) ) === this.data.map.madness.cap ? this.data.map.madness.cap - ( this.data.map.madness.gain * this.data.map.madness.distortionLoop ) : this.data.playerRules.madness.quantity;
+
+      this.data.map.madness.state = this.data.entities[entity].entityBehavior === "player" && this.data.entities[entity].madness.minRangeMoves >= this.data.map.madness.minRangeMovesBeforeDistortion ? true : this.data.map.madness.state;
+
+      if ( this.data.map.madness.state === true && this.data.playerRules.madness.quantity > 0 ) {
+
+        this.data.map.element.classList.add( "madness" );
+        feTurbulence = document.querySelector( "feTurbulence" ); feDisplacementMap = document.querySelector( "feDisplacementMap" );
+        baseFrequency = `${ this.data.playerRules.lastPlayerMoveDirection === "x" ? this.data.map.madness.playerDirectionDistortion : this.data.playerRules.madness.quantity } ${ this.data.playerRules.lastPlayerMoveDirection === "y" ? this.data.map.madness.playerDirectionDistortion : this.data.playerRules.madness.quantity }`;
+        scale = Math.ceil( Number( this.data.playerRules.madness.quantity.toFixed( 2 ) ) * Math.ceil( this.data.map.madness.distortionScaleMultiplier * 100 ) );
+        feTurbulence.setAttribute( "baseFrequency", baseFrequency );
+        feDisplacementMap.setAttribute( "scale", scale )
+
+      }
+
+      if ( entity.includes( "player" ) && this.data.entities[entity].vision.range > this.data.playerRules.vision.minRange && this.data.playerRules.madness.quantity === 0 ) {
+
+        this.data.map.madness.state = false;
+        this.data.entities[entity].madness.minRangeMoves = 0;
+        this.data.map.element.classList.remove( "madness" )
+
+      }
+
+      typeof debugKey === "undefined" ? void 0 : this.debugRegister( "updateMadnessFilter", [], "end", debugKey )
 
     }
 

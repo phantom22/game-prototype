@@ -49,7 +49,7 @@
       }
 
       // creating a game
-      let instance = new gameInstance({gamemode:3},{grid:[g[0],g[1]],meta:meta.join("")},{state:false});
+      let instance = new gameInstance({gamemode:3},{grid:[g[0],g[1]],meta:meta.join("")},false,{state:false});
 
       // if the map was imported from the already existing levels and mapBannedTiles is an array with length greater than 0
       if (mapBannedTiles && mapBannedTiles.length !== 0 && imported) {
@@ -86,9 +86,9 @@
         }
 
         // on mousedown the d becomes true so it's possible to draw with the mouse1 pressed, if the class of the tile it's the same as the drawed block. else if C is equal to 2 it means that the drawed block will become banned, checking if the tile cointains already the .banned class yes = then removing it, no = adding it
-        v.addEventListener("mousedown",function(evt){if (!d) {document.querySelector("table").classList.remove("screenshot"); d = true; if (d && C !== 2 && evt.target.className !== instance.tileClass(C) && !evt.target.classList.contains("banned")) {draw(evt.target)} else if (d && C == 2 && evt.target.classList.contains("air")) {evt.target.classList.contains("banned") ? evt.target.classList.remove("banned") : evt.target.classList.add("banned")}}});
+        v.addEventListener("mousedown",function(evt){if (!d) {document.querySelector("table").classList.remove("screenshot"); d = true; if (d && C !== 2 && evt.target.className !== instance.tileIdToClass(C) && !evt.target.classList.contains("banned")) {draw(evt.target)} else if (d && C == 2 && evt.target.classList.contains("air")) {evt.target.classList.contains("banned") ? evt.target.classList.remove("banned") : evt.target.classList.add("banned")}}});
         // if the mouse1 was already pressed then this event will work
-        v.addEventListener("mouseover", function(evt){ if (d && C !== 2 && evt.target.className !== instance.tileClass(C) && !evt.target.classList.contains("banned")) {draw(evt.target)}});
+        v.addEventListener("mouseover", function(evt){ if (d && C !== 2 && evt.target.className !== instance.tileIdToClass(C) && !evt.target.classList.contains("banned")) {draw(evt.target)}});
 
       });
 
