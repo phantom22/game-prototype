@@ -16,14 +16,31 @@ class gameInstance {
     state = typeof debug !== "undefined" ? debug.state : void 0,
     maxRegistryLength = typeof debug !== "undefined" && typeof map.grid !== "undefined" && debug.maxRegistryLength > ( map.grid[0] * map.grid[1] ) ? debug.maxRegistryLength : ( ( map.grid[0] * map.grid[1] ) * 2 ),
     k = !flag && typeof killerRules !== "undefined" ? killerRules : undefined,
-    keyBindings = [ [87,83,65,68], [73,75,74,76], [38,40,37,39], [71,66,86,78] ],
-    playerColors = [ "red", "blue", "green", "orange" ];
+    savedKeyBindings, 
+    savedColors;
 
     map.grid = typeof map.grid !== "undefined" && Array.isArray( map.grid ) && typeof map.grid.reduce( ( a, b )  =>  a + b ) === "number" && map.grid.length === 2 ? map.grid : void 0;
     map.meta = typeof map.meta === "string" && map.meta.split("").length === map.grid[0] * map.grid[1] ? map.meta.split("").map( v => Number( v ) ) : void 0;
     map.tileClasses = typeof map.tileClasses !== "undefined" && Array.isArray( map.tileClasses ) ? map.tileClasses : ["air", "wall", "coin1", "coin2", "door", "player1", "player2", "player3", "player4" ];
 
     if ( !flag ) {
+
+      p.standardKeyBindings = typeof p.standardKeyBindings !== "undefined" ? p.standardKeyBindings.filter( v => v.length === 4 ) : [ ["KeyW","KeyS","KeyA","KeyD"], ["KeyI","KeyK","KeyJ","KeyL"], ["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"], ["KeyG","KeyB","KeyV","KeyN"], ["Numpad8","Numpad5","Numpad4","Numpad6"] ];
+      p.playerColors = typeof p.playerColors !== "undefined" ? p.playerColors.filter( v => typeof v === "string" ) : [ "red", "blue", "green", "orange" ];
+      savedColors = p.playerColors;
+      savedKeyBindings = p.standardKeyBindings;
+
+      if ( typeof Storage !== "undefined" ) {
+
+        savedKeyBindings = typeof localStorage.keyBindings !== "undefined" ? JSON.parse( localStorage.keyBindings ) : p.standardKeyBindings;
+        savedColors = typeof localStorage.colors !== "undefined" ? JSON.parse( localStorage.colors ) : p.playerColors;
+
+      }
+
+      p.HUDisActive = false;
+      p.focusedKeyBinding = "";
+      p.bannedKeysFromBinding = ["CapsLock","Tab","Escape","ShiftLeft","ControlLeft","AltLeft","AltRight","Enter","Space","ShiftRight","ControlRight"];
+      p.bindedKeys = savedKeyBindings.join().split(",");
 
       p.madnessMoves = 0;
       p.playerQuantity = typeof p.playerQuantity === "number" && p.playerQuantity >= 1 && p.playerQuantity <= 4 ? p.playerQuantity : 1;
@@ -87,7 +104,7 @@ class gameInstance {
 
       if (!flag) {
 
-        for ( index = 0; index < this.data.playerRules.playerQuantity; index++ ) { this.data.entities[`player${ index + 1 }`] = {}; this.data.playerSettings[`player${index + 1}`] = { color: playerColors[index], keyBindings: keyBindings[index] }; if ( ( index + 1 ) === this.data.playerRules.playerQuantity && ( index + 1 ) < keyBindings.length ) { this.data.playerSettings.killer = { keyBindings: keyBindings[index+1] } } }
+        for ( index = 0; index < this.data.playerRules.playerQuantity; index++ ) { this.data.entities[`player${ index + 1 }`] = {}; this.data.playerSettings[`player${index + 1}`] = { color: typeof savedColors[index] !== "undefined" ? savedColors[index] : p.playerColors[index], keyBindings: typeof savedKeyBindings[index] !== "undefined" ? savedKeyBindings[index] : p.standardKeyBindings[index] }; if ( ( index + 1 ) === this.data.playerRules.playerQuantity ) { this.data.playerSettings.killer = { keyBindings: typeof savedKeyBindings[index+1] !== "undefined" ? savedKeyBindings[index+1] : p.standardKeyBindings[index+1] } } }
 
       }
 
@@ -695,6 +712,12 @@ class gameInstance {
 
       }
 
+      else {
+
+        this.generatePlayerSettings()
+
+      }
+
     }
 
     typeof debugKey === "undefined" ? void 0 : this.debugRegister( "mapRender", [], "end", debugKey )
@@ -1261,6 +1284,58 @@ class gameInstance {
       }
 
       typeof debugKey === "undefined" ? void 0 : this.debugRegister( "updateMadnessFilter", [], "end", debugKey )
+
+    }
+
+  }
+
+  togglePlayerSettings() {
+
+    let debugKey,
+    D = T.DOM,
+    userSettings = D.qSA( ".user-settings", document, 0 );
+
+    if ( typeof this.debug !== "undefined" && this.debug.state ) {
+
+      debugKey = this.debugKeyGen();
+      this.debugRegister( "togglePlayerSettings", [], "start", debugKey )
+
+    }
+
+    if ( typeof userSettings !== "undefined" ) {
+
+      this.data.playerRules.HUDisActive = getComputedStyle( userSettings ).display === "block" ? false : true;
+      userSettings.style.display = getComputedStyle( userSettings ).display === "block" ? "none" : "block";
+
+      this.data.playerRules.focusedKeyBinding = "";
+      document.querySelectorAll( ".focused" ).forEach( v => v.classList.remove( "focused" ) );
+
+    }
+
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "togglePlayerSettings", [], "end", debugKey )
+
+  }
+
+  generatePlayerSettings() {
+
+    let keyBindings,
+    D = T.DOM,
+    entities = Object.keys( this.data.playerSettings ),
+    index,
+    div;
+
+    if ( entities.length > 0 && typeof D.qSA( ".user-settings", document, 0 ) === "undefined" ) {
+
+      div = D.cE( "div" );
+      div.className = "user-settings";
+
+      for ( index = 0; index < entities.length; index++ ) {
+
+          div.innerHTML += `<table id="${ entities[index] + "-card" }" class="${ entities[index].includes( "player" ) && this.data.entities[entities[index]].entityBehavior === "player" ? this.data.playerSettings[entities[index]].color : "purple" }"><tr><td colspan="3">${ entities[index] }</td></tr><tr><td id="${ entities[index].includes( "player" ) && this.data.entities[entities[index]].entityBehavior === "player" ? entities[index] + "-leftColorChange" : "" }">${ entities[index].includes( "player" ) && this.data.entities[entities[index]].entityBehavior === "player" ? "<" : "" }</td><td id="${ entities[index] + "-color" }">${ entities[index].includes( "player" ) && this.data.entities[entities[index]].entityBehavior === "player" ? this.data.playerSettings[entities[index]].color : "purple" }</td><td id="${ entities[index].includes( "player" ) && this.data.entities[entities[index]].entityBehavior === "player" ? entities[index] + "-rightColorChange" : "" }">${ entities[index].includes( "player" ) && this.data.entities[entities[index]].entityBehavior === "player" ? ">" : "" }</td></tr><tr><td></td><td id="${ entities[index] + "-keyUp" }">${ typeof this.data.playerSettings[entities[index]].keyBindings !== "undefined" && typeof this.data.playerSettings[entities[index]].keyBindings[0] !== "undefined" ? this.data.playerSettings[entities[index]].keyBindings[0].replace("Key","") : "..." }</td><td></td></tr><tr><td id="${ entities[index] + "-keyLeft" }">${ typeof this.data.playerSettings[entities[index]].keyBindings !== "undefined" && typeof this.data.playerSettings[entities[index]].keyBindings[2] !== "undefined" ? this.data.playerSettings[entities[index]].keyBindings[2].replace("Key","") : "..." }</td><td id="${ entities[index] + "-keyDown" }">${ typeof this.data.playerSettings[entities[index]].keyBindings !== "undefined" && typeof this.data.playerSettings[entities[index]].keyBindings[1] !== "undefined" ? this.data.playerSettings[entities[index]].keyBindings[1].replace("Key","") : "..." }</td><td id="${ entities[index] + "-keyRight" }">${ typeof this.data.playerSettings[entities[index]].keyBindings !== "undefined" && typeof this.data.playerSettings[entities[index]].keyBindings[3] !== "undefined" ? this.data.playerSettings[entities[index]].keyBindings[3].replace("Key","") : "..." }</td></tr></table>`
+        
+      }
+
+      D.aC( div )
 
     }
 

@@ -2,11 +2,14 @@
 
 # **How to play the game?** *(index.html)*
 
-To move around and collect coins use:
-* `WASD` if player1
-* `IJKL` if player2
+To move around and collect coins use (standard key bindings):
+* `W A S D` if player1
+* `I J K L` if player2
 * `Arrows` if player3
-* `GVBN` if player4
+* `G V B N` if player4
+* `Numpad8 Numpad4 Numpad5 Numpad6` if player5 (killer)
+
+**To change the key bindings/player colors use `Caps Lock` to open the menu, all the changes will be saved if the localStorage is supported on your browser**
 
 Even though it seems that there are lots of coins on the map, there are **two types** of coins that are indistinguishable to the eye:
 * [**true**]() need to be collected so the player can escape through the door and win the game, they have a `higher` chance of dealing with the player's madness.

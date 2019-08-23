@@ -1,0 +1,265 @@
+.user-settings {
+	display: none;
+	width: 99.4%;
+	height: 100vh;
+	opacity: 0.85;
+	position: absolute;
+	top: 0;
+	overflow: hidden;
+}
+.user-settings table {
+	overflow: hidden;
+}
+.user-settings table, .user-settings table tr, .user-settings table td {
+    border-collapse: collapse;
+}
+.user-settings table td {
+    padding: 5px;
+    text-align: center;
+    min-height: 115px;
+    height: 19%; 
+}
+.user-settings table {
+	min-width: 284px;
+    font-weight: bold;
+    width: 80%;
+    margin: 10px auto;
+}
+.user-settings table tr:nth-child(3) {
+	border-bottom: none;
+    color: lightcoral;
+}
+.user-settings table tr:nth-child(4) {
+	border-top: none;
+    color: lightcoral;
+}
+.user-settings table tr:nth-child(2) td:nth-child(1):hover, .user-settings table tr:nth-child(2) td:nth-child(3):hover {
+	color: white;
+}
+.user-settings table tr:nth-child(4) td:nth-child(1) {
+	text-align: right;
+}
+.user-settings table tr:nth-child(4) td:nth-child(3) {
+	text-align: left;
+}
+.user-settings table tr:nth-child(1) td {
+	width: 100%;
+}
+.user-settings table tr:nth-child(2) td, .user-settings table tr:nth-child(3) td, .user-settings table tr:nth-child(4) td {
+	width: 33.33333333333333333%;
+}
+.user-settings table td {
+	transition: all 0.3s;
+}
+.user-settings table .focused {
+	background: white;
+	color: black;
+	outline: 4px solid white;
+}
+/***********************************/
+.user-settings .red tr:nth-child(1) {
+	background: hsl(0, 70%, 48%);
+	color: hsl(0, 80%, 25%);
+	border-left: 3px solid hsl(0, 70%, 48%);
+	border-top: 1px solid hsl(0, 70%, 48%);
+	border-right: 3px solid hsl(0, 70%, 48%);
+}
+.user-settings .red tr:nth-child(2) {
+	background: hsl(0, 80%, 35%);
+	border-left: 3px solid hsl(0, 70%, 48%);
+	border-right: 3px solid hsl(0, 70%, 48%);
+	border-bottom: 1px solid hsl(0, 70%, 48%);
+}
+.user-settings .red tr:nth-child(3) {
+	background: hsl(0, 80%, 35%);
+	color: hsl(0, 80%, 55%);
+	border-left: 3px solid hsl(0, 70%, 48%);
+	border-right: 3px solid hsl(0, 70%, 48%);
+}
+
+.user-settings .red tr:nth-child(4) {
+	background: hsl(0, 80%, 35%);
+	color: hsl(0, 80%, 55%);
+	border-left: 3px solid hsl(0, 70%, 48%);
+	border-right: 3px solid hsl(0, 70%, 48%);
+	border-bottom: 4px solid hsl(0, 70%, 48%);
+}
+.user-settings .red tr:nth-child(2) td:nth-child(1), .user-settings .red tr:nth-child(2) td:nth-child(3)  {
+	color: hsl(0, 70%, 48%);
+}
+.user-settings .red tr:nth-child(2) td:nth-child(2) {
+	color: hsl(0, 80%, 55%);
+}
+.user-settings .red tr:nth-child(3) td:nth-child(2):not(.focused):hover {
+	color: white;
+    background: hsl(0, 70%, 48%);
+}
+.user-settings .red tr:nth-child(4) td:not(.focused):hover {
+	color: white;
+    background: hsl(0, 70%, 48%);
+}
+/***********************************/
+.user-settings .blue tr:nth-child(1) {
+	background: hsl(240, 90%, 40%);
+	color: hsl(240, 90%, 15%);
+	border-left: 3px solid hsl(240, 90%, 40%);
+	border-top: 1px solid hsl(240, 90%, 40%);
+	border-right: 3px solid hsl(240, 90%, 40%);
+}
+.user-settings .blue tr:nth-child(2) {
+	background: hsl(240, 90%, 25%);
+	border-left: 3px solid hsl(240, 90%, 40%);
+	border-right: 3px solid hsl(240, 90%, 40%);
+	border-bottom: 1px solid hsl(240, 90%, 40%);
+}
+.user-settings .blue tr:nth-child(3) {
+	background: hsl(240, 90%, 25%);
+	color: hsl(240, 100%, 50%);
+	border-left: 3px solid hsl(240, 90%, 40%);
+	border-right: 3px solid hsl(240, 90%, 40%);
+}
+
+.user-settings .blue tr:nth-child(4) {
+	background: hsl(240, 90%, 25%);
+	color: hsl(240, 100%, 50%);
+	border-left: 3px solid hsl(240, 90%, 40%);
+	border-right: 3px solid hsl(240, 90%, 40%);
+	border-bottom: 4px solid hsl(240, 90%, 40%);
+}
+.user-settings .blue tr:nth-child(2) td:nth-child(1), .user-settings .blue tr:nth-child(2) td:nth-child(3)  {
+	color: hsl(240, 90%, 40%);
+}
+.user-settings .blue tr:nth-child(2) td:nth-child(2) {
+	color: hsl(240, 100%, 50%);
+}
+.user-settings .blue tr:nth-child(3) td:nth-child(2):not(.focused):hover {
+	color: white;
+    background: hsl(240, 90%, 40%);
+}
+.user-settings .blue tr:nth-child(4) td:not(.focused):hover {
+	color: white;
+    background: hsl(240, 90%, 40%);
+}
+/***********************************/
+.user-settings .green tr:nth-child(1) {
+	background: hsl(120, 100%, 50%);
+	color: hsl(120, 100%, 15%);
+	border-left: 3px solid hsl(120, 100%, 50%);
+	border-top: 1px solid hsl(120, 100%, 50%);
+	border-right: 3px solid hsl(120, 100%, 50%);
+}
+.user-settings .green tr:nth-child(2) {
+	background: hsl(120, 100%, 25%);
+	border-left: 3px solid hsl(120, 100%, 50%);
+	border-right: 3px solid hsl(120, 100%, 50%);
+	border-bottom: 1px solid hsl(120, 100%, 50%);
+}
+.user-settings .green tr:nth-child(3) {
+	background: hsl(120, 100%, 25%);
+	color: hsl(120, 100%, 65%);
+	border-left: 3px solid hsl(120, 100%, 50%);
+	border-right: 3px solid hsl(120, 100%, 50%);
+}
+
+.user-settings .green tr:nth-child(4) {
+	background: hsl(120, 100%, 25%);
+	color: hsl(120, 100%, 65%);
+	border-left: 3px solid hsl(120, 100%, 50%);
+	border-right: 3px solid hsl(120, 100%, 50%);
+	border-bottom: 4px solid hsl(120, 100%, 50%);
+}
+.user-settings .green tr:nth-child(2) td:nth-child(1), .user-settings .green tr:nth-child(2) td:nth-child(3)  {
+	color: hsl(120, 100%, 50%);
+}
+.user-settings .green tr:nth-child(2) td:nth-child(2) {
+	color: hsl(120, 100%, 65%);
+}
+.user-settings .green tr:nth-child(3) td:nth-child(2):not(.focused):hover {
+	color: white;
+    background: hsl(120, 100%, 50%);
+}
+.user-settings .green tr:nth-child(4) td:not(.focused):hover {
+	color: white;
+    background: hsl(120, 100%, 50%);
+}
+/***********************************/
+.user-settings .orange tr:nth-child(1) {
+	background: hsl(30, 100%, 50%);
+	color: hsl(30, 100%, 20%);
+	border-left: 3px solid hsl(30, 100%, 50%);
+	border-top: 1px solid hsl(30, 100%, 50%);
+	border-right: 3px solid hsl(30, 100%, 50%);
+}
+.user-settings .orange tr:nth-child(2) {
+	background: hsl(30, 100%, 30%);
+	border-left: 3px solid hsl(30, 100%, 50%);
+	border-right: 3px solid hsl(30, 100%, 50%);
+	border-bottom: 1px solid hsl(30, 100%, 50%);
+}
+.user-settings .orange tr:nth-child(3) {
+	background: hsl(30, 100%, 30%);
+	color: hsl(30, 100%, 55%);
+	border-left: 3px solid hsl(30, 100%, 50%);
+	border-right: 3px solid hsl(30, 100%, 50%);
+}
+
+.user-settings .orange tr:nth-child(4) {
+	background: hsl(30, 100%, 30%);
+	color: hsl(30, 100%, 55%);
+	border-left: 3px solid hsl(30, 100%, 50%);
+	border-right: 3px solid hsl(30, 100%, 50%);
+	border-bottom: 4px solid hsl(30, 100%, 50%);
+}
+.user-settings .orange tr:nth-child(2) td:nth-child(1), .user-settings .orange tr:nth-child(2) td:nth-child(3)  {
+	color: hsl(30, 100%, 50%);
+}
+.user-settings .orange tr:nth-child(2) td:nth-child(2) {
+	color: hsl(30, 100%, 55%);
+}
+.user-settings .orange tr:nth-child(3) td:nth-child(2):not(.focused):hover {
+	color: white;
+    background: hsl(30, 100%, 50%);
+}
+.user-settings .orange tr:nth-child(4) td:not(.focused):hover {
+	color: white;
+    background: hsl(30, 100%, 50%);
+}
+/***********************************/
+.user-settings .purple tr:nth-child(1) {
+	background: hsl(300, 50%, 40%);
+	color: hsl(300, 50%, 30%);
+	border-left: 3px solid hsl(300, 50%, 40%);
+	border-top: 1px solid hsl(300, 50%, 40%);
+	border-right: 3px solid hsl(300, 50%, 40%);
+}
+.user-settings .purple tr:nth-child(2) {
+	background: hsl(300, 50%, 25%);
+	border-left: 3px solid hsl(300, 50%, 40%);
+	border-right: 3px solid hsl(300, 50%, 40%);
+	border-bottom: 1px solid hsl(300, 50%, 40%);
+}
+.user-settings .purple tr:nth-child(3) {
+	background: hsl(300, 50%, 25%);
+	color: hsl(300, 50%, 55%);
+	border-left: 3px solid hsl(300, 50%, 40%);
+	border-right: 3px solid hsl(300, 50%, 40%);
+}
+
+.user-settings .purple tr:nth-child(4) {
+	background: hsl(300, 50%, 25%);
+	color: hsl(300, 50%, 55%);
+	border-left: 3px solid hsl(300, 50%, 40%);
+	border-right: 3px solid hsl(300, 50%, 40%);
+	border-bottom: 4px solid hsl(300, 50%, 40%);
+}
+.user-settings .purple tr:nth-child(2) td:nth-child(2) {
+	color: hsl(300, 50%, 55%);
+}
+.user-settings .purple tr:nth-child(3) td:nth-child(2):not(.focused):hover {
+	color: white;
+    background: hsl(300, 50%, 40%);
+}
+.user-settings .purple tr:nth-child(4) td:not(.focused):hover {
+	color: white;
+    background: hsl(300, 50%, 40%);
+}
