@@ -28,7 +28,7 @@ class gameInstance {
       p.standardKeyBindings = typeof p.standardKeyBindings !== "undefined" ? p.standardKeyBindings.filter( v => v.length === 4 ) : [ ["KeyW","KeyS","KeyA","KeyD"], ["KeyI","KeyK","KeyJ","KeyL"], ["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"], ["KeyG","KeyB","KeyV","KeyN"], ["Numpad8","Numpad5","Numpad4","Numpad6"] ];
       p.playerColors = typeof p.playerColors !== "undefined" ? p.playerColors.filter( v => typeof v === "string" ) : [ "red", "blue", "green", "orange" ];
       savedColors = p.playerColors;
-      savedKeyBindings = p.standardKeyBindings;
+      savedKeyBindings = p.standardKeyBindings.slice( 0, p.playerQuantity );
 
       if ( typeof Storage !== "undefined" ) {
 
@@ -105,6 +105,29 @@ class gameInstance {
       if (!flag) {
 
         for ( index = 0; index < this.data.playerRules.playerQuantity; index++ ) { this.data.entities[`player${ index + 1 }`] = {}; this.data.playerSettings[`player${index + 1}`] = { color: typeof savedColors[index] !== "undefined" ? savedColors[index] : p.playerColors[index], keyBindings: typeof savedKeyBindings[index] !== "undefined" ? savedKeyBindings[index] : p.standardKeyBindings[index] }; if ( ( index + 1 ) === this.data.playerRules.playerQuantity ) { this.data.playerSettings.killer = { keyBindings: typeof savedKeyBindings[index+1] !== "undefined" ? savedKeyBindings[index+1] : p.standardKeyBindings[index+1] } } }
+        
+        // removing all duplicated key bindings
+        Object.keys( this.data.playerSettings ).forEach( v => {
+
+          this.data.playerSettings[v].keyBindings.forEach( V => {
+
+            Object.keys( this.data.playerSettings ).forEach( p => {
+
+              if ( this.data.playerSettings[p] !== this.data.playerSettings[v] ) {
+
+                if ( this.data.playerSettings[p].keyBindings.includes( V ) ) {
+
+                  this.data.playerSettings[p].keyBindings[ this.data.playerSettings[p].keyBindings.indexOf( V ) ] = ""
+
+                }
+
+              }
+
+            })
+
+          } )
+
+        } )
 
       }
 
@@ -1318,20 +1341,11 @@ class gameInstance {
 
   generatePlayerSettings() {
 
-    let debugKey,
-    keyBindings,
+    let keyBindings,
     D = T.DOM,
     entities = Object.keys( this.data.playerSettings ),
     index,
     div;
-
-
-    if ( typeof this.debug !== "undefined" && this.debug.state ) {
-
-      debugKey = this.debugKeyGen();
-      this.debugRegister( "generatePlayerSettings", [], "start", debugKey )
-
-    }
 
     if ( entities.length > 0 && typeof D.qSA( ".user-settings", document, 0 ) === "undefined" ) {
 
@@ -1340,15 +1354,13 @@ class gameInstance {
 
       for ( index = 0; index < entities.length; index++ ) {
 
-          div.innerHTML += `<table id="${ entities[index] + "-card" }" class="${ entities[index].includes( "player" ) && this.data.entities[entities[index]].entityBehavior === "player" ? this.data.playerSettings[entities[index]].color : "purple" }"><tr><td colspan="3">${ entities[index] }</td></tr><tr><td id="${ entities[index].includes( "player" ) && this.data.entities[entities[index]].entityBehavior === "player" ? entities[index] + "-leftColorChange" : "" }">${ entities[index].includes( "player" ) && this.data.entities[entities[index]].entityBehavior === "player" ? "<" : "" }</td><td id="${ entities[index] + "-color" }">${ entities[index].includes( "player" ) && this.data.entities[entities[index]].entityBehavior === "player" ? this.data.playerSettings[entities[index]].color : "purple" }</td><td id="${ entities[index].includes( "player" ) && this.data.entities[entities[index]].entityBehavior === "player" ? entities[index] + "-rightColorChange" : "" }">${ entities[index].includes( "player" ) && this.data.entities[entities[index]].entityBehavior === "player" ? ">" : "" }</td></tr><tr><td></td><td id="${ entities[index] + "-keyUp" }">${ typeof this.data.playerSettings[entities[index]].keyBindings !== "undefined" && typeof this.data.playerSettings[entities[index]].keyBindings[0] !== "undefined" ? this.data.playerSettings[entities[index]].keyBindings[0].replace("Key","") : "..." }</td><td></td></tr><tr><td id="${ entities[index] + "-keyLeft" }">${ typeof this.data.playerSettings[entities[index]].keyBindings !== "undefined" && typeof this.data.playerSettings[entities[index]].keyBindings[2] !== "undefined" ? this.data.playerSettings[entities[index]].keyBindings[2].replace("Key","") : "..." }</td><td id="${ entities[index] + "-keyDown" }">${ typeof this.data.playerSettings[entities[index]].keyBindings !== "undefined" && typeof this.data.playerSettings[entities[index]].keyBindings[1] !== "undefined" ? this.data.playerSettings[entities[index]].keyBindings[1].replace("Key","") : "..." }</td><td id="${ entities[index] + "-keyRight" }">${ typeof this.data.playerSettings[entities[index]].keyBindings !== "undefined" && typeof this.data.playerSettings[entities[index]].keyBindings[3] !== "undefined" ? this.data.playerSettings[entities[index]].keyBindings[3].replace("Key","") : "..." }</td></tr></table>`
+          div.innerHTML += `<table id="${ entities[index] + "-card" }" class="${ entities[index].includes( "player" ) && this.data.entities[entities[index]].entityBehavior === "player" ? this.data.playerSettings[entities[index]].color : "purple" }"><tr><td colspan="3">${ entities[index] }</td></tr><tr><td id="${ entities[index].includes( "player" ) && this.data.entities[entities[index]].entityBehavior === "player" ? entities[index] + "-leftColorChange" : "" }">${ entities[index].includes( "player" ) && this.data.entities[entities[index]].entityBehavior === "player" ? "<" : "" }</td><td id="${ entities[index] + "-color" }">${ entities[index].includes( "player" ) && this.data.entities[entities[index]].entityBehavior === "player" ? this.data.playerSettings[entities[index]].color : "purple" }</td><td id="${ entities[index].includes( "player" ) && this.data.entities[entities[index]].entityBehavior === "player" ? entities[index] + "-rightColorChange" : "" }">${ entities[index].includes( "player" ) && this.data.entities[entities[index]].entityBehavior === "player" ? ">" : "" }</td></tr><tr><td></td><td id="${ entities[index] + "-keyUp" }">${ typeof this.data.playerSettings[entities[index]].keyBindings !== "undefined" && typeof this.data.playerSettings[entities[index]].keyBindings[0] !== "undefined" && this.data.playerSettings[entities[index]].keyBindings[0] !== "" ? this.data.playerSettings[entities[index]].keyBindings[0].replace("Key","") : "..." }</td><td></td></tr><tr><td id="${ entities[index] + "-keyLeft" }">${ typeof this.data.playerSettings[entities[index]].keyBindings !== "undefined" && typeof this.data.playerSettings[entities[index]].keyBindings[2] !== "undefined" && this.data.playerSettings[entities[index]].keyBindings[2] !== "" ? this.data.playerSettings[entities[index]].keyBindings[2].replace("Key","") : "..." }</td><td id="${ entities[index] + "-keyDown" }">${ typeof this.data.playerSettings[entities[index]].keyBindings !== "undefined" && typeof this.data.playerSettings[entities[index]].keyBindings[1] !== "undefined" && this.data.playerSettings[entities[index]].keyBindings[1] !== "" ? this.data.playerSettings[entities[index]].keyBindings[1].replace("Key","") : "..." }</td><td id="${ entities[index] + "-keyRight" }">${ typeof this.data.playerSettings[entities[index]].keyBindings !== "undefined" && typeof this.data.playerSettings[entities[index]].keyBindings[3] !== "undefined" && this.data.playerSettings[entities[index]].keyBindings[3] !== "" ? this.data.playerSettings[entities[index]].keyBindings[3].replace("Key","") : "..." }</td></tr></table>`
         
       }
 
       D.aC( div )
 
     }
-
-    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "generatePlayerSettings", [], "end", debugKey )
 
   }
 

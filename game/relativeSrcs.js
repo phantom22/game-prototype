@@ -279,14 +279,35 @@ let instance;
 
           if ( k && instance.data.playerRules.focusedKeyBinding !== "" && instance.data.playerRules.HUDisActive === true ) {
 
-            let keys = { keyUp: 0, keyDown: 1, keyLeft: 2, keyRight: 3 };
+            let keys = { keyUp: 0, keyDown: 1, keyLeft: 2, keyRight: 3 }; let keyId = { 0: "keyUp", 1: "keyDown", 2: "keyLeft", 3: "keyRight" };
             let focusedKeyBinding = instance.data.playerRules.focusedKeyBinding.split( " " );
 
-            if ( !instance.data.playerRules.bannedKeysFromBinding.includes( k ) && !instance.data.playerRules.bindedKeys.includes( k ) ) {
+            if ( !instance.data.playerRules.bannedKeysFromBinding.includes( k ) ) {
 
               let oldKeyIndex = instance.data.playerRules.bindedKeys.indexOf( instance.data.playerSettings[ focusedKeyBinding[0] ].keyBindings[ keys[ focusedKeyBinding[1] ] ] );
 
               instance.data.playerRules.bindedKeys.splice( oldKeyIndex, 1 );
+
+              Object.keys( instance.data.playerSettings ).forEach( v => {
+
+                // v = entity
+
+                instance.data.playerSettings[v].keyBindings.forEach( V => {
+
+                  // V = key binding
+
+                  let index = instance.data.playerSettings[v].keyBindings.indexOf( k );
+                  
+                  if ( index !== -1 ) {
+
+                    instance.data.playerSettings[v].keyBindings[index] = "";
+                    document.querySelector( `#${v}-${keyId[index]}` ).textContent = "...";
+
+                  }
+
+                } )
+
+              } )
 
               instance.data.playerSettings[ focusedKeyBinding[0] ].keyBindings[ keys[ focusedKeyBinding[1] ] ] = k;
               document.querySelector( `#${ focusedKeyBinding.join( "-" ) }` ).textContent = k.replace("Key","");
