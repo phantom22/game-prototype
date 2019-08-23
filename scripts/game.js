@@ -1318,11 +1318,20 @@ class gameInstance {
 
   generatePlayerSettings() {
 
-    let keyBindings,
+    let debugKey,
+    keyBindings,
     D = T.DOM,
     entities = Object.keys( this.data.playerSettings ),
     index,
     div;
+
+
+    if ( typeof this.debug !== "undefined" && this.debug.state ) {
+
+      debugKey = this.debugKeyGen();
+      this.debugRegister( "generatePlayerSettings", [], "start", debugKey )
+
+    }
 
     if ( entities.length > 0 && typeof D.qSA( ".user-settings", document, 0 ) === "undefined" ) {
 
@@ -1338,6 +1347,8 @@ class gameInstance {
       D.aC( div )
 
     }
+
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "generatePlayerSettings", [], "end", debugKey )
 
   }
 
