@@ -5,6 +5,8 @@
 	opacity: 0.85;
 	position: absolute;
 	top: 0;
+	user-select: none;
+	-moz-user-select: none;
 	overflow: hidden;
 }
 .user-settings table, .user-settings table tr, .user-settings table td {

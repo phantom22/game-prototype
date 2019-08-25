@@ -104,49 +104,21 @@ let instance;
 
           if ( v.includes("player") && instance.data.entities[v].entityBehavior === "player" ) {
 
-            document.querySelector( `#${ v + "-leftColorChange" }`).addEventListener( "click", function() {
+            instance.data.playerSettings[v].HUD.arrowLeft.addEventListener( "click", function() {
 
-                let savedColors = [];
-
-                let playerColors = instance.data.playerRules.playerColors;
-                let colorIndex = playerColors.indexOf( instance.data.playerSettings[v].color );
-
-                document.querySelector(`#${ v + "-card" }`).className = ( colorIndex - 1 ) >= 0 ? playerColors[ colorIndex - 1 ] : playerColors[ 0 ];
-                instance.data.playerSettings[v].color = ( colorIndex - 1 ) >= 0 ? playerColors[ colorIndex - 1 ] : playerColors[ 0 ];
-
-                document.querySelector(`#${ v + "-color" }`).textContent = instance.data.playerSettings[v].color;
-
-                instance.registerTile( instance.data.entities[v].position, instance.tileClassToId( v ) );
-                instance.tileUpdateDisplay( instance.data.entities[v].position );
-
-                Object.keys( instance.data.playerSettings ).forEach( v => typeof instance.data.playerSettings[v].color !== "undefined" ? savedColors.push( instance.data.playerSettings[v].color ) : void 0 );
-                localStorage.colors = JSON.stringify( savedColors )
+                instance.entityArrowColorChange( v, "left" )
 
             } );
 
-            document.querySelector( `#${ v + "-rightColorChange" }`).addEventListener( "click", function() {
+            instance.data.playerSettings[v].HUD.arrowRight.addEventListener( "click", function() {
 
-                let savedColors = [];
-
-                let playerColors = instance.data.playerRules.playerColors;
-                let colorIndex = playerColors.indexOf( instance.data.playerSettings[v].color );
-
-                document.querySelector(`#${ v + "-card" }`, document, 0 ).className = ( colorIndex + 1 ) <= ( playerColors.length - 1 )  ? playerColors[ colorIndex + 1 ] : playerColors[ playerColors.length - 1 ];
-                instance.data.playerSettings[v].color = ( colorIndex + 1 ) <= ( playerColors.length - 1 ) ? playerColors[ colorIndex + 1 ] : playerColors[ playerColors.length - 1 ];
-
-                document.querySelector(`#${ v + "-color" }`, document, 0 ).textContent = instance.data.playerSettings[v].color;
-
-                instance.registerTile( instance.data.entities[v].position, instance.tileClassToId( v ) );
-                instance.tileUpdateDisplay( instance.data.entities[v].position );
-
-                Object.keys( instance.data.playerSettings ).forEach( v => typeof instance.data.playerSettings[v].color !== "undefined" ? savedColors.push( instance.data.playerSettings[v].color ) : void 0 );
-                localStorage.colors = JSON.stringify( savedColors )
+                instance.entityArrowColorChange( v, "right" )
 
             } )
 
           }
 
-          document.querySelector( `#${ v + "-keyUp" }` ).addEventListener( "click", function(evt) {
+          instance.data.playerSettings[v].HUD.keyUp.addEventListener( "click", function(evt) {
 
             if ( !evt.target.classList.contains( "focused" ) ) {
 
@@ -165,7 +137,7 @@ let instance;
 
           })
 
-          document.querySelector( `#${ v + "-keyDown" }` ).addEventListener( "click", function(evt) {
+          instance.data.playerSettings[v].HUD.keyDown.addEventListener( "click", function(evt) {
 
             if ( !evt.target.classList.contains( "focused" ) ) {
 
@@ -184,7 +156,7 @@ let instance;
 
           })
 
-          document.querySelector( `#${ v + "-keyLeft" }` ).addEventListener( "click", function(evt) {
+          instance.data.playerSettings[v].HUD.keyLeft.addEventListener( "click", function(evt) {
 
             if ( !evt.target.classList.contains( "focused" ) ) {
 
@@ -203,7 +175,7 @@ let instance;
 
           })
 
-          document.querySelector( `#${ v + "-keyRight" }` ).addEventListener( "click", function(evt) {
+          instance.data.playerSettings[v].HUD.keyRight.addEventListener( "click", function(evt) {
 
             if ( !evt.target.classList.contains( "focused" ) ) {
 
@@ -260,16 +232,16 @@ let instance;
             }
 
             if (typeof bindings !== "undefined" && k === bindings[0] && instance.data.playerRules.HUDisActive !== true ) {
-              newTile = instance.entityUP( entity );
+              newTile = instance.entityMoveUp( entity );
             }
             else if (typeof bindings !== "undefined" && k === bindings[1] && instance.data.playerRules.HUDisActive !== true ) {
-              newTile = instance.entityDOWN( entity );
+              newTile = instance.entityMoveDown( entity );
             }
             else if (typeof bindings !== "undefined" && k === bindings[2] && instance.data.playerRules.HUDisActive !== true ) {
-              newTile = instance.entityLEFT( entity );
+              newTile = instance.entityMoveLeft( entity );
             }
             else if (typeof bindings !== "undefined" && k === bindings[3] && instance.data.playerRules.HUDisActive !== true ) {
-              newTile = instance.entityRIGHT( entity );
+              newTile = instance.entityMoveRight( entity );
             }
             else if (!bindings && k === "CapsLock") {
               instance.togglePlayerSettings();
@@ -288,29 +260,10 @@ let instance;
 
               instance.data.playerRules.bindedKeys.splice( oldKeyIndex, 1 );
 
-              Object.keys( instance.data.playerSettings ).forEach( v => {
-
-                // v = entity
-
-                instance.data.playerSettings[v].keyBindings.forEach( V => {
-
-                  // V = key binding
-
-                  let index = instance.data.playerSettings[v].keyBindings.indexOf( k );
-                  
-                  if ( index !== -1 ) {
-
-                    instance.data.playerSettings[v].keyBindings[index] = "";
-                    document.querySelector( `#${v}-${keyId[index]}` ).textContent = "...";
-
-                  }
-
-                } )
-
-              } )
+              instance.removeDuplicatedKeyBindings( k );
 
               instance.data.playerSettings[ focusedKeyBinding[0] ].keyBindings[ keys[ focusedKeyBinding[1] ] ] = k;
-              document.querySelector( `#${ focusedKeyBinding.join( "-" ) }` ).textContent = k.replace("Key","");
+              instance.updateEntityHUD( focusedKeyBinding[0] );
 
               instance.data.playerRules.bindedKeys.push( k );
 
@@ -340,25 +293,10 @@ let instance;
 
               Object.keys( instance.data.playerSettings ).forEach( v => savedBindings.push( instance.data.playerSettings[v].keyBindings ) );
 
-              localStorage.keyBindings = JSON.stringify( savedBindings );
+              localStorage.exportedKeyBindings = JSON.stringify( savedBindings );
 
             }
 
-          }
-
-          // if the new coordinates are defined (if one of the WASD buttons was pressed)
-          if ( newTile ) {
-            // register querySelector
-            registryItem = instance.registry[newTile.join("-")];
-            // if the tile is found in the registry
-            id = registryItem ? registryItem.id : undefined;
-            element = registryItem ? registryItem.element : undefined
-          }
-
-          // if the tile is found in the registry and its id in not 1 (wall) then move to that tile
-          if ( element && element instanceof HTMLElement ) {
-            instance.entityMove(entity, newTile);
-            instance.entitiesSight(entity)
           }
         })
       }
