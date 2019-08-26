@@ -49,7 +49,7 @@
       }
 
       // creating a game
-      let instance = new gameInstance({gamemode:3},{grid:[g[0],g[1]],meta:meta.join("")},false,{state:false});
+      let instance = new gameInstance("instance",{gamemode:3},{grid:[g[0],g[1]],meta:meta.join("")},false,{state:false});
 
       // if the map was imported from the already existing levels and mapBannedTiles is an array with length greater than 0
       if (mapBannedTiles && mapBannedTiles.length !== 0 && imported) {

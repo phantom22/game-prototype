@@ -34,6 +34,7 @@ let instance;
 
         // after all the .js scripts are loaded creating a game
         instance = new gameInstance(
+          "instance",
           {
             spawnPoints: true,
             playerQuantity: a[2],
@@ -120,84 +121,32 @@ let instance;
 
           instance.data.playerSettings[v].HUD.keyUp.addEventListener( "click", function(evt) {
 
-            if ( !evt.target.classList.contains( "focused" ) ) {
+            instance.toggleFocusedKeyBinding( `${v} keyUp` )
 
-              document.querySelectorAll( ".focused" ).forEach( v => v.classList.remove( "focused" ) );
-              evt.target.classList.add( "focused" );
-              instance.data.playerRules.focusedKeyBinding = `${v} keyUp`
-
-            }
-
-            else {
-
-              evt.target.classList.remove( "focused" );
-              instance.data.playerRules.focusedKeyBinding = ""
-
-            }
-
-          })
+          } )
 
           instance.data.playerSettings[v].HUD.keyDown.addEventListener( "click", function(evt) {
 
-            if ( !evt.target.classList.contains( "focused" ) ) {
+            instance.toggleFocusedKeyBinding( `${v} keyDown` )
 
-              document.querySelectorAll( ".focused" ).forEach( v => v.classList.remove( "focused" ) );
-              evt.target.classList.add( "focused" );
-              instance.data.playerRules.focusedKeyBinding = `${v} keyDown`
-
-            }
-
-            else {
-
-              evt.target.classList.remove( "focused" );
-              instance.data.playerRules.focusedKeyBinding = ""
-
-            }
-
-          })
+          } )
 
           instance.data.playerSettings[v].HUD.keyLeft.addEventListener( "click", function(evt) {
 
-            if ( !evt.target.classList.contains( "focused" ) ) {
+            instance.toggleFocusedKeyBinding( `${v} keyLeft` )
 
-              document.querySelectorAll( ".focused" ).forEach( v => v.classList.remove( "focused" ) );
-              evt.target.classList.add( "focused" );
-              instance.data.playerRules.focusedKeyBinding = `${v} keyLeft`
-
-            }
-
-            else {
-
-              evt.target.classList.remove( "focused" );
-              instance.data.playerRules.focusedKeyBinding = ""
-
-            }
-
-          })
+          } )
 
           instance.data.playerSettings[v].HUD.keyRight.addEventListener( "click", function(evt) {
 
-            if ( !evt.target.classList.contains( "focused" ) ) {
+            instance.toggleFocusedKeyBinding( `${v} keyRight` )
 
-              document.querySelectorAll( ".focused" ).forEach( v => v.classList.remove( "focused" ) );
-              evt.target.classList.add( "focused" );
-              instance.data.playerRules.focusedKeyBinding = `${v} keyRight`
-
-            }
-
-            else {
-
-              evt.target.classList.remove( "focused" );
-              instance.data.playerRules.focusedKeyBinding = ""
-
-            }
-
-          })
+          } )
 
         } )
 
         // adding an event listener for the keybord press event
-        document.addEventListener("keydown", function(event) {
+        document.body.addEventListener("keydown", function(event) {
           // getting player position
           let coordinates,
           k = event.code,
@@ -232,74 +181,49 @@ let instance;
             }
 
             if (typeof bindings !== "undefined" && k === bindings[0] && instance.data.playerRules.HUDisActive !== true ) {
-              newTile = instance.entityMoveUp( entity );
+
+              instance.entityMoveUp( entity )
+
             }
+
             else if (typeof bindings !== "undefined" && k === bindings[1] && instance.data.playerRules.HUDisActive !== true ) {
-              newTile = instance.entityMoveDown( entity );
+
+              instance.entityMoveDown( entity )
+
             }
+
             else if (typeof bindings !== "undefined" && k === bindings[2] && instance.data.playerRules.HUDisActive !== true ) {
-              newTile = instance.entityMoveLeft( entity );
+
+              instance.entityMoveLeft( entity )
+
             }
+
             else if (typeof bindings !== "undefined" && k === bindings[3] && instance.data.playerRules.HUDisActive !== true ) {
-              newTile = instance.entityMoveRight( entity );
+
+              instance.entityMoveRight( entity )
+
             }
+
             else if (!bindings && k === "CapsLock") {
-              instance.togglePlayerSettings();
+
+              instance.togglePlayerSettings()
+
             }
 
           }
 
           if ( k && instance.data.playerRules.focusedKeyBinding !== "" && instance.data.playerRules.HUDisActive === true ) {
 
-            let keys = { keyUp: 0, keyDown: 1, keyLeft: 2, keyRight: 3 }; let keyId = { 0: "keyUp", 1: "keyDown", 2: "keyLeft", 3: "keyRight" };
-            let focusedKeyBinding = instance.data.playerRules.focusedKeyBinding.split( " " );
-
-            if ( !instance.data.playerRules.bannedKeysFromBinding.includes( k ) ) {
-
-              let oldKeyIndex = instance.data.playerRules.bindedKeys.indexOf( instance.data.playerSettings[ focusedKeyBinding[0] ].keyBindings[ keys[ focusedKeyBinding[1] ] ] );
-
-              instance.data.playerRules.bindedKeys.splice( oldKeyIndex, 1 );
-
-              instance.removeDuplicatedKeyBindings( k );
-
-              instance.data.playerSettings[ focusedKeyBinding[0] ].keyBindings[ keys[ focusedKeyBinding[1] ] ] = k;
-              instance.updateEntityHUD( focusedKeyBinding[0] );
-
-              instance.data.playerRules.bindedKeys.push( k );
-
-              instance.data.playerRules.focusedKeyBinding = "";
-              document.querySelectorAll( ".focused" ).forEach( v => v.classList.remove( "focused" ) );
-
-            }
-
-            else if ( k === "Escape" ) {
-
-              let oldKeyIndex = instance.data.playerRules.bindedKeys.indexOf( instance.data.playerSettings[ focusedKeyBinding[0] ].keyBindings[ keys[ focusedKeyBinding[1] ] ] );
-
-              instance.data.playerRules.bindedKeys.splice( oldKeyIndex, 1 );
-
-              instance.data.playerSettings[ focusedKeyBinding[0] ].keyBindings[ keys[ focusedKeyBinding[1] ] ] = "";
-              document.querySelector( `#${ focusedKeyBinding.join( "-" ) }` ).textContent = "...";
-
-              instance.data.playerRules.focusedKeyBinding = "";
-              document.querySelectorAll( ".focused" ).forEach( v => v.classList.remove( "focused" ) );
-
-
-            }
-
-            if ( typeof Storage !== "undefined" ) {
-
-              let savedBindings = [];
-
-              Object.keys( instance.data.playerSettings ).forEach( v => savedBindings.push( instance.data.playerSettings[v].keyBindings ) );
-
-              localStorage.exportedKeyBindings = JSON.stringify( savedBindings );
-
-            }
+            instance.bindKey( k )
 
           }
+
         })
+
       }
+
     }
+
   }
+
 })()

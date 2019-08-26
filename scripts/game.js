@@ -2,7 +2,7 @@ const T = TOOL;
 
 class gameInstance { 
 
-  constructor( playerRules = { spawnPoints, moveDistance, vision, gamemode, playerQuantity }, map = { grid, meta, coins, madness, tileClasses }, killerRules = { vision, movesBeforeDisappearing, playerMadnessMovesBeforeSpawn, spawn }, debug = { state, maxRegistryLength } ) { 
+  constructor( instanceName, playerRules = { spawnPoints, moveDistance, vision, gamemode, playerQuantity }, map = { grid, meta, coins, madness, tileClasses }, killerRules = { vision, movesBeforeDisappearing, playerMadnessMovesBeforeSpawn, spawn }, debug = { state, maxRegistryLength } ) { 
 
     let p = playerRules,
     vision = typeof p.vision !== "undefined" ? p.vision : void 0,
@@ -98,7 +98,10 @@ class gameInstance {
 
     }
 
-    if ( typeof map.grid !== "undefined" && typeof map.meta !== "undefined" && p.gamemode !== 3 || typeof map.grid !== "undefined" && typeof map.meta !== "undefined" && p.gamemode === 3 ) {
+    if ( typeof instanceName !== "undefined" && typeof map.grid !== "undefined" && typeof map.meta !== "undefined" && p.gamemode !== 3 || typeof map.grid !== "undefined" && typeof map.meta !== "undefined" && p.gamemode === 3 ) {
+
+      this.__proto__.instanceName = instanceName;
+      this.__proto__.getInstanceName = () => this.instanceName;
 
       this.data = { map: map, playerRules: p, killerRules: k, entities: {}, playerSettings: {} };
 
@@ -295,11 +298,110 @@ class gameInstance {
       
       D.aC( tbody, table );
 
-      this.data.map.element = table;
+      this.data.map.element = table
 
     }
 
     typeof debugKey === "undefined" ? void 0 : this.debugRegister( "createMap", [], "end", debugKey );
+
+  }
+
+  registerTile( coordinates, tileId ) {
+
+    let D = T.DOM,
+    debugKey,
+    map = this.data.map,
+    registryQuery,
+    element;
+
+    if ( typeof this.debug !== "undefined" && this.debug.state ) {
+
+      debugKey = this.debugKeyGen();
+      this.debugRegister( "registerTile", [coordinates, tileId], "start", debugKey )
+
+    }
+
+    if ( coordinates && Array.isArray( coordinates ) && typeof tileId === "number" ) {
+
+      registryQuery = coordinates.join( "-" ); element = D.qSA( `[data-x="${ coordinates[0] }"][data-y="${ coordinates[1] }"]`, map.element , 0);
+
+      this.registry[registryQuery] = { id: Number( tileId ), class: this.tileIdToClass( tileId ), element: element }
+
+    }
+
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "registerTile", [], "end", debugKey )
+
+  }
+
+  tileUpdateDisplay( coordinates ) {
+
+    let debugKey,
+    registryQuery,
+    registryItem;
+
+    if ( typeof this.debug !== "undefined" && this.debug.state ) {
+
+      debugKey = this.debugKeyGen();
+      this.debugRegister( "tileUpdateDisplay", [coordinates], "start", debugKey )
+
+    }
+
+    if ( coordinates && Array.isArray( coordinates ) ) {
+
+      registryQuery = coordinates.join( "-" );
+
+      if ( typeof this.registry[registryQuery] !== "undefined" ) {
+
+        registryItem = this.registry[registryQuery];
+        this.tileClear( coordinates ); 
+
+        registryItem.id !== this.tileClassToId( "player1" ) && registryItem.id !== this.tileClassToId( "player2" ) && registryItem.id !== this.tileClassToId( "player3" ) && registryItem.id !== this.tileClassToId( "player4" ) ? this.registry[registryQuery].element.classList.add( this.registry[registryQuery].class ) : this.registry[registryQuery].class.split(" ").forEach( v => this.registry[registryQuery].element.classList.add( v ) )
+
+      }
+
+    }
+
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "tileUpdateDisplay", [], "end", debugKey );
+
+  }
+
+  tileClear( coordinates, flag ) {
+
+    let debugKey,
+    registryQuery,
+    elementClassList;
+
+    if ( typeof this.debug !== "undefined" && this.debug.state ) {
+
+      debugKey = this.debugKeyGen();
+      this.debugRegister( "tileClear", [coordinates, flag], "start", debugKey )
+
+    }
+
+    if ( coordinates && Array.isArray( coordinates ) ) {
+
+      registryQuery = coordinates.join( "-" );
+
+      if ( this.registry[registryQuery] ) {
+
+        elementClassList = this.registry[registryQuery].element.classList;
+
+        elementClassList.remove( "air" );
+        elementClassList.remove( "wall" );
+        elementClassList.remove( "coin" );
+        elementClassList.remove( "player" );
+        elementClassList.remove( "red" );
+        elementClassList.remove( "blue" );
+        elementClassList.remove( "green" );
+        elementClassList.remove( "orange" );
+        elementClassList.remove( "killer" );
+        typeof flag !== "undefined" && flag === true ? elementClassList.remove( "light" ) : void 0
+
+      }
+
+    }
+
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "tileClear", [], "end", debugKey )
 
   }
 
@@ -443,220 +545,6 @@ class gameInstance {
     }
 
     typeof debugKey === "undefined" ? void 0 : this.debugRegister( "registerDoor", [], "end", debugKey )
-
-  }
-
-  registerTile( coordinates, tileId ) {
-
-    let D = T.DOM,
-    debugKey,
-    map = this.data.map,
-    registryQuery,
-    element;
-
-    if ( typeof this.debug !== "undefined" && this.debug.state ) {
-
-      debugKey = this.debugKeyGen();
-      this.debugRegister( "registerTile", [coordinates, tileId], "start", debugKey )
-
-    }
-
-    if ( coordinates && Array.isArray( coordinates ) && typeof tileId === "number" ) {
-
-      registryQuery = coordinates.join( "-" ); element = D.qSA( `[data-x="${ coordinates[0] }"][data-y="${ coordinates[1] }"]`, map.element , 0);
-
-      this.registry[registryQuery] = { id: Number( tileId ), class: this.tileIdToClass( tileId ), element: element }
-
-    }
-
-    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "registerTile", [], "end", debugKey )
-
-  }
-
-  tileUpdateDisplay( coordinates ) {
-
-    let debugKey,
-    registryQuery,
-    registryItem;
-
-    if ( typeof this.debug !== "undefined" && this.debug.state ) {
-
-      debugKey = this.debugKeyGen();
-      this.debugRegister( "tileUpdateDisplay", [coordinates], "start", debugKey )
-
-    }
-
-    if ( coordinates && Array.isArray( coordinates ) ) {
-
-      registryQuery = coordinates.join( "-" );
-
-      if ( typeof this.registry[registryQuery] !== "undefined" ) {
-
-        registryItem = this.registry[registryQuery];
-        this.tileClear( coordinates ); 
-
-        registryItem.id !== this.tileClassToId( "player1" ) && registryItem.id !== this.tileClassToId( "player2" ) && registryItem.id !== this.tileClassToId( "player3" ) && registryItem.id !== this.tileClassToId( "player4" ) ? this.registry[registryQuery].element.classList.add( this.registry[registryQuery].class ) : this.registry[registryQuery].class.split(" ").forEach( v => this.registry[registryQuery].element.classList.add( v ) )
-
-      }
-
-    }
-
-    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "tileUpdateDisplay", [], "end", debugKey );
-
-  }
-
-  tileClear( coordinates, flag ) {
-
-    let debugKey,
-    registryQuery,
-    elementClassList;
-
-    if ( typeof this.debug !== "undefined" && this.debug.state ) {
-
-      debugKey = this.debugKeyGen();
-      this.debugRegister( "tileClear", [coordinates, flag], "start", debugKey )
-
-    }
-
-    if ( coordinates && Array.isArray( coordinates ) ) {
-
-      registryQuery = coordinates.join( "-" );
-
-      if ( this.registry[registryQuery] ) {
-
-        elementClassList = this.registry[registryQuery].element.classList;
-
-        elementClassList.remove( "air" );
-        elementClassList.remove( "wall" );
-        elementClassList.remove( "coin" );
-        elementClassList.remove( "player" );
-        elementClassList.remove( "red" );
-        elementClassList.remove( "blue" );
-        elementClassList.remove( "green" );
-        elementClassList.remove( "orange" );
-        elementClassList.remove( "killer" );
-        typeof flag !== "undefined" && flag === true ? elementClassList.remove( "light" ) : void 0
-
-      }
-
-    }
-
-    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "tileClear", [], "end", debugKey )
-
-  }
-
-  lastUpdatedTilesFog( lastUpdatedTiles ) {
-
-    let debugKey,
-    registryQuery,
-    tileId,
-    elementClassList;
-
-    if ( typeof this.debug !== "undefined" && this.debug.state ) {
-
-      debugKey = this.debugKeyGen();
-      this.debugRegister( "lastUpdatedTilesFog", [lastUpdatedTiles], "start", debugKey )
-
-    }
-
-    if ( lastUpdatedTiles && Array.isArray( lastUpdatedTiles ) ) {
-
-      lastUpdatedTiles.forEach( v => { 
-
-        registryQuery = v.join( "-" );
-        tileId = this.registry[registryQuery].id;
-        elementClassList = this.registry[registryQuery].element.classList;
-
-        switch ( tileId ) {
-
-          case this.tileClassToId( "wall" ):
-            elementClassList.remove( "wall" );
-          break;
-
-          case this.tileClassToId( "air" ):
-            elementClassList.remove( "light" );
-          break;
-
-          case this.tileClassToId( "player1" ):
-            elementClassList.remove( "light" );
-          break;
-
-          case this.tileClassToId( "player2" ):
-            elementClassList.remove( "light" );
-          break;
-
-          case this.tileClassToId( "player3" ):
-            elementClassList.remove( "light" );
-          break;
-
-          case this.tileClassToId( "player4" ):
-            elementClassList.remove( "light" );
-          break;
-
-          case this.tileClassToId( "killer" ):
-            elementClassList.remove( "light" );
-          break;
-
-          case this.tileClassToId( "coin1" ):
-            elementClassList.remove( "coin" ); elementClassList.add( "air" );
-          break;
-
-          case this.tileClassToId( "coin2" ):
-            elementClassList.remove( "coin" ); elementClassList.add( "air" );
-          break;
-
-        }
-
-      } )
-
-    }
-
-    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "lastUpdatedTilesFog", [], "end", debugKey )
-
-  }
-
-  currentTilesLighting( currentTiles ) {
-
-
-    let debugKey,
-    registryQuery,
-    tileId,
-    elementClassList;
-
-    if ( typeof this.debug !== "undefined" && this.debug.state ) {
-
-      debugKey = this.debugKeyGen();
-      this.debugRegister( "currentTilesLighting", [currentTiles], "start", debugKey )
-
-    }
-
-    if ( currentTiles && Array.isArray( currentTiles ) ) {
-
-      currentTiles.forEach( v => {
-
-        registryQuery = v.join( "-" );
-        tileId = this.registry[registryQuery].id;
-        elementClassList = this.registry[registryQuery].element.classList;
-
-        switch ( tileId ) {
-
-          case this.tileClassToId( "air" ):
-            elementClassList.add( "light" );
-          break;
-
-          case this.tileClassToId( "door" ):
-            elementClassList.add( "light" );
-          break;
-
-        }
-
-        this.tileUpdateDisplay( v )
-
-      } )
-
-    }
-
-    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "currentTilesLighting", [], "end", debugKey )
 
   }
 
@@ -890,6 +778,150 @@ class gameInstance {
 
   }
 
+  lastUpdatedTilesFog( lastUpdatedTiles ) {
+
+    let debugKey,
+    registryQuery,
+    tileId,
+    elementClassList;
+
+    if ( typeof this.debug !== "undefined" && this.debug.state ) {
+
+      debugKey = this.debugKeyGen();
+      this.debugRegister( "lastUpdatedTilesFog", [lastUpdatedTiles], "start", debugKey )
+
+    }
+
+    if ( lastUpdatedTiles && Array.isArray( lastUpdatedTiles ) ) {
+
+      lastUpdatedTiles.forEach( v => { 
+
+        registryQuery = v.join( "-" );
+        tileId = this.registry[registryQuery].id;
+        elementClassList = this.registry[registryQuery].element.classList;
+
+        switch ( tileId ) {
+
+          case this.tileClassToId( "wall" ):
+            elementClassList.remove( "wall" );
+          break;
+
+          case this.tileClassToId( "air" ):
+            elementClassList.remove( "light" );
+          break;
+
+          case this.tileClassToId( "player1" ):
+            elementClassList.remove( "light" );
+          break;
+
+          case this.tileClassToId( "player2" ):
+            elementClassList.remove( "light" );
+          break;
+
+          case this.tileClassToId( "player3" ):
+            elementClassList.remove( "light" );
+          break;
+
+          case this.tileClassToId( "player4" ):
+            elementClassList.remove( "light" );
+          break;
+
+          case this.tileClassToId( "killer" ):
+            elementClassList.remove( "light" );
+          break;
+
+          case this.tileClassToId( "coin1" ):
+            elementClassList.remove( "coin" ); elementClassList.add( "air" );
+          break;
+
+          case this.tileClassToId( "coin2" ):
+            elementClassList.remove( "coin" ); elementClassList.add( "air" );
+          break;
+
+        }
+
+      } )
+
+    }
+
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "lastUpdatedTilesFog", [], "end", debugKey )
+
+  }
+
+  currentTilesLighting( currentTiles ) {
+
+
+    let debugKey,
+    registryQuery,
+    tileId,
+    elementClassList;
+
+    if ( typeof this.debug !== "undefined" && this.debug.state ) {
+
+      debugKey = this.debugKeyGen();
+      this.debugRegister( "currentTilesLighting", [currentTiles], "start", debugKey )
+
+    }
+
+    if ( currentTiles && Array.isArray( currentTiles ) ) {
+
+      currentTiles.forEach( v => {
+
+        registryQuery = v.join( "-" );
+        tileId = this.registry[registryQuery].id;
+        elementClassList = this.registry[registryQuery].element.classList;
+
+        switch ( tileId ) {
+
+          case this.tileClassToId( "air" ):
+            elementClassList.add( "light" );
+          break;
+
+          case this.tileClassToId( "door" ):
+            elementClassList.add( "light" );
+          break;
+
+        }
+
+        this.tileUpdateDisplay( v )
+
+      } )
+
+    }
+
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "currentTilesLighting", [], "end", debugKey )
+
+  }
+
+  // update all entities sight except the entity that just moved
+  updateEntitiesSight( entity ) {
+
+    let debugKey,
+    entityIndex;
+
+    if ( typeof this.debug !== "undefined" && this.debug.state ) {
+
+      debugKey = this.debugKeyGen();
+      this.debugRegister( "updateEntitiesSight", [entity], "start", debugKey )
+
+    }
+
+    if ( typeof this.data.entities[entity] !== "undefined" ) {
+
+      entityIndex = entity.includes( "player" ) ? Number( entity.slice( -1 ) ) : 5;
+
+      entityIndex !== 1 ? this.entitySight( "player1" ) : void 0;
+      entityIndex !== 2 ? this.entitySight( "player2" ) : void 0;
+      entityIndex !== 3 ? this.entitySight( "player3" ) : void 0;
+      entityIndex !== 4 ? this.entitySight( "player4" ) : void 0;
+      entityIndex !== 5 ? this.entitySight( "killer" ) : void 0
+
+    }
+
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "updateEntitiesSight", [], "end", debugKey )
+
+  }
+
   entityMove( entity, coordinates ) { 
 
     let debugKey,
@@ -948,146 +980,15 @@ class gameInstance {
         if (  typeof this.data.entities[entity] === "undefined" ) { this.tileClear( oldXY, true ) }
 
         typeof this.data.entities[entity] !== "undefined" ? this.entitySight( entity ) : void 0;
-        typeof this.data.entities[entity] !== "undefined" ? this.tileClear( oldXY ) : void 0
+        typeof this.data.entities[entity] !== "undefined" ? this.tileClear( oldXY ) : void 0;
+
+        this.updateEntitiesSight( entity )
 
       }
 
     }
 
     typeof debugKey === "undefined" ? void 0 : this.debugRegister( "entityMove", [], "end", debugKey )
-
-  }
-
-  tileEvents( coordinates, entity ) {
-
-    let M = T.Math,
-    debugKey,
-    tileId,
-    range,
-    tokensPerRangeLoss = this.data.playerRules.vision.tokensPerRangeLoss,
-    tokens,
-    trueCoinsTokenRewards = this.data.map.coins.true.tokenRewards,
-    falseCoinsTokenRewards = this.data.map.coins.false.tokenRewards,
-    trueCoinsRandomRewards = trueCoinsTokenRewards.random,
-    falseCoinsRandomRewards = falseCoinsTokenRewards.random,
-    obsession = typeof entity !== "undefined" && entity.includes( "killer" ) && typeof this.data.entities[ this.data.entities[entity].obsession ] !== "undefined" ? this.data.entities[entity].obsession : undefined;
-
-    if ( typeof this.debug !== "undefined" && this.debug.state ) {
-
-      debugKey = this.debugKeyGen();
-      this.debugRegister( "tileEvents", [coordinates, entity], "start", debugKey )
-
-    }
-
-    if ( entity && typeof this.data.entities[entity] !== "undefined" && this.data.entities[entity].entityBehavior === "player" ) {
-
-      range = this.data.entities[entity].vision.range;
-      tokens = this.data.entities[entity].vision.tokens;
-
-      if ( coordinates && Array.isArray( coordinates ) && coordinates.length === 2) {
-
-        tileId = this.registry[coordinates.join( "-" )].id;
-
-        switch ( tileId ) {
-
-          case this.tileClassToId( "coin1" ): 
-            this.data.playerRules.coins.true += 1;
-            this.data.playerRules.madness.quantity = this.data.playerRules.madness.quantity > 0 ? this.data.playerRules.madness.quantity * this.data.map.madness.coins.true.madnessMultiplier : 0;
-            this.data.entities[entity].vision.tokens = tokens + trueCoinsTokenRewards.base + M.R( trueCoinsRandomRewards.added[0], trueCoinsRandomRewards.added[1] ) - M.R( trueCoinsRandomRewards.removed[0], trueCoinsRandomRewards.removed[1] );
-          break;
-
-          case this.tileClassToId( "door" ):
-            this.data.map.coins.true.quantity - this.data.playerRules.coins.true === 0 ? alert( "you won" ) : alert( `you found ${ this.data.playerRules.coins.true } coins of ${ this.data.map.coins.true.quantity }` );
-          break;
-
-          case this.tileClassToId( "coin2" ):
-            this.data.playerRules.coins.false += 1;
-            this.data.playerRules.madness.quantity = this.data.playerRules.madness.quantity > 0 ? this.data.playerRules.madness.quantity * this.data.map.madness.coins.false.madnessMultiplier : 0;
-            this.data.entities[entity].vision.tokens = tokens + falseCoinsTokenRewards.base + M.R( falseCoinsRandomRewards.added[0], falseCoinsRandomRewards.added[1] ) - M.R( falseCoinsRandomRewards.removed[0], falseCoinsRandomRewards.removed[1] );
-          break
-
-        }
-         
-        this.data.entities[entity].madness.minRangeMoves += this.data.entities[entity].vision.range === this.data.playerRules.vision.minRange ? 1 : 0;
-        this.data.playerRules.madnessMoves += this.data.map.madness.state === true && this.data.entities[entity].vision.range === this.data.playerRules.vision.minRange ? 1 : 0;
-
-        if ( this.data.killerRules.playerMadnessMovesBeforeSpawn === this.data.playerRules.madnessMoves ) {
-
-          this.spawnKiller( entity );
-
-        }
-
-        this.updateMadnessFilter( entity );
-
-        this.data.entities[entity].vision.tokens = this.data.entities[entity].vision.tokens < ( this.data.playerRules.vision.tokensPerRangeLoss * this.data.playerRules.vision.maxRange ) ? this.data.entities[entity].vision.tokens : ( this.data.playerRules.vision.tokensPerRangeLoss * this.data.playerRules.vision.maxRange );
-        this.data.entities[entity].vision.tokens = this.data.entities[entity].vision.tokens < ( ( ( this.data.playerRules.vision.minRange - 1 ) * this.data.playerRules.vision.tokensPerRangeLoss ) + 1 ) ? ( ( this.data.playerRules.vision.minRange - 1 ) * ( this.data.playerRules.vision.tokensPerRangeLoss ) + 1 ) : this.data.entities[entity].vision.tokens;
-        this.data.entities[entity].vision.tokens -= this.data.entities[entity].vision.tokens !== ( ( ( this.data.playerRules.vision.minRange - 1 ) * this.data.playerRules.vision.tokensPerRangeLoss ) + 1 ) ? 1 : 0;
-        this.data.entities[entity].vision.range = Math.ceil( this.data.entities[entity].vision.tokens / this.data.playerRules.vision.tokensPerRangeLoss ) >= this.data.playerRules.vision.minRange ? Math.ceil( this.data.entities[entity].vision.tokens / this.data.playerRules.vision.tokensPerRangeLoss ) : this.data.playerRules.vision.minRange;
-
-        typeof debugKey === "undefined" ? void 0 : this.debugRegister( "tileEvents", [], "end", debugKey )
-
-      }
-
-    }
-
-    else if ( entity && typeof this.data.entities[entity] !== "undefined" && this.data.entities[entity].entityBehavior === "killer" && obsession ) {
-
-      this.data.entities[entity].movesBeforeDisappearing -= this.data.entities[entity].movesBeforeDisappearing >= 1 ? 1 : 0;
-      this.updateMadnessFilter( entity );
-
-      if ( Math.abs( this.data.entities.killer.position[0] - this.data.entities[obsession].position[0] ) === 0 && Math.abs( this.data.entities.killer.position[1] - this.data.entities[obsession].position[1] ) === 1 || Math.abs( this.data.entities.killer.position[0] - this.data.entities[obsession].position[0] ) === 1 && Math.abs( this.data.entities.killer.position[1] - this.data.entities[obsession].position[1] ) === 0 ) {
-
-        this.entityRemove( obsession );
-        this.data.entities[entity].movesBeforeDisappearing = 0
-
-      }
-
-      if ( this.data.entities[entity].movesBeforeDisappearing === 0 ) {
-
-        this.entityRemove( entity );
-        this.data.playerRules.madnessMoves = 0
-
-      }
-
-    }
-
-  }
-
-  spawnKiller( entity ) {
-
-    let M = T.Math,
-    debugKey,
-    bannedTilesFromRandomizing = this.data.map.bannedTilesFromRandomizing.map( v => v.join( "-" ) ),
-    index,
-    registry,
-    airTiles,
-    number,
-    tileId,
-    coordinates,
-    obsessionPosition;
-
-    if ( typeof this.debug !== "undefined" && this.debug.state ) {
-
-      debugKey = this.debugKeyGen();
-      this.debugRegister( "spawnKiller", [entity], "start", debugKey )
-
-    }
-
-    if ( !this.data.entities.killer && entity && !entity.includes( "killer" ) && typeof this.data.entities[entity] !== "undefined" ) {
-
-      obsessionPosition = this.data.entities[entity].position;
-
-      registry = Object.keys( this.registry ); airTiles = registry.filter( v => this.registry[v].id === 0 && !bannedTilesFromRandomizing.includes( v ) ); //airTiles = airTiles.filter( v => Math.abs( v[0] - obsessionPosition[0] ) >= this.data.killerRules.spawn.minDistanceFromObsession && Math.abs( v[0] - obsessionPosition[0] ) <= this.data.killerRules.spawn.maxDistanceFromObsession || Math.abs( v[1] - obsessionPosition[1] ) >= this.data.killerRules.spawn.minDistanceFromObsession && Math.abs( v[1] - obsessionPosition[1] ) <= this.data.killerRules.spawn.maxDistanceFromObsession );
-      number = M.R( airTiles.length ); tileId = this.tileClassToId( "killer" ); coordinates = airTiles[number].split( "-" ).map( v => Number( v ) );
-
-      this.registerTile( coordinates, tileId );
-      this.tileUpdateDisplay( coordinates );
-
-      this.data.entities.killer = { entityBehavior: "killer", position: coordinates, vision: { range: this.data.killerRules.vision.range }, movesBeforeDisappearing: this.data.killerRules.movesBeforeDisappearing, obsession: entity }
-
-    }
-
-    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "spawnKiller", [], "end", debugKey )
 
   }
 
@@ -1179,32 +1080,141 @@ class gameInstance {
 
   }
 
-  // update all entities sight except the entity that just moved
-  updateEntitiesSight( entity ) {
+  tileEvents( coordinates, entity ) {
 
-    let debugKey,
-    entityIndex;
+    let M = T.Math,
+    debugKey,
+    tileId,
+    range,
+    tokensPerRangeLoss = this.data.playerRules.vision.tokensPerRangeLoss,
+    tokens,
+    trueCoinsTokenRewards = this.data.map.coins.true.tokenRewards,
+    falseCoinsTokenRewards = this.data.map.coins.false.tokenRewards,
+    trueCoinsRandomRewards = trueCoinsTokenRewards.random,
+    falseCoinsRandomRewards = falseCoinsTokenRewards.random,
+    obsession = typeof entity !== "undefined" && entity.includes( "killer" ) && typeof this.data.entities[ this.data.entities[entity].obsession ] !== "undefined" ? this.data.entities[entity].obsession : undefined,
+    trueCoinPositions = this.data.map.coins.true.positions.map( v => v.join( "-" ) ),
+    falseCoinPositions = this.data.map.coins.false.positions.map( v => v.join( "-" ) ),
+    coinIndex;
 
     if ( typeof this.debug !== "undefined" && this.debug.state ) {
 
       debugKey = this.debugKeyGen();
-      this.debugRegister( "updateEntitiesSight", [entity], "start", debugKey )
+      this.debugRegister( "tileEvents", [coordinates, entity], "start", debugKey )
 
     }
 
-    if ( typeof this.data.entities[entity] !== "undefined" ) {
+    if ( entity && typeof this.data.entities[entity] !== "undefined" && this.data.entities[entity].entityBehavior === "player" ) {
 
-      entityIndex = entity.includes( "player" ) ? Number( entity.slice( -1 ) ) : 5;
+      range = this.data.entities[entity].vision.range;
+      tokens = this.data.entities[entity].vision.tokens;
 
-      entityIndex !== 1 ? this.entitySight( "player1" ) : void 0;
-      entityIndex !== 2 ? this.entitySight( "player2" ) : void 0;
-      entityIndex !== 3 ? this.entitySight( "player3" ) : void 0;
-      entityIndex !== 4 ? this.entitySight( "player4" ) : void 0;
-      entityIndex !== 5 ? this.entitySight( "killer" ) : void 0
+      if ( coordinates && Array.isArray( coordinates ) && coordinates.length === 2) {
+
+        tileId = this.registry[coordinates.join( "-" )].id;
+
+        switch ( tileId ) {
+
+          case this.tileClassToId( "coin1" ): 
+            this.data.playerRules.coins.true += 1;
+            this.data.playerRules.madness.quantity = this.data.playerRules.madness.quantity > 0 ? this.data.playerRules.madness.quantity * this.data.map.madness.coins.true.madnessMultiplier : 0;
+            this.data.entities[entity].vision.tokens = tokens + trueCoinsTokenRewards.base + M.R( trueCoinsRandomRewards.added[0], trueCoinsRandomRewards.added[1] ) - M.R( trueCoinsRandomRewards.removed[0], trueCoinsRandomRewards.removed[1] );
+            coinIndex = trueCoinPositions.indexOf( coordinates.join( "-" ) ); coinIndex !== -1 ? this.data.map.coins.true.positions.splice( coinIndex, 1 ) : void 0
+          break;
+
+          case this.tileClassToId( "door" ):
+            this.data.map.coins.true.quantity - this.data.playerRules.coins.true === 0 ? alert( "you won" ) : alert( `you found ${ this.data.playerRules.coins.true } coins of ${ this.data.map.coins.true.quantity }` );
+          break;
+
+          case this.tileClassToId( "coin2" ):
+            this.data.playerRules.coins.false += 1;
+            this.data.playerRules.madness.quantity = this.data.playerRules.madness.quantity > 0 ? this.data.playerRules.madness.quantity * this.data.map.madness.coins.false.madnessMultiplier : 0;
+            this.data.entities[entity].vision.tokens = tokens + falseCoinsTokenRewards.base + M.R( falseCoinsRandomRewards.added[0], falseCoinsRandomRewards.added[1] ) - M.R( falseCoinsRandomRewards.removed[0], falseCoinsRandomRewards.removed[1] );
+            coinIndex = falseCoinPositions.indexOf( coordinates.join( "-" ) ); coinIndex !== -1 ? this.data.map.coins.false.positions.splice( coinIndex, 1 ) : void 0
+          break
+
+        }
+         
+        this.data.entities[entity].madness.minRangeMoves += this.data.entities[entity].vision.range === this.data.playerRules.vision.minRange ? 1 : 0;
+        this.data.playerRules.madnessMoves += this.data.map.madness.state === true && this.data.entities[entity].vision.range === this.data.playerRules.vision.minRange ? 1 : 0;
+
+        if ( this.data.killerRules.playerMadnessMovesBeforeSpawn === this.data.playerRules.madnessMoves ) {
+
+          this.spawnKiller( entity );
+
+        }
+
+        this.updateMadnessFilter( entity );
+
+        this.data.entities[entity].vision.tokens = this.data.entities[entity].vision.tokens < ( this.data.playerRules.vision.tokensPerRangeLoss * this.data.playerRules.vision.maxRange ) ? this.data.entities[entity].vision.tokens : ( this.data.playerRules.vision.tokensPerRangeLoss * this.data.playerRules.vision.maxRange );
+        this.data.entities[entity].vision.tokens = this.data.entities[entity].vision.tokens < ( ( ( this.data.playerRules.vision.minRange - 1 ) * this.data.playerRules.vision.tokensPerRangeLoss ) + 1 ) ? ( ( this.data.playerRules.vision.minRange - 1 ) * ( this.data.playerRules.vision.tokensPerRangeLoss ) + 1 ) : this.data.entities[entity].vision.tokens;
+        this.data.entities[entity].vision.tokens -= this.data.entities[entity].vision.tokens !== ( ( ( this.data.playerRules.vision.minRange - 1 ) * this.data.playerRules.vision.tokensPerRangeLoss ) + 1 ) ? 1 : 0;
+        this.data.entities[entity].vision.range = Math.ceil( this.data.entities[entity].vision.tokens / this.data.playerRules.vision.tokensPerRangeLoss ) >= this.data.playerRules.vision.minRange ? Math.ceil( this.data.entities[entity].vision.tokens / this.data.playerRules.vision.tokensPerRangeLoss ) : this.data.playerRules.vision.minRange;
+
+        typeof debugKey === "undefined" ? void 0 : this.debugRegister( "tileEvents", [], "end", debugKey )
+
+      }
 
     }
 
-    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "updateEntitiesSight", [], "end", debugKey )
+    else if ( entity && typeof this.data.entities[entity] !== "undefined" && this.data.entities[entity].entityBehavior === "killer" && obsession ) {
+
+      this.data.entities[entity].movesBeforeDisappearing -= this.data.entities[entity].movesBeforeDisappearing >= 1 ? 1 : 0;
+      this.updateMadnessFilter( entity );
+
+      if ( Math.abs( this.data.entities.killer.position[0] - this.data.entities[obsession].position[0] ) === 0 && Math.abs( this.data.entities.killer.position[1] - this.data.entities[obsession].position[1] ) === 1 || Math.abs( this.data.entities.killer.position[0] - this.data.entities[obsession].position[0] ) === 1 && Math.abs( this.data.entities.killer.position[1] - this.data.entities[obsession].position[1] ) === 0 ) {
+
+        this.entityRemove( obsession );
+        this.data.entities[entity].movesBeforeDisappearing = 0
+
+      }
+
+      if ( this.data.entities[entity].movesBeforeDisappearing === 0 ) {
+
+        this.entityRemove( entity );
+        this.data.playerRules.madnessMoves = 0
+
+      }
+
+    }
+
+  }
+
+  spawnKiller( entity ) {
+
+    let M = T.Math,
+    debugKey,
+    bannedTilesFromRandomizing = this.data.map.bannedTilesFromRandomizing.map( v => v.join( "-" ) ),
+    index,
+    registry,
+    airTiles,
+    number,
+    tileId,
+    coordinates,
+    obsessionPosition;
+
+    if ( typeof this.debug !== "undefined" && this.debug.state ) {
+
+      debugKey = this.debugKeyGen();
+      this.debugRegister( "spawnKiller", [entity], "start", debugKey )
+
+    }
+
+    if ( !this.data.entities.killer && entity && !entity.includes( "killer" ) && typeof this.data.entities[entity] !== "undefined" ) {
+
+      obsessionPosition = this.data.entities[entity].position;
+
+      registry = Object.keys( this.registry ); airTiles = registry.filter( v => this.registry[v].id === 0 && !bannedTilesFromRandomizing.includes( v ) ); //airTiles = airTiles.filter( v => Math.abs( v[0] - obsessionPosition[0] ) >= this.data.killerRules.spawn.minDistanceFromObsession && Math.abs( v[0] - obsessionPosition[0] ) <= this.data.killerRules.spawn.maxDistanceFromObsession || Math.abs( v[1] - obsessionPosition[1] ) >= this.data.killerRules.spawn.minDistanceFromObsession && Math.abs( v[1] - obsessionPosition[1] ) <= this.data.killerRules.spawn.maxDistanceFromObsession );
+      number = M.R( airTiles.length ); tileId = this.tileClassToId( "killer" ); coordinates = airTiles[number].split( "-" ).map( v => Number( v ) );
+
+      this.registerTile( coordinates, tileId );
+      this.tileUpdateDisplay( coordinates );
+
+      this.data.entities.killer = { entityBehavior: "killer", position: coordinates, vision: { range: this.data.killerRules.vision.range }, movesBeforeDisappearing: this.data.killerRules.movesBeforeDisappearing, obsession: entity }
+
+    }
+
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "spawnKiller", [], "end", debugKey )
 
   }
 
@@ -1225,7 +1235,7 @@ class gameInstance {
       this.tileClear( this.data.entities[entity].position );
       this.data.entities[entity].lastUpdatedTiles.forEach( v => { if ( !this.registry[ v.join( "-" ) ].element.classList.contains( "player" ) ) { this.tileClear( v, true ) } } );
       this.updateEntitiesSight( entity );
-      delete this.data.entities[entity];
+      delete this.data.entities[entity]
 
     }
 
@@ -1295,33 +1305,6 @@ class gameInstance {
 
   }
 
-  togglePlayerSettings() {
-
-    let debugKey,
-    D = T.DOM,
-    userSettings = D.qSA( ".user-settings", document, 0 );
-
-    if ( typeof this.debug !== "undefined" && this.debug.state ) {
-
-      debugKey = this.debugKeyGen();
-      this.debugRegister( "togglePlayerSettings", [], "start", debugKey )
-
-    }
-
-    if ( typeof userSettings !== "undefined" ) {
-
-      this.data.playerRules.HUDisActive = getComputedStyle( userSettings ).display === "block" ? false : true;
-      userSettings.style.display = getComputedStyle( userSettings ).display === "block" ? "none" : "block";
-
-      this.data.playerRules.focusedKeyBinding = "";
-      document.querySelectorAll( ".focused" ).forEach( v => v.classList.remove( "focused" ) );
-
-    }
-
-    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "togglePlayerSettings", [], "end", debugKey )
-
-  }
-
   generatePlayerSettings() {
 
     let debugKey,
@@ -1347,8 +1330,6 @@ class gameInstance {
 
           div.innerHTML += `<table id="${ entities[index] + "-card" }"><tr><td colspan="3">${ entities[index] }</td></tr><tr><td id="${ entities[index].includes( "player" ) && this.data.entities[ entities[index] ].entityBehavior === "player" ? entities[index] + "-leftColorChange" : "" }"></td><td id="${ entities[index] + "-color" }"></td><td id="${ entities[index].includes( "player" ) && this.data.entities[ entities[index] ].entityBehavior === "player" ? entities[index] + "-rightColorChange" : "" }"></td></tr><tr><td></td><td id="${ entities[index] + "-keyUp" }"></td><td></td></tr><tr><td id="${ entities[index] + "-keyLeft" }"></td><td id="${ entities[index] + "-keyDown" }"></td><td id="${ entities[index] + "-keyRight" }"></td></tr></table>`
 
-          /*div.innerHTML += `<table id="${ entities[index] + "-card" }" class="${ entities[index].includes( "player" ) && this.data.entities[ entities[index] ].entityBehavior === "player" ? this.data.playerSettings[ entities[index] ].color : "purple" }"><tr><td colspan="3">${ entities[index] }</td></tr><tr><td id="${ entities[index].includes( "player" ) && this.data.entities[ entities[index] ].entityBehavior === "player" ? entities[index] + "-leftColorChange" : "" }">${ entities[index].includes( "player" ) && this.data.entities[ entities[index] ].entityBehavior === "player" ? "<" : "" }</td><td id="${ entities[index] + "-color" }">${ entities[index].includes( "player" ) && this.data.entities[ entities[index] ].entityBehavior === "player" ? this.data.playerSettings[ entities[index] ].color : "purple" }</td><td id="${ entities[index].includes( "player" ) && this.data.entities[ entities[index] ].entityBehavior === "player" ? entities[index] + "-rightColorChange" : "" }">${ entities[index].includes( "player" ) && this.data.entities[ entities[index] ].entityBehavior === "player" ? ">" : "" }</td></tr><tr><td></td><td id="${ entities[index] + "-keyUp" }">${ typeof this.data.playerSettings[ entities[index] ].keyBindings !== "undefined" && typeof this.data.playerSettings[ entities[index] ].keyBindings[0] !== "undefined" && this.data.playerSettings[ entities[index] ].keyBindings[0] !== "" ? this.data.playerSettings[ entities[index] ].keyBindings[0].replace("Key","") : "..." }</td><td></td></tr><tr><td id="${ entities[index] + "-keyLeft" }">${ typeof this.data.playerSettings[ entities[index] ].keyBindings !== "undefined" && typeof this.data.playerSettings[ entities[index] ].keyBindings[2] !== "undefined" && this.data.playerSettings[ entities[index] ].keyBindings[2] !== "" ? this.data.playerSettings[ entities[index] ].keyBindings[2].replace("Key","") : "..." }</td><td id="${ entities[index] + "-keyDown" }">${ typeof this.data.playerSettings[ entities[index] ].keyBindings !== "undefined" && typeof this.data.playerSettings[ entities[index] ].keyBindings[1] !== "undefined" && this.data.playerSettings[ entities[index] ].keyBindings[1] !== "" ? this.data.playerSettings[ entities[index] ].keyBindings[1].replace("Key","") : "..." }</td><td id="${ entities[index] + "-keyRight" }">${ typeof this.data.playerSettings[ entities[index] ].keyBindings !== "undefined" && typeof this.data.playerSettings[ entities[index] ].keyBindings[3] !== "undefined" && this.data.playerSettings[ entities[index] ].keyBindings[3] !== "" ? this.data.playerSettings[ entities[index] ].keyBindings[3].replace("Key","") : "..." }</td></tr></table>`
-*/
       }
 
       document.body.insertAdjacentElement( "afterbegin", div );
@@ -1371,6 +1352,33 @@ class gameInstance {
     }
 
     typeof debugKey === "undefined" ? void 0 : this.debugRegister( "generatePlayerSettings", [], "end", debugKey )
+
+  }
+
+  togglePlayerSettings() {
+
+    let debugKey,
+    D = T.DOM,
+    userSettings = D.qSA( ".user-settings", document, 0 );
+
+    if ( typeof this.debug !== "undefined" && this.debug.state ) {
+
+      debugKey = this.debugKeyGen();
+      this.debugRegister( "togglePlayerSettings", [], "start", debugKey )
+
+    }
+
+    if ( typeof userSettings !== "undefined" ) {
+
+      this.data.playerRules.HUDisActive = getComputedStyle( userSettings ).display === "block" ? false : true;
+      userSettings.style.display = getComputedStyle( userSettings ).display === "block" ? "none" : "block";
+
+      this.data.playerRules.focusedKeyBinding = "";
+      document.querySelectorAll( ".focused" ).forEach( v => v.classList.remove( "focused" ) );
+
+    }
+
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "togglePlayerSettings", [], "end", debugKey )
 
   }
 
@@ -1426,8 +1434,8 @@ class gameInstance {
 
     if ( typeof this.data.entities[entity] !== "undefined" && typeof this.data.playerSettings[entity].color !== "undefined" ) {
 
-      this.registerTile( instance.data.entities[entity].position, instance.tileClassToId( entity ) );
-      this.tileUpdateDisplay( instance.data.entities[entity].position );
+      this.registerTile( this.data.entities[entity].position, this.tileClassToId( entity ) );
+      this.tileUpdateDisplay( this.data.entities[entity].position );
 
     }
 
@@ -1469,13 +1477,13 @@ class gameInstance {
 
       document.querySelector(`#${ entity + "-card" }`, document, 0 ).className = newColor;
       document.querySelector(`#${ entity + "-color" }`, document, 0 ).textContent = newColor;
-      instance.data.playerSettings[entity].color = newColor;
+      this.data.playerSettings[entity].color = newColor;
 
-      instance.entityUpdateColor( entity );
+      this.entityUpdateColor( entity );
 
       if ( typeof localStorage !== "undefined" ) {
 
-        Object.keys( instance.data.playerSettings ).forEach( v => typeof instance.data.playerSettings[v].color !== "undefined" ? savedColors.push( instance.data.playerSettings[v].color ) : void 0 );
+        Object.keys( this.data.playerSettings ).forEach( v => typeof this.data.playerSettings[v].color !== "undefined" ? savedColors.push( this.data.playerSettings[v].color ) : void 0 );
         localStorage.exportedPlayerColors = JSON.stringify( savedColors ) 
 
       }
@@ -1526,11 +1534,11 @@ class gameInstance {
 
     else if ( Object.keys( this.data.playerSettings ).length > 0 && key ) {
 
-      Object.keys( instance.data.playerSettings ).forEach( v => {
+      Object.keys( this.data.playerSettings ).forEach( v => {
 
         this.data.playerSettings[v].keyBindings.forEach( V => {
 
-          let index = instance.data.playerSettings[v].keyBindings.indexOf( key );
+          let index = this.data.playerSettings[v].keyBindings.indexOf( key );
                   
           if ( index !== -1 ) {
 
@@ -1546,6 +1554,106 @@ class gameInstance {
     }
 
     typeof debugKey === "undefined" ? void 0 : this.debugRegister( "removeDuplicatedKeyBindings", [], "end", debugKey )
+
+  }
+
+  toggleFocusedKeyBinding( focusedKeyBinding ) {
+
+    let debugKey,
+    entity,
+    key;
+
+    if ( typeof this.debug !== "undefined" && this.debug.state ) {
+
+      debugKey = this.debugKeyGen();
+      this.debugRegister( "toggleFocusedKeyBinding", [focusedKeyBinding], "start", debugKey )
+
+    }
+
+    if ( typeof focusedKeyBinding !== "undefined" ) {
+
+      focusedKeyBinding = focusedKeyBinding.split( " " );
+
+      entity = focusedKeyBinding[0];
+      key = focusedKeyBinding[1];
+
+      if ( focusedKeyBinding.join( " " ) !== this.data.playerRules.focusedKeyBinding ) {
+
+        this.data.playerSettings[entity].HUD[key].className = "focused";
+        this.data.playerRules.focusedKeyBinding = focusedKeyBinding.join( " " )
+
+      }
+
+      else {
+
+        this.data.playerSettings[entity].HUD[key].className = "";
+        this.data.playerRules.focusedKeyBinding = ""
+
+      }
+
+    }
+
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "toggleFocusedKeyBinding", [], "end", debugKey )
+
+  }
+
+  bindKey( key ) {
+
+    let debugKey,
+    keys = { keyUp: 0, keyDown: 1, keyLeft: 2, keyRight: 3 },
+    keyId = { 0: "keyUp", 1: "keyDown", 2: "keyLeft", 3: "keyRight" },
+    focusedKeyBinding = this.data.playerRules.focusedKeyBinding.split( " " ),
+    oldKeyIndex,
+    savedBindings = [];
+
+    if ( typeof this.debug !== "undefined" && this.debug.state ) {
+
+      debugKey = this.debugKeyGen();
+      this.debugRegister( "bindKey", [key], "start", debugKey )
+
+    }
+
+    if ( typeof key !== "undefined" ) {
+
+      oldKeyIndex = this.data.playerRules.bindedKeys.indexOf( this.data.playerSettings[ focusedKeyBinding[0] ].keyBindings[ keys[ focusedKeyBinding[1] ] ] );
+
+      if ( !this.data.playerRules.bannedKeysFromBinding.includes( key ) ) {
+
+        this.data.playerRules.bindedKeys.splice( oldKeyIndex, 1 );
+
+        this.removeDuplicatedKeyBindings( key );
+
+        this.data.playerSettings[ focusedKeyBinding[0] ].keyBindings[ keys[ focusedKeyBinding[1] ] ] = key;
+        this.updateEntityHUD( focusedKeyBinding[0] );
+
+        this.data.playerRules.bindedKeys.push( key );
+
+        this.toggleFocusedKeyBinding( this.data.playerRules.focusedKeyBinding );
+
+      }
+
+      else if ( key === "Escape" ) {
+
+        this.data.playerRules.bindedKeys.splice( oldKeyIndex, 1 );
+
+        this.data.playerSettings[ focusedKeyBinding[0] ].keyBindings[ keys[ focusedKeyBinding[1] ] ] = "";
+        this.updateEntityHUD( focusedKeyBinding[0] );
+
+        this.toggleFocusedKeyBinding( this.data.playerRules.focusedKeyBinding );
+
+      }
+
+      if ( typeof Storage !== "undefined" ) {
+
+        Object.keys( this.data.playerSettings ).forEach( v => savedBindings.push( this.data.playerSettings[v].keyBindings ) );
+
+        localStorage.exportedKeyBindings = JSON.stringify( savedBindings );
+
+      }
+
+    }
+
+    typeof debugKey === "undefined" ? void 0 : this.debugRegister( "bindKey", [], "end", debugKey )
 
   }
 
